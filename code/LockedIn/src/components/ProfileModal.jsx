@@ -547,7 +547,7 @@ export default function ProfileModal({
                       <div className="text-xs font-black text-white flex items-center gap-1.5">
                         <span>Coach Lock Neural Engine</span>
                         <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-orange-500/20 text-orange-300 border border-orange-500/30">
-                          llama-3.1-8b
+                          openai/gpt-oss-20b
                         </span>
                       </div>
                       <div className="text-[10px] text-slate-400 font-medium">Groq Cloud LPU Inference</div>
@@ -581,7 +581,29 @@ export default function ProfileModal({
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-slate-800">
+                {/* Free Key Instructions Callout */}
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">
+                      ⚡ Free GroqCloud API Key
+                    </span>
+                    <a
+                      href="https://console.groq.com/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-bold text-orange-400 hover:underline flex items-center gap-0.5"
+                    >
+                      console.groq.com/keys ↗
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-snug font-medium">
+                    1. Sign in to <strong className="text-white">GroqCloud</strong> with Google/GitHub (free, instant).<br />
+                    2. Click <strong className="text-white">"Create API Key"</strong> and copy your key.<br />
+                    3. Paste below to unlock live <strong className="text-orange-400">openai/gpt-oss-20b</strong> AI recipes & drills!
+                  </p>
+                </div>
+
+                <div className="pt-1 border-t border-slate-800">
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[11px] font-bold text-slate-400 block">
                       {t('groqKeyLabel')}
@@ -596,7 +618,7 @@ export default function ProfileModal({
                     type="password"
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
-                    placeholder={getGroqApiKey() ? "Pre-configured demo key active" : "Paste your gsk_... key here"}
+                    placeholder={getGroqApiKey() ? "Key saved in browser storage" : "Paste your gsk_... key here"}
                     className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-800 bg-slate-900 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-none"
                   />
                 </div>

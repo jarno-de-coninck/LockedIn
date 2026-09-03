@@ -22,6 +22,7 @@ import {
   generateSportWorkout,
   generateWeeklySchedule,
   askNutritionistCoach,
+  getGroqApiKey,
 } from '../services/groq';
 import { useLanguage } from '../services/i18n';
 
@@ -454,10 +455,10 @@ export default function AiStudioTab({
               </div>
               <div>
                 <span className="text-xs font-black text-amber-200 block">
-                  AI Engine Offline — Using Fallback
+                  AI Engine Offline — Live openai/gpt-oss-20b Disabled
                 </span>
                 <span className="text-[11px] text-amber-400/80 font-medium block">
-                  Enter your Groq API key to activate live Coach Lock.
+                  Add your free GroqCloud key to generate 100% live AI recipes & coach advice.
                 </span>
               </div>
             </div>
@@ -471,7 +472,29 @@ export default function AiStudioTab({
             </button>
           </div>
 
-          <form onSubmit={handleSaveInlineKey} className="flex gap-2 pt-1">
+          {/* Step-by-step GroqCloud explanation */}
+          <div className="p-3 rounded-2xl bg-slate-950/90 border border-amber-500/25 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">
+                ⚡ How to get a 100% Free Key via GroqCloud
+              </span>
+              <a
+                href="https://console.groq.com/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-bold text-orange-400 hover:text-orange-300 underline flex items-center gap-1"
+              >
+                console.groq.com/keys ↗
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-snug font-medium">
+              1. Open <strong className="text-white">console.groq.com/keys</strong> (Free, instant signup with Google or GitHub, no card needed).<br />
+              2. Click <strong className="text-white">"Create API Key"</strong> and copy it.<br />
+              3. Paste below to unlock live <strong className="text-orange-400">openai/gpt-oss-20b</strong> AI inference!
+            </p>
+          </div>
+
+          <form onSubmit={handleSaveInlineKey} className="flex gap-2 pt-0.5">
             <input
               type="password"
               value={inlineKey}
@@ -482,9 +505,9 @@ export default function AiStudioTab({
             <button
               type="submit"
               disabled={isCheckingAi}
-              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shrink-0 active-press transition-colors flex items-center gap-1 shadow-md"
+              className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black shrink-0 active-press transition-colors flex items-center gap-1 shadow-md shadow-orange-500/20"
             >
-              {isCheckingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Connect'}
+              {isCheckingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Connect Key'}
             </button>
           </form>
         </div>
@@ -496,12 +519,28 @@ export default function AiStudioTab({
       {aiMode === 'diet' && (
         <div className="space-y-4 animate-slide-up">
           <div className="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800/80 shadow-lg space-y-4">
-            {/* Header & Goal Pill */}
+            {/* Header & Goal Pill & AI Status */}
             <div className="flex items-center justify-between gap-2">
               <div>
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                  {t('dietMode') || 'Diet Architect'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                    {t('dietMode') || 'Diet Architect'}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                      getGroqApiKey()
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    }`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        getGroqApiKey() ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                      }`}
+                    />
+                    {getGroqApiKey() ? 'Live AI Active (openai/gpt-oss-20b)' : 'Offline (No API Key)'}
+                  </span>
+                </div>
                 <h3 className="text-xs sm:text-sm font-black text-white mt-0.5">
                   Olympic Meal Generation Studio
                 </h3>
