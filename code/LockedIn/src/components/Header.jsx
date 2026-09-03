@@ -34,8 +34,11 @@ export default function Header({
             className="tap-target group flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 transition-all active-press shadow-2xs"
             title="Athlete Profile & Biometrics"
           >
-            <div className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-extrabold group-hover:bg-orange-500 transition-colors">
-              <User className="w-3 h-3" />
+            <div className="relative">
+              <div className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-extrabold group-hover:bg-orange-500 transition-colors">
+                <User className="w-3 h-3" />
+              </div>
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" title="AI Ready" />
             </div>
             <div className="flex items-center gap-1 leading-none pr-0.5">
               <span className="text-xs font-black text-slate-800">

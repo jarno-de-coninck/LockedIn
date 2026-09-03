@@ -57,15 +57,11 @@ export default function ProfileModal({
   const [aiResult, setAiResult] = useState(null);
 
   // AI settings
-  const [provider, setProvider] = useState(getActiveProvider());
-  const [localEndpoint, setLocalEndpoint] = useState(
-    localStorage.getItem('lockedin_local_ai_endpoint') || '/api/local-ai'
-  );
   const [apiKeyInput, setApiKeyInput] = useState(
     localStorage.getItem('lockedin_custom_groq_key') || ''
   );
-  const [testingLocal, setTestingLocal] = useState(false);
-  const [testResult, setTestResult] = useState(null);
+  const [testingGroq, setTestingGroq] = useState(false);
+  const [groqTestResult, setGroqTestResult] = useState(null);
 
   // Scientific Mifflin-St Jeor calculation
   const calculatedMaintenance = useMemo(() => {
@@ -103,12 +99,45 @@ export default function ProfileModal({
       ? (Number(weight) / (heightInMeters * heightInMeters)).toFixed(1)
       : '24.1';
 
-  const handleTestConnection = async () => {
-    setTestingLocal(true);
-    setTestResult(null);
-    const res = await testLocalAiConnection(localEndpoint.trim());
-    setTestResult(res);
-    setTestingLocal(false);
+  const handleTestGroq = async () => {
+    setTestingGroq(true);
+    setGroqTestResult(null);
+    const key = apiKeyInput.trim() || getGroqApiKey();
+    if (!key) {
+      setGroqTestResult({
+        success: false,
+        message: 'No Groq API key detected. Using offline fallback engine.',
+      });
+      setTestingGroq(false);
+      return;
+    }
+
+    const startTime = Date.now();
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      const latency = Date.now() - startTime;
+      if (res.ok) {
+        setGroqTestResult({
+          success: true,
+          message: `Connected to Groq Cloud (openai/gpt-oss-20b • ${latency}ms latency)`,
+        });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setGroqTestResult({
+          success: false,
+          message: `Groq error (${res.status}): ${data.error?.message || 'Invalid API Key'}`,
+        });
+      }
+    } catch (err) {
+      setGroqTestResult({
+        success: false,
+        message: `Network error reaching Groq: ${err.message}`,
+      });
+    } finally {
+      setTestingGroq(false);
+    }
   };
 
   const handleAiEstimate = async () => {
@@ -164,8 +193,7 @@ export default function ProfileModal({
     setGoal(parsedGoal);
 
     // Save AI configs
-    localStorage.setItem('lockedin_ai_provider', provider);
-    localStorage.setItem('lockedin_local_ai_endpoint', localEndpoint.trim());
+    localStorage.setItem('lockedin_ai_provider', 'groq');
     if (apiKeyInput.trim()) {
       localStorage.setItem('lockedin_custom_groq_key', apiKeyInput.trim());
     } else {
@@ -448,78 +476,92 @@ export default function ProfileModal({
             </div>
           </div>
 
-          {/* Section 3: AI Connection Settings */}
+          {/* Section 3: AI Intelligence Engine */}
           <div className="space-y-2 pt-1 border-t border-slate-100">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-              3. AI Engine Provider
-            </span>
-
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setProvider('local')}
-                className={`p-2 rounded-xl border text-left transition-all ${
-                  provider === 'local'
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                    : 'bg-slate-50 text-slate-700 border-slate-200'
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                3. AI Intelligence Engine
+              </span>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  groqTestResult?.success
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-amber-50 text-amber-700 border border-amber-200'
                 }`}
               >
-                <span className="text-xs font-bold block">💻 RTX GPU (Local)</span>
-                <span className={`text-[9px] block ${provider === 'local' ? 'text-slate-300' : 'text-slate-400'}`}>
-                  Llama 3.2 on Laptop
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider('groq')}
-                className={`p-2 rounded-xl border text-left transition-all ${
-                  provider === 'groq'
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                    : 'bg-slate-50 text-slate-700 border-slate-200'
-                }`}
-              >
-                <span className="text-xs font-bold block">⚡ Groq Cloud</span>
-                <span className={`text-[9px] block ${provider === 'groq' ? 'text-slate-300' : 'text-slate-400'}`}>
-                  Ultra-fast Cloud AI
-                </span>
-              </button>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    groqTestResult?.success ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                  }`}
+                />
+                {groqTestResult?.success ? 'Coach Lock AI Online' : 'Offline Fallback'}
+              </span>
             </div>
 
-            {/* Local Server Config */}
-            {provider === 'local' && (
-              <div className="space-y-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                <label className="text-[9px] font-bold text-slate-400 uppercase block">
-                  AI Server Endpoint
-                </label>
-                <div className="flex gap-1.5">
-                  <input
-                    type="text"
-                    value={localEndpoint}
-                    onChange={(e) => setLocalEndpoint(e.target.value)}
-                    placeholder="http://145.19.247.3:8080"
-                    className="flex-1 px-2.5 py-1 text-xs font-mono rounded-lg border border-slate-200 bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleTestConnection}
-                    disabled={testingLocal}
-                    className="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-bold shrink-0 flex items-center gap-1 active-press"
-                  >
-                    {testingLocal ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Ping'}
-                  </button>
+            <div className="p-3 rounded-2xl bg-slate-900 text-white space-y-2.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold flex items-center gap-1.5">
+                      <span>Coach Lock Neural AI</span>
+                      <span className="px-1.5 py-0.2 rounded text-[8px] font-mono bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                        gpt-oss-20b
+                      </span>
+                    </div>
+                    <div className="text-[9px] text-slate-400">Groq Cloud LPU Inference</div>
+                  </div>
                 </div>
 
-                {testResult && (
-                  <div className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1.5 ${
-                    testResult.success ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-                  }`}>
-                    {testResult.success ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <AlertCircle className="w-3.5 h-3.5 text-rose-600" />}
-                    <span className="text-[11px] truncate">{testResult.message}</span>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={handleTestGroq}
+                  disabled={testingGroq}
+                  className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold flex items-center gap-1 active-press"
+                >
+                  {testingGroq ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Ping AI'}
+                </button>
               </div>
-            )}
+
+              {groqTestResult && (
+                <div
+                  className={`p-2.5 rounded-xl text-[11px] font-medium flex items-start gap-1.5 ${
+                    groqTestResult.success
+                      ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/50'
+                      : 'bg-amber-950/60 text-amber-300 border border-amber-800/50'
+                  }`}
+                >
+                  {groqTestResult.success ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-400 mt-0.5" />
+                  )}
+                  <span className="leading-tight">{groqTestResult.message}</span>
+                </div>
+              )}
+
+              <div className="pt-1.5 border-t border-slate-800">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[9px] font-semibold text-slate-400 block">
+                    Groq API Key
+                  </label>
+                  {getGroqApiKey() && (
+                    <span className="text-[9px] text-emerald-400 font-semibold flex items-center gap-1">
+                      <Check className="w-2.5 h-2.5" /> Key Active
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder={getGroqApiKey() ? "Pre-configured demo key active" : "Paste your gsk_... key here"}
+                  className="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-hidden"
+                />
+              </div>
+            </div>
           </div>
 
           <button
