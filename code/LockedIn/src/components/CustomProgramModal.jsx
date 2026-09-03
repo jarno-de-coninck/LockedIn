@@ -33,6 +33,7 @@ export default function CustomProgramModal({
   if (!isOpen) return null;
 
   const [builderMode, setBuilderMode] = useState('prompt'); // 'prompt' | 'manual'
+  const [daysPerWeek, setDaysPerWeek] = useState(trainingSchedule?.daysPerWeek || 4);
   const [promptText, setPromptText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -72,11 +73,12 @@ export default function CustomProgramModal({
       const res = await generateWeeklyScheduleFromPrompt({
         promptText: textToUse,
         defaultSport: activeSport,
+        daysPerWeek,
       });
 
       if (res && res.schedule) {
         setTrainingSchedule(res.schedule);
-        showToast('Generated 7-day program!');
+        showToast(`Generated ${daysPerWeek}-day split!`);
         setTimeout(() => onClose(), 600);
       }
     } catch (err) {
@@ -155,6 +157,38 @@ export default function CustomProgramModal({
         <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5">
           {builderMode === 'prompt' ? (
             <div className="space-y-3">
+              {/* Workout Frequency Selector */}
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">
+                    Workout Frequency
+                  </span>
+                  <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                    {daysPerWeek} Training Days / Wk
+                  </span>
+                </div>
+                <div className="grid grid-cols-5 gap-1 pt-0.5">
+                  {[2, 3, 4, 5, 6].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setDaysPerWeek(num)}
+                      className={`py-2 rounded-xl border text-center transition-all ${
+                        daysPerWeek === num
+                          ? 'bg-slate-900 text-white border-slate-900 font-black shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100 font-bold'
+                      }`}
+                    >
+                      <span className="text-xs font-black block">{num}</span>
+                      <span className="text-[8px] font-semibold block uppercase opacity-75">Days</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] text-slate-500 font-medium">
+                  Generates {daysPerWeek} training sessions and {7 - daysPerWeek} rest & recovery days.
+                </p>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
                   Describe Your Split

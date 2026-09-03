@@ -1144,13 +1144,39 @@ function getFallbackWeeklySchedule({ sport = 'weightlifting', goal = 'strength',
   };
 
   const defaultSchedule = schedules[sportKey] || schedules['weightlifting'];
+
+  // Calibrate active workout days to match requested daysPerWeek
+  const activePatternByDays = {
+    2: [0, 3], // Mon, Thu
+    3: [0, 2, 4], // Mon, Wed, Fri
+    4: [0, 1, 3, 4], // Mon, Tue, Thu, Fri
+    5: [0, 1, 2, 4, 5], // Mon, Tue, Wed, Fri, Sat
+    6: [0, 1, 2, 3, 4, 5], // Mon through Sat
+    7: [0, 1, 2, 3, 4, 5, 6],
+  };
+  const activeDays = activePatternByDays[daysPerWeek] || [0, 1, 3, 4];
+
+  const calibratedSchedule = defaultSchedule.map((item, index) => {
+    if (!activeDays.includes(index)) {
+      return {
+        ...item,
+        title: 'Rest & Athletic Recovery',
+        focus: 'Active recovery, hydration, mobility & tissue repair',
+        duration: '0m',
+        type: 'Rest',
+        exercises: [],
+      };
+    }
+    return item;
+  });
+
   return {
     programTitle: programTitles[sportKey] || `${sport} Athletic Protocol`,
     sport,
     goal,
     daysPerWeek,
     level,
-    schedule: defaultSchedule,
+    schedule: calibratedSchedule,
   };
 }
 
@@ -1350,7 +1376,7 @@ function getContextualCoachFallback(question, context) {
 /**
  * Generates a full 7-day periodized program from a free-text custom user prompt.
  */
-export async function generateWeeklyScheduleFromPrompt({ promptText, defaultSport = 'weightlifting' }) {
+export async function generateWeeklyScheduleFromPrompt({ promptText, defaultSport = 'weightlifting', daysPerWeek = 4 }) {
   const provider = getActiveProvider();
   const cleanPrompt = (promptText || '').trim();
 
@@ -1360,7 +1386,7 @@ export async function generateWeeklyScheduleFromPrompt({ promptText, defaultSpor
       schedule: getFallbackWeeklySchedule({
         sport: defaultSport,
         goal: cleanPrompt.slice(0, 30) || 'Custom Training',
-        daysPerWeek: 4,
+        daysPerWeek,
         level: 'Intermediate',
       }),
       isMock: true,
@@ -1369,23 +1395,23 @@ export async function generateWeeklyScheduleFromPrompt({ promptText, defaultSpor
   }
 
   const systemPrompt = `You are a world-class strength & athletic conditioning director.
-The user wants a customized 7-day training schedule (Monday to Sunday) based on their specific request.
-Create a complete 7-day schedule adhering to their prompt.
+The user wants a customized 7-day training schedule (Monday to Sunday) with EXACTLY ${daysPerWeek} active workout days and ${7 - daysPerWeek} rest/recovery days based on their request.
+Create a complete 7-day schedule adhering to their prompt and frequency.
 Output STRICT RAW JSON ONLY. No markdown formatting.
 Schema:
 {
   "programTitle": "Creative Program Title based on user prompt",
   "sport": "${defaultSport}",
   "goal": "Summary of user goal",
-  "daysPerWeek": 4,
+  "daysPerWeek": ${daysPerWeek},
   "level": "Intermediate",
   "schedule": [
     {
       "day": "Monday",
-      "title": "Workout Title",
+      "title": "Workout Title or Rest & Recovery",
       "focus": "Focus description",
       "duration": "50m",
-      "type": "Strength",
+      "type": "Strength or Rest",
       "exercises": [
         {"name": "Exercise Name", "sets": "4 sets", "reps": "8 reps", "notes": "Form note or target weight"}
       ]
@@ -1393,7 +1419,7 @@ Schema:
   ]
 }`;
 
-  const userPrompt = `Build a custom 7-day weekly schedule for this exact request: "${cleanPrompt}". Return RAW JSON ONLY.`;
+  const userPrompt = `Build a 7-day periodized split with exactly ${daysPerWeek} training days for: "${cleanPrompt}". Return RAW JSON ONLY.`;
 
   try {
     const res = await callChatCompletions({
