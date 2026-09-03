@@ -6,9 +6,57 @@ import WorkoutTab from './components/WorkoutTab';
 import DietTab from './components/DietTab';
 import AiStudioTab from './components/AiStudioTab';
 import SplashScreen from './components/SplashScreen';
+import { Download, X } from 'lucide-react';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const dismissed = sessionStorage.getItem('lockedin_dismiss_install');
+        return !isStandalone && !dismissed;
+      }
+    } catch {
+      return true;
+    }
+    return true;
+  });
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (!isStandalone) {
+        setShowInstallBanner(true);
+      }
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallBanner(false);
+        setDeferredPrompt(null);
+      }
+    } else {
+      setShowInstallGuide(true);
+    }
+  };
+
+  const handleDismissBanner = () => {
+    setShowInstallBanner(false);
+    try {
+      sessionStorage.setItem('lockedin_dismiss_install', '1');
+    } catch {}
+  };
 
   // 1. Storage-backed state: User Profile
   const [userProfile, setUserProfile] = useState(() => {
@@ -246,9 +294,85 @@ export default function App() {
           setUserProfile={setUserProfile}
           activeSport={activeSport}
           setActiveSport={setActiveSport}
-        trainingGoal={trainingGoal}
-        setTrainingGoal={setTrainingGoal}
-      />
+          trainingGoal={trainingGoal}
+          setTrainingGoal={setTrainingGoal}
+        />
+
+        {/* PWA Install Banner */}
+        {showInstallBanner && (
+          <div className="mx-3.5 mt-2 p-2.5 rounded-xl bg-orange-500 text-white flex items-center justify-between shadow-md">
+            <div className="flex items-center gap-2">
+              <Download className="w-4 h-4 shrink-0" />
+              <div className="text-xs font-bold leading-tight">
+                Install LockedIn App
+                <span className="block text-[10px] font-normal text-orange-100">Full-screen & native feel</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                className="px-2.5 py-1 rounded-lg bg-white text-orange-600 text-xs font-bold active-press shadow-xs"
+              >
+                Install
+              </button>
+              <button
+                type="button"
+                onClick={handleDismissBanner}
+                className="p-1 text-orange-200 hover:text-white"
+                title="Dismiss"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Install Guide Modal */}
+        {showInstallGuide && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                    <Download className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-sm">Install LockedIn App</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowInstallGuide(false)}
+                  className="p-1 text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs text-slate-300">
+                <div className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
+                  <span>Tap the <strong>three dots (⋮)</strong> in Chrome at the top right.</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center shrink-0 text-[10px]">2</span>
+                  <span>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center shrink-0 text-[10px]">3</span>
+                  <span>Tap <strong>Add / Install</strong> — the app will install with its native dark icon!</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowInstallGuide(false)}
+                className="w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs active-press"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        )}
 
       {/* Dynamic Tab Body */}
       <main className="flex-1 px-3.5 py-3 sm:px-4 sm:py-4 overflow-y-auto">

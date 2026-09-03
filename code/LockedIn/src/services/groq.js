@@ -7,12 +7,16 @@
  */
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_DEFAULT_MODEL = 'openai/gpt-oss-20b';
+const GROQ_FALLBACK_MODEL = 'llama-3.3-70b-versatile';
 
 export const getActiveProvider = () => {
   const saved = localStorage.getItem('lockedin_ai_provider');
   if (saved) return saved;
   if (import.meta.env.VITE_GROQ_API_KEY) return 'groq';
+  if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+    return 'groq';
+  }
   return 'local';
 };
 
@@ -20,13 +24,13 @@ export const getLocalAiEndpoint = () => {
   const saved = localStorage.getItem('lockedin_local_ai_endpoint');
   if (saved && saved.trim()) return saved.trim();
 
-  // If inside Capacitor APK or Android standalone WebView, default to laptop Wi-Fi IP
+  // If inside Capacitor APK or Android standalone WebView, default to Tailscale IP
   if (
     typeof window !== 'undefined' &&
     (window.location.protocol === 'capacitor:' ||
       (window.location.hostname === 'localhost' && window.location.port !== '5173'))
   ) {
-    return 'http://145.19.247.3:8080';
+    return 'http://100.115.34.31:8080';
   }
   return '/api/local-ai';
 };
@@ -151,22 +155,44 @@ async function callChatCompletions({ messages, temperature = 0.4, max_tokens = 1
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-    const response = await fetch(GROQ_API_URL, {
+    const isReasoning = GROQ_DEFAULT_MODEL.includes('gpt-oss') || GROQ_DEFAULT_MODEL.includes('o1');
+    const primaryPayload = {
+      model: GROQ_DEFAULT_MODEL,
+      messages,
+      max_completion_tokens: max_tokens,
+      ...(isReasoning ? { reasoning_effort: 'medium', temperature: 1 } : { temperature, max_tokens }),
+    };
+
+    let response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model: GROQ_DEFAULT_MODEL,
-        messages,
-        temperature,
-        max_tokens,
-      }),
+      body: JSON.stringify(primaryPayload),
       signal: controller.signal,
-    });
+    }).catch(() => null);
+
+    // If primary model fails, try fallback model
+    if (!response || !response.ok) {
+      console.warn(`Primary model ${GROQ_DEFAULT_MODEL} failed, trying fallback ${GROQ_FALLBACK_MODEL}...`);
+      response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: GROQ_FALLBACK_MODEL,
+          messages,
+          temperature,
+          max_tokens,
+        }),
+        signal: controller.signal,
+      });
+    }
 
     clearTimeout(timeoutId);
 
@@ -179,7 +205,7 @@ async function callChatCompletions({ messages, temperature = 0.4, max_tokens = 1
     return {
       content: data.choices?.[0]?.message?.content || '',
       source: 'groq',
-      modelName: 'Llama 3.3 70B (Groq Cloud)',
+      modelName: data.model || GROQ_DEFAULT_MODEL,
     };
   }
 

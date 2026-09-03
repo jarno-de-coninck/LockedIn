@@ -8,6 +8,11 @@ HOST="0.0.0.0"
 CTX_SIZE=4096
 GPU_LAYERS=99 # Fully offload 3B model to RTX 4060 GPU
 
+if ss -tulpn | grep -q ":$PORT "; then
+  echo "✅ Local AI server is already running on port $PORT."
+  exit 0
+fi
+
 if [ ! -f "$MODEL_PATH" ]; then
   echo "❌ Error: Model file not found at $MODEL_PATH"
   echo "Please verify the model download has completed."
