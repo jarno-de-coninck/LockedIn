@@ -7,7 +7,7 @@
  */
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_DEFAULT_MODEL = 'openai/gpt-oss-20b';
+const GROQ_DEFAULT_MODEL = 'llama-3.1-8b-instant';
 const GROQ_FALLBACK_MODEL = 'llama-3.3-70b-versatile';
 
 export const getActiveProvider = () => {
@@ -475,32 +475,43 @@ export async function generateDietPlan({ goal, dietType = 'High Protein' }) {
     };
   }
 
-  const systemPrompt = `You are a certified sports nutritionist and executive chef. Generate a 4-meal daily plan (Breakfast, Lunch, Dinner, Snack).
-IMPORTANT: The sum of all 4 meals MUST EQUAL EXACTLY ${targetGoal} kcal.
-- Breakfast: ~${Math.round(targetGoal * 0.25)} kcal
-- Lunch: ~${Math.round(targetGoal * 0.35)} kcal
-- Dinner: ~${Math.round(targetGoal * 0.30)} kcal
-- Snack: ~${Math.max(50, targetGoal - (Math.round(targetGoal * 0.25) + Math.round(targetGoal * 0.35) + Math.round(targetGoal * 0.30)))} kcal
+  // Exact target calorie distribution for the 4 daily slots
+  const bCals = Math.round(targetGoal * 0.25);
+  const lCals = Math.round(targetGoal * 0.35);
+  const dCals = Math.round(targetGoal * 0.30);
+  const sCals = Math.max(50, targetGoal - (bCals + lCals + dCals));
+  const slotTargets = {
+    Breakfast: bCals,
+    Lunch: lCals,
+    Dinner: dCals,
+    Snack: sCals,
+  };
 
-Every meal MUST include a detailed recipe: prepTime, protein (grams), carbs (grams), fats (grams), ingredients array (with quantities), and step-by-step instructions array.
-Output STRICT RAW JSON ONLY.
+  // Concise chef prompt to minimize tokens while delivering gourmet recipes
+  const systemPrompt = `You are a world-class Olympic Sports Nutritionist & Executive Chef.
+Generate a 4-meal daily athlete menu (Breakfast, Lunch, Dinner, Snack).
+Total Target: ${targetGoal} kcal (${bCals} Breakfast, ${lCals} Lunch, ${dCals} Dinner, ${sCals} Snack).
+
+CRITICAL CONSTRAINTS TO SAVE TOKENS & ENSURE QUALITY:
+1. Provide creative, appetizing meal titles (e.g. "Flame-Grilled Steak & Sweet Potato", "Wild Honey Salmon & Jasmine Rice").
+2. 3 to 4 real ingredients per meal with gram weights.
+3. 2 concise preparation steps per meal.
+4. Output STRICT RAW JSON ONLY. No markdown, no explanations.
+
 Schema:
 [
   {
     "id": 1,
     "meal": "Breakfast",
     "title": "Recipe Title",
-    "calories": 500,
-    "protein": 45,
-    "carbs": 40,
-    "fats": 15,
+    "calories": ${bCals},
     "prepTime": "15 mins",
-    "ingredients": ["Item 1 with quantity", "Item 2 with quantity"],
-    "instructions": ["Step 1...", "Step 2..."]
+    "ingredients": ["150g Egg Whites", "80g Rolled Oats", "50g Berries"],
+    "instructions": ["Cook oats with boiling water.", "Scramble egg whites and serve together."]
   }
 ]`;
 
-  const userPrompt = `Create a ${dietType} diet plan with full recipes for a total target of ${targetGoal} kcal per day.`;
+  const userPrompt = `Create an athletic ${dietType} 4-meal menu for ${targetGoal} kcal total. Return JSON array only.`;
 
   try {
     const res = await callChatCompletions({
@@ -508,42 +519,50 @@ Schema:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.35,
-      max_tokens: 2048,
+      temperature: 0.45,
+      max_tokens: 850,
     });
 
     const parsedPlan = cleanJsonOutput(res.content);
 
     if (Array.isArray(parsedPlan) && parsedPlan.length >= 1) {
-      const validMeals = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
-      const rawNormalized = parsedPlan.slice(0, 4).map((item, idx) => ({
-        id: item.id || idx + 1,
-        meal: validMeals[idx] || item.meal || 'Meal',
-        title: item.title || 'Nutritious balanced meal',
-        calories: Math.max(50, Math.round(Number(item.calories) || 400)),
-        protein: Math.round(Number(item.protein) || 30),
-        carbs: Math.round(Number(item.carbs) || 35),
-        fats: Math.round(Number(item.fats) || 12),
-        prepTime: typeof item.prepTime === 'number' ? `${item.prepTime} mins` : (item.prepTime || '15 mins'),
-        ingredients: Array.isArray(item.ingredients) && item.ingredients.length > 0 ? item.ingredients : ['High quality protein source', 'Fibrous greens', 'Healthy carbs'],
-        instructions: Array.isArray(item.instructions) && item.instructions.length > 0 ? item.instructions : ['Prep fresh ingredients.', 'Cook over medium heat.', 'Serve warm.'],
-      }));
+      const validSlots = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+      const finalMeals = validSlots.map((slot, idx) => {
+        const item = parsedPlan.find((p) => p.meal?.toLowerCase() === slot.toLowerCase()) || parsedPlan[idx] || {};
+        const slotCalorieTarget = slotTargets[slot];
 
-      // If fewer than 4 meals generated, fill remaining slots
-      while (rawNormalized.length < 4) {
-        const slot = validMeals[rawNormalized.length];
-        rawNormalized.push(getSingleMealFallback(slot, Math.round(targetGoal / 4), dietType));
-      }
+        // Mathematically guarantee (Protein * 4) + (Carbs * 4) + (Fats * 9) === slotCalorieTarget
+        const macros = computeRealisticMacros(slotCalorieTarget, dietType);
 
-      // Mathematically normalize sum to match EXACT targetGoal
-      const currentSum = rawNormalized.reduce((a, m) => a + m.calories, 0);
-      const diff = targetGoal - currentSum;
-      if (diff !== 0) {
-        // Adjust the last meal/snack by the difference so total equals targetGoal exactly
-        rawNormalized[rawNormalized.length - 1].calories = Math.max(50, rawNormalized[rawNormalized.length - 1].calories + diff);
-      }
+        return {
+          id: idx + 1,
+          meal: slot,
+          title: item.title && item.title.trim().length > 3 ? item.title.trim() : `${dietType} ${slot} Plate`,
+          calories: slotCalorieTarget,
+          protein: macros.protein,
+          carbs: macros.carbs,
+          fats: macros.fats,
+          prepTime: item.prepTime || '15 mins',
+          ingredients:
+            Array.isArray(item.ingredients) && item.ingredients.length >= 2
+              ? item.ingredients.slice(0, 5)
+              : [
+                  `${Math.round(slotCalorieTarget * 0.35)}g Fresh Protein Source`,
+                  `${Math.round(slotCalorieTarget * 0.30)}g Complex Carbohydrates`,
+                  '1 serving fresh vegetables / greens',
+                ],
+          instructions:
+            Array.isArray(item.instructions) && item.instructions.length >= 2
+              ? item.instructions.slice(0, 3)
+              : [
+                  'Portion and season ingredients with sea salt & pepper.',
+                  'Cook over medium-high heat until done.',
+                  'Plate and enjoy fresh.',
+                ],
+        };
+      });
 
-      return { plan: rawNormalized, isMock: false, source: res.source, modelName: res.modelName };
+      return { plan: finalMeals, isMock: false, source: res.source, modelName: res.modelName };
     } else {
       throw new Error('AI output was not formatted as a valid JSON array.');
     }
@@ -593,20 +612,21 @@ Schema:
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.6,
-      max_tokens: 600,
+      max_tokens: 480,
     });
 
     const parsed = cleanJsonOutput(res.content);
 
     if (parsed && parsed.title) {
+      const macros = computeRealisticMacros(cals, dietType);
       return {
         meal: {
           meal: mealSlot,
           title: parsed.title,
           calories: cals, // enforce exact match
-          protein: Math.round(Number(parsed.protein) || Math.round(cals * 0.09)),
-          carbs: Math.round(Number(parsed.carbs) || Math.round(cals * 0.08)),
-          fats: Math.round(Number(parsed.fats) || Math.round(cals * 0.03)),
+          protein: macros.protein,
+          carbs: macros.carbs,
+          fats: macros.fats,
           prepTime: parsed.prepTime || '15 mins',
           ingredients: Array.isArray(parsed.ingredients) && parsed.ingredients.length > 0 ? parsed.ingredients : ['High quality protein', 'Complex carbs', 'Healthy fats'],
           instructions: Array.isArray(parsed.instructions) && parsed.instructions.length > 0 ? parsed.instructions : ['Prepare ingredients.', 'Cook until golden.', 'Serve warm.'],
@@ -653,21 +673,21 @@ export async function generateCustomMealFromPrompt({ promptText, mealSlot = 'Lun
     };
   }
 
-  const systemPrompt = `You are a Michelin-level sports nutritionist and fitness chef.
-The user wants a customized recipe featuring their specific cravings/ingredients: "${userCravings}".
-The meal is for "${mealSlot}" with target energy: EXACTLY ${cals} kcal and adhering to "${dietType}".
-Output STRICT RAW JSON ONLY for a SINGLE object.
+  const systemPrompt = `You are an elite sports chef. Generate a delicious athletic recipe for ${mealSlot} tailored to "${dietType}".
+Target Calories: EXACTLY ${cals} kcal.
+Cravings/Ingredients to incorporate: "${userCravings}".
+
+CONCISE FORMAT TO SAVE TOKENS:
+- 3 to 4 real ingredients with gram weights.
+- 2 brief prep instructions.
+Output RAW JSON ONLY.
+
 Schema:
 {
-  "meal": "${mealSlot}",
-  "title": "Creative Appetizing Recipe Name",
-  "calories": ${cals},
-  "protein": 42,
-  "carbs": 45,
-  "fats": 14,
+  "title": "Creative Recipe Title",
   "prepTime": "15 mins",
-  "ingredients": ["150g Fresh Salmon", "1/2 Ripe Avocado", "100g Jasmine Rice", "1 tbsp Lemon Juice"],
-  "instructions": ["Step 1: Season salmon with sea salt and black pepper...", "Step 2: Pan sear over medium heat for 4 mins per side...", "Step 3: Fluff rice and top with sliced avocado and salmon."]
+  "ingredients": ["150g Chicken", "100g Rice", "80g Asparagus"],
+  "instructions": ["Season and sear protein.", "Assemble with carbs & greens."]
 }`;
 
   const userPrompt = `Create a ${cals} kcal recipe for ${mealSlot} featuring: "${userCravings}". Return RAW JSON ONLY.`;
@@ -679,21 +699,22 @@ Schema:
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.5,
-      max_tokens: 800,
+      max_tokens: 480,
     });
 
     const parsed = cleanJsonOutput(res.content);
 
     if (parsed && parsed.title) {
+      const macros = computeRealisticMacros(cals, dietType);
       return {
         meal: {
           id: `custom_${Date.now()}`,
           meal: mealSlot,
           title: parsed.title,
           calories: cals,
-          protein: Math.round(Number(parsed.protein) || Math.round(cals * 0.09)),
-          carbs: Math.round(Number(parsed.carbs) || Math.round(cals * 0.08)),
-          fats: Math.round(Number(parsed.fats) || Math.round(cals * 0.03)),
+          protein: macros.protein,
+          carbs: macros.carbs,
+          fats: macros.fats,
           prepTime: typeof parsed.prepTime === 'number' ? `${parsed.prepTime} mins` : (parsed.prepTime || '15 mins'),
           ingredients: Array.isArray(parsed.ingredients) && parsed.ingredients.length > 0 ? parsed.ingredients : ['High quality protein', 'Complex carbs', 'Healthy fats'],
           instructions: Array.isArray(parsed.instructions) && parsed.instructions.length > 0 ? parsed.instructions : ['Prep ingredients.', 'Cook until golden.', 'Serve warm.'],
@@ -707,15 +728,16 @@ Schema:
     }
   } catch (err) {
     console.warn('Custom meal generation error, fallback triggered:', err.message);
+    const macros = computeRealisticMacros(cals, dietType);
     return {
       meal: {
         id: `custom_${Date.now()}`,
         meal: mealSlot,
         title: userCravings ? `Custom ${userCravings.slice(0, 30)}` : 'Healthy Power Plate',
         calories: cals,
-        protein: Math.round(cals * 0.08),
-        carbs: Math.round(cals * 0.09),
-        fats: Math.round(cals * 0.03),
+        protein: macros.protein,
+        carbs: macros.carbs,
+        fats: macros.fats,
         prepTime: '15 mins',
         ingredients: [userCravings, '100g Brown Rice', '1 tbsp Extra Virgin Olive Oil'],
         instructions: ['Prep ingredients.', 'Cook over medium heat.', 'Serve hot.'],

@@ -21,6 +21,8 @@ import {
   Minus,
   Bot,
   Globe,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   getActiveProvider,
@@ -63,6 +65,7 @@ export default function ProfileModal({
   );
   const [testingGroq, setTestingGroq] = useState(false);
   const [groqTestResult, setGroqTestResult] = useState(null);
+  const [showAiDropdown, setShowAiDropdown] = useState(false);
 
   // Scientific Mifflin-St Jeor calculation
   const calculatedMaintenance = useMemo(() => {
@@ -493,92 +496,112 @@ export default function ProfileModal({
             </div>
           </div>
 
-          {/* Section 3: AI Intelligence Engine */}
-          <div className="space-y-2 pt-1 border-t border-slate-800">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                3. {t('aiEngine')}
-              </span>
-              <span
-                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  groqTestResult?.success
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                }`}
-              >
+          {/* Section 3: AI Intelligence Engine (Collapsible Dropdown Accordion) */}
+          <div className="pt-2 border-t border-slate-800 space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowAiDropdown((v) => !v)}
+              className="w-full p-3 rounded-2xl bg-slate-950/70 hover:bg-slate-950 border border-slate-800 flex items-center justify-between text-left transition-colors active-press"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="text-xs font-black text-white block">3. {t('aiEngine')} & API Key</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Custom Groq API Key configuration</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    groqTestResult?.success ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    groqTestResult?.success || getGroqApiKey()
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-slate-800 text-slate-400'
                   }`}
-                />
-                {groqTestResult?.success ? t('aiOnline') : t('aiOffline')}
-              </span>
-            </div>
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      groqTestResult?.success || getGroqApiKey() ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'
+                    }`}
+                  />
+                  {groqTestResult?.success || getGroqApiKey() ? 'Connected' : 'Offline'}
+                </span>
+                {showAiDropdown ? (
+                  <ChevronUp className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                )}
+              </div>
+            </button>
 
-            <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-black text-white flex items-center gap-1.5">
-                      <span>Coach Lock Neural Engine</span>
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-orange-500/20 text-orange-300 border border-orange-500/30">
-                        gpt-oss-20b
-                      </span>
+            {showAiDropdown && (
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 animate-slide-up">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                      <Sparkles className="w-4 h-4" />
                     </div>
-                    <div className="text-[10px] text-slate-400 font-medium">Groq Cloud LPU Inference</div>
+                    <div>
+                      <div className="text-xs font-black text-white flex items-center gap-1.5">
+                        <span>Coach Lock Neural Engine</span>
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                          llama-3.1-8b
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-medium">Groq Cloud LPU Inference</div>
+                    </div>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={handleTestGroq}
+                    disabled={testingGroq}
+                    className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-black flex items-center gap-1 active-press transition-colors shadow-md shadow-orange-500/20"
+                  >
+                    {testingGroq ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Ping AI'}
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleTestGroq}
-                  disabled={testingGroq}
-                  className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-black flex items-center gap-1 active-press transition-colors shadow-md shadow-orange-500/20"
-                >
-                  {testingGroq ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Ping AI'}
-                </button>
+                {groqTestResult && (
+                  <div
+                    className={`p-3 rounded-xl text-xs font-bold flex items-start gap-2 ${
+                      groqTestResult.success
+                        ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/50'
+                        : 'bg-amber-950/60 text-amber-300 border border-amber-800/50'
+                    }`}
+                  >
+                    {groqTestResult.success ? (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+                    )}
+                    <span className="leading-tight">{groqTestResult.message}</span>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-800">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 block">
+                      {t('groqKeyLabel')}
+                    </label>
+                    {getGroqApiKey() && (
+                      <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Key Active
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="password"
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    placeholder={getGroqApiKey() ? "Pre-configured demo key active" : "Paste your gsk_... key here"}
+                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-800 bg-slate-900 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-none"
+                  />
+                </div>
               </div>
-
-              {groqTestResult && (
-                <div
-                  className={`p-3 rounded-xl text-xs font-bold flex items-start gap-2 ${
-                    groqTestResult.success
-                      ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/50'
-                      : 'bg-amber-950/60 text-amber-300 border border-amber-800/50'
-                  }`}
-                >
-                  {groqTestResult.success ? (
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
-                  )}
-                  <span className="leading-tight">{groqTestResult.message}</span>
-                </div>
-              )}
-
-              <div className="pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 block">
-                    {t('groqKeyLabel')}
-                  </label>
-                  {getGroqApiKey() && (
-                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                      <Check className="w-3 h-3" /> Key Active
-                    </span>
-                  )}
-                </div>
-                <input
-                  type="password"
-                  value={apiKeyInput}
-                  onChange={(e) => setApiKeyInput(e.target.value)}
-                  placeholder={getGroqApiKey() ? "Pre-configured demo key active" : "Paste your gsk_... key here"}
-                  className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-800 bg-slate-900 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-none"
-                />
-              </div>
-            </div>
+            )}
           </div>
 
           <button

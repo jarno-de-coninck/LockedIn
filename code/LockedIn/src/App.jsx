@@ -558,7 +558,6 @@ export default function App() {
         todayMeals={meals}
         todayWorkouts={workouts}
         goal={goal}
-        onTriggerRollover={() => handlePerformDailyRollover(true)}
       />
     </>
   );

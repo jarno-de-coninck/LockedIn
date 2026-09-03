@@ -12,7 +12,7 @@ import {
   Zap,
   Trophy,
 } from 'lucide-react';
-import { getDailyHistory, formatHumanDate, simulateNextDayRollover } from '../services/history';
+import { getDailyHistory, formatHumanDate } from '../services/history';
 import { useLanguage } from '../services/i18n';
 
 export default function DailyHistoryModal({
@@ -21,25 +21,12 @@ export default function DailyHistoryModal({
   todayMeals = [],
   todayWorkouts = [],
   goal = 2000,
-  onTriggerRollover,
 }) {
   const { t } = useLanguage();
   const [expandedDate, setExpandedDate] = useState(null);
   const [historyList, setHistoryList] = useState(() => getDailyHistory());
 
   if (!isOpen) return null;
-
-  const handleRefresh = () => {
-    setHistoryList(getDailyHistory());
-  };
-
-  const handleSimulateRollover = () => {
-    if (onTriggerRollover) {
-      onTriggerRollover();
-      handleRefresh();
-      onClose();
-    }
-  };
 
   // Compute today's live preview
   const todayConsumed = todayMeals.reduce((a, m) => a + (Number(m.calories) || 0), 0);
@@ -57,7 +44,9 @@ export default function DailyHistoryModal({
             </div>
             <div>
               <h3 className="text-xs font-black text-white">{t('history') || 'Daily History Log'}</h3>
-              <p className="text-[11px] text-slate-400 font-bold">Review what you ate & did</p>
+              <p className="text-[11px] text-slate-400 font-bold">
+                {historyList.length > 0 ? `${historyList.length} past days archived` : 'Review what you ate & did'}
+              </p>
             </div>
           </div>
           <button
@@ -66,22 +55,6 @@ export default function DailyHistoryModal({
             className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Action Bar (Test rollover helper for instant verification) */}
-        <div className="p-3 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0">
-          <span className="text-[11px] font-bold text-slate-400">
-            {historyList.length} past days archived
-          </span>
-          <button
-            type="button"
-            onClick={handleSimulateRollover}
-            className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-orange-400 text-[11px] font-black flex items-center gap-1 active-press transition-colors"
-            title="Simulate rollover to next calendar day"
-          >
-            <Zap className="w-3 h-3 text-orange-400" />
-            <span>Test Day Rollover</span>
           </button>
         </div>
 
