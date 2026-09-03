@@ -326,7 +326,7 @@ export default function App() {
         onSkip={() => setShowOnboarding(false)}
       />
 
-      <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col relative select-none shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+      <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col relative select-none shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-x-hidden">
         {/* Sticky Top Minimalist Header with Profile Avatar */}
         <Header
           goal={goal}
