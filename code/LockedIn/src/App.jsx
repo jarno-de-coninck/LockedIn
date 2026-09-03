@@ -7,9 +7,12 @@ import DietTab from './components/DietTab';
 import AiStudioTab from './components/AiStudioTab';
 import SplashScreen from './components/SplashScreen';
 import OnboardingModal from './components/OnboardingModal';
+import DailyHistoryModal from './components/DailyHistoryModal';
 import { Download, X } from 'lucide-react';
 import { useLanguage } from './services/i18n';
 import { calculateRealStreak } from './services/streak';
+import { checkAndPerformDailyRollover, simulateNextDayRollover } from './services/history';
+import { generateDietPlan, getFallbackDietPlan } from './services/groq';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -235,6 +238,66 @@ export default function App() {
 
   // Active navigation tab: 'today' | 'workouts' | 'diet' | 'ai'
   const [activeTab, setActiveTab] = useState('today');
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+
+  // Daily Rollover handler: archives previous day, clears daily logs, generates fresh diet
+  const handlePerformDailyRollover = async (forceSimulate = false) => {
+    const rolloverFn = forceSimulate ? simulateNextDayRollover : checkAndPerformDailyRollover;
+    const res = rolloverFn({
+      currentMeals: meals,
+      currentWorkouts: workouts,
+      goal,
+      onNewDay: async ({ previousDate, newDate }) => {
+        // 1. Reset daily activity logs
+        setMeals([]);
+        setWorkouts([]);
+
+        // 2. Generate a fresh new diet plan for the new day
+        try {
+          const dietPref = userProfile?.dietPreference || 'High Protein';
+          const fresh = await generateDietPlan({
+            goal,
+            dietType: dietPref,
+            mealsCount: 4,
+          });
+          if (fresh && fresh.plan && fresh.plan.length > 0) {
+            setDietPlan(fresh.plan);
+            localStorage.setItem('lockedin_diet_plan', JSON.stringify(fresh.plan));
+          } else {
+            const fallback = getFallbackDietPlan(dietPref, goal);
+            setDietPlan(fallback);
+            localStorage.setItem('lockedin_diet_plan', JSON.stringify(fallback));
+          }
+        } catch (err) {
+          console.warn('Rollover diet generation error:', err);
+          const fallback = getFallbackDietPlan('High Protein', goal);
+          setDietPlan(fallback);
+          localStorage.setItem('lockedin_diet_plan', JSON.stringify(fallback));
+        }
+      },
+    });
+
+    return res;
+  };
+
+  // Check rollover on app load and tab visibility
+  useEffect(() => {
+    handlePerformDailyRollover(false);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        handlePerformDailyRollover(false);
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibility);
+    const interval = setInterval(() => handlePerformDailyRollover(false), 60000);
+
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, [meals, workouts, goal, userProfile]);
 
   // Real, Honest Streak Calculation
   const realStreakDays = useMemo(() => {
@@ -431,6 +494,7 @@ export default function App() {
               activeSport={activeSport}
               onNavigateToDiet={() => setActiveTab('diet')}
               onNavigateToWorkouts={() => setActiveTab('workouts')}
+              onOpenHistory={() => setShowHistoryModal(true)}
             />
           )}
 
@@ -486,6 +550,16 @@ export default function App() {
           loggedWorkoutsCount={workouts.length}
         />
       </div>
+
+      {/* Daily History Modal */}
+      <DailyHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        todayMeals={meals}
+        todayWorkouts={workouts}
+        goal={goal}
+        onTriggerRollover={() => handlePerformDailyRollover(true)}
+      />
     </>
   );
 }

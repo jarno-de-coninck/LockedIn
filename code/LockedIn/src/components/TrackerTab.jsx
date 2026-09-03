@@ -10,9 +10,13 @@ import {
   Check,
   Star,
   Zap,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import RecipeModal from './RecipeModal';
 import { useLanguage } from '../services/i18n';
+import { getDailyHistory, formatHumanDate } from '../services/history';
 
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -26,6 +30,7 @@ export default function TrackerTab({
   activeSport,
   onNavigateToDiet,
   onNavigateToWorkouts,
+  onOpenHistory,
 }) {
   const { t } = useLanguage();
   const [mealName, setMealName] = useState('');
@@ -34,23 +39,36 @@ export default function TrackerTab({
   const [toastMsg, setToastMsg] = useState('');
   const [selectedRecipeMeal, setSelectedRecipeMeal] = useState(null);
 
+  // Historical Day Navigator state (null = today)
+  const [selectedHistoryDate, setSelectedHistoryDate] = useState(null);
+  const historyRecords = getDailyHistory();
+  const selectedPastDay = selectedHistoryDate
+    ? historyRecords.find((h) => h.date === selectedHistoryDate)
+    : null;
+
   const todayName = DAYS_OF_WEEK[new Date().getDay()];
+  const activeDayName = selectedPastDay?.dayName || todayName;
+
+  // Active data (Today vs. Historical day being viewed)
+  const activeMeals = selectedPastDay ? selectedPastDay.meals : meals;
+  const activeWorkouts = selectedPastDay ? selectedPastDay.workouts : workouts;
+  const activeGoal = selectedPastDay ? selectedPastDay.goalCalories : goal;
 
   // Energy balance calculations
-  const totalConsumed = meals.reduce((acc, m) => acc + (Number(m.calories) || 0), 0);
-  const totalBurned = workouts.reduce((acc, w) => acc + (Number(w.caloriesBurned) || 0), 0);
+  const totalConsumed = activeMeals.reduce((acc, m) => acc + (Number(m.calories) || 0), 0);
+  const totalBurned = activeWorkouts.reduce((acc, w) => acc + (Number(w.caloriesBurned) || 0), 0);
   const netCalories = totalConsumed - totalBurned;
-  const remainingBudget = goal - netCalories;
+  const remainingBudget = activeGoal - netCalories;
 
-  const rawPercentage = Math.round((netCalories / Math.max(1, goal)) * 100);
-  const isOverGoal = netCalories > goal;
+  const rawPercentage = Math.round((netCalories / Math.max(1, activeGoal)) * 100);
+  const isOverGoal = netCalories > activeGoal;
   const displayPercentage = Math.min(100, Math.max(0, rawPercentage));
 
-  // Today's Scheduled Workout
-  const scheduledForToday = trainingSchedule?.schedule?.find((s) => s.day === todayName);
-  const isWorkoutDoneToday = workouts.length > 0 || scheduledForToday?.type === 'Rest';
-  const isCalorieGoalSatisfied = totalConsumed >= Math.round(goal * 0.85);
-  const isMealsLogged = meals.length >= 3;
+  // Scheduled Workout for the active day
+  const scheduledForToday = trainingSchedule?.schedule?.find((s) => s.day === activeDayName);
+  const isWorkoutDoneToday = activeWorkouts.length > 0 || scheduledForToday?.type === 'Rest';
+  const isCalorieGoalSatisfied = totalConsumed >= Math.round(activeGoal * 0.85);
+  const isMealsLogged = activeMeals.length >= 3;
 
   // Gamification & XP
   const completedMissionsCount =
@@ -58,7 +76,7 @@ export default function TrackerTab({
     (isCalorieGoalSatisfied ? 1 : 0) +
     (isMealsLogged ? 1 : 0);
   const isFullyLockedIn = completedMissionsCount === 3;
-  const earnedXp = (isWorkoutDoneToday ? 100 : 0) + (isCalorieGoalSatisfied ? 75 : 0) + (meals.length * 25);
+  const earnedXp = (isWorkoutDoneToday ? 100 : 0) + (isCalorieGoalSatisfied ? 75 : 0) + (activeMeals.length * 25);
 
   // SVG Energy Halo calculations
   const radius = 78;
@@ -68,10 +86,10 @@ export default function TrackerTab({
   // Diet Plan Meal Slots
   const mealSlots = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
   const loggedMealsByType = {
-    Breakfast: meals.filter((m) => m.name.toLowerCase().includes('breakfast') || m.time < '11:00'),
-    Lunch: meals.filter((m) => m.name.toLowerCase().includes('lunch') || (m.time >= '11:00' && m.time < '16:00')),
-    Dinner: meals.filter((m) => m.name.toLowerCase().includes('dinner') || m.time >= '17:30'),
-    Snack: meals.filter((m) => m.name.toLowerCase().includes('snack') || (m.time >= '16:00' && m.time < '17:30')),
+    Breakfast: activeMeals.filter((m) => m.name.toLowerCase().includes('breakfast') || m.time < '11:00'),
+    Lunch: activeMeals.filter((m) => m.name.toLowerCase().includes('lunch') || (m.time >= '11:00' && m.time < '16:00')),
+    Dinner: activeMeals.filter((m) => m.name.toLowerCase().includes('dinner') || m.time >= '17:30'),
+    Snack: activeMeals.filter((m) => m.name.toLowerCase().includes('snack') || (m.time >= '16:00' && m.time < '17:30')),
   };
 
   const showToast = (msg) => {
@@ -140,6 +158,101 @@ export default function TrackerTab({
           showToast(`Logged ${m.title}`);
         }}
       />
+
+      {/* 0. DAY NAVIGATOR & ATHLETIC HISTORY BAR */}
+      <div className="flex items-center justify-between px-1 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {/* Previous Day Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (historyRecords.length > 0) {
+                if (!selectedHistoryDate) {
+                  setSelectedHistoryDate(historyRecords[0].date);
+                } else {
+                  const currIdx = historyRecords.findIndex((h) => h.date === selectedHistoryDate);
+                  if (currIdx < historyRecords.length - 1) {
+                    setSelectedHistoryDate(historyRecords[currIdx + 1].date);
+                  }
+                }
+              } else if (onOpenHistory) {
+                onOpenHistory();
+              }
+            }}
+            disabled={
+              historyRecords.length === 0 ||
+              (selectedHistoryDate &&
+                historyRecords.findIndex((h) => h.date === selectedHistoryDate) ===
+                  historyRecords.length - 1)
+            }
+            className="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center active-press disabled:opacity-25 transition-colors shrink-0"
+            title="View previous day"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="min-w-0 flex items-center gap-1.5">
+            {!selectedHistoryDate && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            )}
+            <span className="text-xs font-black text-white uppercase tracking-wider truncate">
+              {selectedHistoryDate ? formatHumanDate(selectedHistoryDate) : 'Today'}
+            </span>
+            <span className="text-[11px] text-slate-400 font-bold hidden xs:inline truncate">
+              • {selectedPastDay?.dayName || todayName}
+            </span>
+          </div>
+
+          {/* Next Day Button (disabled when viewing today) */}
+          <button
+            type="button"
+            onClick={() => {
+              if (selectedHistoryDate) {
+                const currIdx = historyRecords.findIndex((h) => h.date === selectedHistoryDate);
+                if (currIdx > 0) {
+                  setSelectedHistoryDate(historyRecords[currIdx - 1].date);
+                } else {
+                  setSelectedHistoryDate(null); // return to today
+                }
+              }
+            }}
+            disabled={!selectedHistoryDate}
+            className="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center active-press disabled:opacity-25 transition-colors shrink-0"
+            title="View next day"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Full History Archive Button */}
+        <button
+          type="button"
+          onClick={onOpenHistory}
+          className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-black flex items-center gap-1.5 active-press transition-colors shadow-xs shrink-0"
+        >
+          <Calendar className="w-3.5 h-3.5 text-orange-400" />
+          <span>{t('history') || 'Past Days'}</span>
+        </button>
+      </div>
+
+      {/* Viewing Past Day Notice Banner */}
+      {selectedHistoryDate && (
+        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-2 animate-slide-up">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-xs font-black text-amber-200 truncate">
+              Archived: {formatHumanDate(selectedHistoryDate)}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSelectedHistoryDate(null)}
+            className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs active-press shrink-0 shadow-xs transition-colors"
+          >
+            Back to Today
+          </button>
+        </div>
+      )}
 
       {/* =========================================================================
           1. HERO ELEMENT: THE "LOCKEDIN ENERGY HALO"
@@ -263,39 +376,54 @@ export default function TrackerTab({
         </div>
 
         {/* Quick Food / Snack Entry Form */}
-        <form onSubmit={handleAddMeal} className="space-y-1.5 pt-2 border-t border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              {t('quickLogTitle')}
-            </span>
-            {errorMsg && <span className="text-xs text-rose-400 font-bold">{errorMsg}</span>}
-          </div>
+        {!selectedHistoryDate ? (
+          <form onSubmit={handleAddMeal} className="space-y-1.5 pt-2 border-t border-slate-800/80">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                {t('quickLogTitle')}
+              </span>
+              {errorMsg && <span className="text-xs text-rose-400 font-bold">{errorMsg}</span>}
+            </div>
 
-          <div className="grid grid-cols-12 gap-2">
-            <input
-              type="text"
-              value={mealName}
-              onChange={(e) => setMealName(e.target.value)}
-              placeholder={t('foodPlaceholder')}
-              className="col-span-7 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500 font-bold"
-            />
-            <input
-              type="number"
-              min="1"
-              max="5000"
-              value={calories}
-              onChange={(e) => setCalories(e.target.value)}
-              placeholder={t('calsPlaceholder')}
-              className="col-span-3 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500 font-black text-center"
-            />
+            <div className="grid grid-cols-12 gap-2">
+              <input
+                type="text"
+                value={mealName}
+                onChange={(e) => setMealName(e.target.value)}
+                placeholder={t('foodPlaceholder')}
+                className="col-span-7 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500 font-bold"
+              />
+              <input
+                type="number"
+                min="1"
+                max="5000"
+                value={calories}
+                onChange={(e) => setCalories(e.target.value)}
+                placeholder={t('calsPlaceholder')}
+                className="col-span-3 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500 font-black text-center"
+              />
+              <button
+                type="submit"
+                className="col-span-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press flex items-center justify-center transition-all shadow-md shadow-orange-500/25"
+              >
+                <Plus className="w-5 h-5 stroke-[3]" />
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+            <span className="font-bold text-slate-300">
+              Archived Record • {activeMeals.length} meals logged
+            </span>
             <button
-              type="submit"
-              className="col-span-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press flex items-center justify-center transition-all shadow-md shadow-orange-500/25"
+              type="button"
+              onClick={() => setSelectedHistoryDate(null)}
+              className="text-orange-400 hover:text-orange-300 font-black text-xs transition-colors"
             >
-              <Plus className="w-5 h-5 stroke-[3]" />
+              Return to Today →
             </button>
           </div>
-        </form>
+        )}
       </div>
 
       {/* =========================================================================

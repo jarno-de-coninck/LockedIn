@@ -239,7 +239,7 @@ export function computeRealisticMacros(calories, dietType = 'High Protein') {
   }
 }
 
-function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
+export function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
   const goal = Number(targetGoal) || 2000;
   
   // Exact mathematical split summing up to 100% of goal
