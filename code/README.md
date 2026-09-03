@@ -15,9 +15,7 @@ This folder contains the complete source code for **LockedIn**, an Athletic Oper
       - `SplashScreen.jsx` — Animated dark startup screen with funny and motivational LockedIn quotes.
       - `Header.jsx` & `BottomNav.jsx` — Mobile navigation with safe-area notch clearances.
     - `services/groq.js` — Dual AI inference client: local Llama 3.2 3B GPU (`127.0.0.1:8080`) with Groq Cloud LPU fallback.
-  - `android/` — Capacitor 7 native Android wrapper configured with custom launcher icons and dark launch theme.
-  - `public/` — PWA icons, manifest, and web assets.
-  - `build-apk.sh` — One-command script to build the production Android APK.
+  - `public/` — PWA icons, web manifest, and static assets.
   - `start-local-ai.sh` — Helper script to launch local `llama-server` on GPU.
 
 ## Running the Application
@@ -29,12 +27,8 @@ npm install
 npm run dev -- --host
 ```
 
-### 2. Building Native Android APK
-```bash
-cd code/LockedIn
-./build-apk.sh
-```
-The compiled APK will be output to `android/app/build/outputs/apk/debug/app-debug.apk`.
+### 2. Installing as an App (PWA / Chrome App)
+Open the app in Chrome on your phone or PC, tap the menu (or the install icon in the URL bar), and select **"Add to Home Screen"** or **"Install App"**. LockedIn runs fullscreen as an installable standalone app with offline support.
 
 ### 3. Running Local Neural AI (Optional)
 ```bash

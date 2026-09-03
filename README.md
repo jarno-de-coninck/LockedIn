@@ -14,14 +14,14 @@
 - **🏋️ Active Gym Tracker (Strong / Hevy Grade)**: 1-tap `±2.5kg` weight & `±1 rep` steppers (eliminating keyboard fatigue during sweaty workouts), automatic rest timer, set carry-forward, and manual duration adjustments.
 - **🤖 Coach Lock Neural AI**: Context-aware athletic coaching running locally on **Llama 3.2 3B (GPU accelerated)** with Groq Cloud LPU fallback. Zero cloud token bills and 100% on-device health privacy.
 - **🏆 100% LockedIn Daily Quests**: Gamified daily completion engine tracking workouts, calorie targets, and nutrition logging.
-- **📱 Native Android APK**: Packaged via Capacitor 7 with custom dark launch theme and branded launcher icons.
+- **📱 Installable Progressive Web App (PWA)**: Installable directly via Chrome / Safari ("Add to Home Screen" / "Install App") with standalone theme and offline storage.
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
 - **Frontend**: React 18, Vite, Tailwind CSS 3, Lucide Icons
-- **Mobile Bridge**: Capacitor 7 (Android SDK 35)
+- **App Distribution**: Progressive Web App (PWA) & Chrome App Install
 - **Local AI Engine**: Llama 3.2 3B running via `llama-server` on local NVIDIA RTX 4060 GPU
 - **Cloud AI Fallback**: Groq Cloud LPU API (Llama 3.3 70B)
 - **Data Persistence**: Offline-First LocalStorage Sync

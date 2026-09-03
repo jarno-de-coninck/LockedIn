@@ -96,7 +96,7 @@ export default function DailyHistoryModal({
               <Calendar className="w-8 h-8 text-slate-600 mx-auto" />
               <p className="text-xs font-bold text-slate-400">No past days archived yet.</p>
               <p className="text-[11px] text-slate-500">
-                At midnight (or when you tap "Test Day Rollover"), today's meals & workouts are automatically saved here and fresh logs start for the new day!
+                At midnight, today's meals & workouts are automatically archived here and fresh logs start for the new day.
               </p>
             </div>
           ) : (

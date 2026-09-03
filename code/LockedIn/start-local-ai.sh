@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start local llama.cpp server with GPU acceleration for LockedIn
-# Binds to 0.0.0.0 with CORS enabled so phone APK can connect directly
+# Binds to 0.0.0.0 with CORS enabled for network access
 
 MODEL_PATH="/home/yaruno/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
 PORT=8080

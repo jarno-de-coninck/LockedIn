@@ -23,14 +23,6 @@ export const getLocalAiEndpoint = () => {
   const saved = localStorage.getItem('lockedin_local_ai_endpoint');
   if (saved && saved.trim()) return saved.trim();
 
-  // If inside Capacitor APK or Android standalone WebView, default to Tailscale IP
-  if (
-    typeof window !== 'undefined' &&
-    (window.location.protocol === 'capacitor:' ||
-      (window.location.hostname === 'localhost' && window.location.port !== '5173'))
-  ) {
-    return 'http://100.115.34.31:8080';
-  }
   return '/api/local-ai';
 };
 
