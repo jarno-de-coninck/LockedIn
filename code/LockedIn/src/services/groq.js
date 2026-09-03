@@ -751,12 +751,37 @@ Schema:
    DETAILED SPORT WORKOUT GENERATION (WITH SETS, REPS & EXERCISES)
    ========================================================================= */
 
+function sanitizeReps(rawReps) {
+  if (!rawReps) return '10';
+  const str = String(rawReps).trim();
+  const rangeMatch = str.match(/(\d+)\s*[-–—]\s*(\d+)/);
+  if (rangeMatch) {
+    const upper = parseInt(rangeMatch[2], 10);
+    if (!isNaN(upper) && upper > 0 && upper <= 50) return String(upper);
+  }
+  if (/(\d+)\s*s\b/i.test(str)) return '12';
+  const match = str.match(/\b(\d+)\b/);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    if (!isNaN(num) && num > 0 && num <= 50) return String(num);
+  }
+  return '10';
+}
+
+function sanitizeWeight(rawWeight) {
+  if (!rawWeight) return '20';
+  const match = String(rawWeight).match(/\d+(\.\d+)?/);
+  return match ? match[0] : '20';
+}
+
 function buildExerciseSets(numSets, repsDefault, defaultWeight = '') {
   const count = parseInt(numSets, 10) || 3;
+  const cleanReps = sanitizeReps(repsDefault);
+  const cleanWeight = sanitizeWeight(defaultWeight);
   return Array.from({ length: count }, (_, idx) => ({
     setNumber: idx + 1,
-    weight: defaultWeight,
-    reps: repsDefault,
+    weight: cleanWeight,
+    reps: cleanReps,
     completed: false,
   }));
 }

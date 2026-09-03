@@ -107,20 +107,56 @@ export default function WorkoutTab({
   };
 
   const parseNum = (val, fallback = 0) => {
-    const num = parseFloat(String(val).replace(/[^0-9.]/g, ''));
-    return isNaN(num) ? fallback : num;
+    if (typeof val === 'number') return isNaN(val) ? fallback : val;
+    const match = String(val).match(/\d+(\.\d+)?/);
+    if (match) {
+      const num = parseFloat(match[0]);
+      return isNaN(num) ? fallback : num;
+    }
+    return fallback;
+  };
+
+  const parseSafeReps = (val, fallback = '10') => {
+    if (!val) return fallback;
+    const str = String(val).trim();
+    // If range like "6-8" or "8-12", take upper target (8 or 12)
+    const rangeMatch = str.match(/(\d+)\s*[-–—]\s*(\d+)/);
+    if (rangeMatch) {
+      const upper = parseInt(rangeMatch[2], 10);
+      if (!isNaN(upper) && upper > 0 && upper <= 50) return String(upper);
+    }
+    // If timed drill like "30s" or "45s", default to clean 12 reps
+    if (/(\d+)\s*s\b/i.test(str)) return '12';
+    // Match first standalone number
+    const match = str.match(/\b(\d+)\b/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num > 0 && num <= 50) return String(num);
+    }
+    return fallback;
+  };
+
+  const parseSafeWeight = (notesStr, fallback = '20') => {
+    if (!notesStr) return fallback;
+    const match = String(notesStr).match(/(\d+(?:\.\d+)?)\s*kg/i);
+    if (match) {
+      const w = parseFloat(match[1]);
+      if (!isNaN(w) && w > 0 && w <= 300) return String(w);
+    }
+    return fallback;
   };
 
   // 1. Launch Programmed Day Workout
   const handleStartScheduledWorkout = (dayPlan) => {
     const formattedExercises = (dayPlan.exercises || []).map((ex, idx) => {
       const parsedSetsCount = parseInt(ex.sets, 10) || 3;
-      const defaultReps = ex.reps?.replace(/[^0-9]/g, '') || '10';
+      const defaultReps = parseSafeReps(ex.reps, '10');
+      const defaultWeight = parseSafeWeight(ex.notes || ex.name, idx === 0 ? '60' : '20');
       const initialSets = [];
       for (let i = 1; i <= parsedSetsCount; i++) {
         initialSets.push({
           setNumber: i,
-          weight: idx === 0 ? '60' : '20',
+          weight: defaultWeight,
           reps: defaultReps,
           completed: false,
         });
@@ -236,8 +272,8 @@ export default function WorkoutTab({
       const updated = prev.exercises.map((ex) => {
         if (ex.id !== exId) return ex;
         const currentSet = ex.sets.find((s) => s.setNumber === setNumber);
-        const currentReps = parseNum(currentSet?.reps, 10);
-        const newReps = Math.max(1, currentReps + delta);
+        const currentReps = parseInt(parseSafeReps(currentSet?.reps, '10'), 10);
+        const newReps = Math.max(1, Math.min(100, currentReps + delta));
 
         const nextSets = ex.sets.map((s) => {
           if (s.setNumber === setNumber) {
