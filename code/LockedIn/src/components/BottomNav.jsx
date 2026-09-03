@@ -40,7 +40,7 @@ export default function BottomNav({
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 sm:border-x sm:border-slate-800/80 shadow-[0_-8px_30px_rgba(0,0,0,0.6)]"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-slate-950/95 backdrop-blur-xl border-t border-x border-slate-800/80 rounded-t-2xl sm:rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.6)] overflow-hidden"
       style={{
         paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
       }}

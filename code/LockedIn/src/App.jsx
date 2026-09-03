@@ -6,13 +6,24 @@ import WorkoutTab from './components/WorkoutTab';
 import DietTab from './components/DietTab';
 import AiStudioTab from './components/AiStudioTab';
 import SplashScreen from './components/SplashScreen';
+import OnboardingModal from './components/OnboardingModal';
 import { Download, X } from 'lucide-react';
 import { useLanguage } from './services/i18n';
+import { calculateRealStreak } from './services/streak';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const { t } = useLanguage();
+
+  // First-time onboarding detection (when userProfile is not found in localStorage)
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try {
+      return !localStorage.getItem('lockedin_user_profile');
+    } catch {
+      return false;
+    }
+  });
 
   const [showInstallBanner, setShowInstallBanner] = useState(() => {
     try {
@@ -225,12 +236,25 @@ export default function App() {
   // Active navigation tab: 'today' | 'workouts' | 'diet' | 'ai'
   const [activeTab, setActiveTab] = useState('today');
 
-  // Dynamic Streak Calculation
-  const streakDays = useMemo(() => {
-    const base = 3;
-    const bonus = workouts.length > 0 ? 1 : 0;
-    return base + bonus;
-  }, [workouts.length]);
+  // Real, Honest Streak Calculation
+  const realStreakDays = useMemo(() => {
+    return calculateRealStreak(meals, workouts);
+  }, [meals, workouts]);
+
+  // Onboarding completion handler
+  const handleOnboardingComplete = (profile, newGoal, newSport) => {
+    setUserProfile(profile);
+    setGoal(newGoal);
+    if (newSport) setActiveSport(newSport);
+    try {
+      localStorage.setItem('lockedin_user_profile', JSON.stringify(profile));
+      localStorage.setItem('lockedin_goal', newGoal.toString());
+      if (newSport) localStorage.setItem('lockedin_active_sport', newSport);
+    } catch (e) {
+      console.warn('Failed to save onboarding data', e);
+    }
+    setShowOnboarding(false);
+  };
 
   // Persistence Sync
   useEffect(() => {
@@ -295,6 +319,12 @@ export default function App() {
     <>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
 
+      {/* First-Time Real Athlete Onboarding */}
+      <OnboardingModal
+        isOpen={showOnboarding && !showSplash}
+        onComplete={handleOnboardingComplete}
+      />
+
       <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col relative select-none shadow-[0_0_80px_rgba(0,0,0,0.8)]">
         {/* Sticky Top Minimalist Header with Profile Avatar */}
         <Header
@@ -306,7 +336,7 @@ export default function App() {
           setActiveSport={setActiveSport}
           trainingGoal={trainingGoal}
           setTrainingGoal={setTrainingGoal}
-          streakCount={streakDays}
+          streakCount={realStreakDays}
         />
 
         {/* PWA Install Banner */}
