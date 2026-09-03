@@ -341,22 +341,22 @@ export default function TrackerTab({
         </div>
 
         {/* 4-Stat Metrics Row */}
-        <div className="grid grid-cols-4 gap-1.5 pt-1 border-t border-slate-100 text-center">
-          <div className="p-1.5 rounded-xl bg-slate-50">
-            <span className="text-[8px] font-bold text-slate-400 uppercase block">Base</span>
-            <span className="text-xs font-extrabold text-slate-800">{goal}</span>
+        <div className="grid grid-cols-4 gap-1.5 pt-1.5 border-t border-slate-100 text-center">
+          <div className="p-2 rounded-xl bg-slate-50">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight block">Base</span>
+            <span className="text-sm font-black text-slate-800">{goal}</span>
           </div>
-          <div className="p-1.5 rounded-xl bg-slate-50">
-            <span className="text-[8px] font-bold text-slate-400 uppercase block">Food</span>
-            <span className="text-xs font-extrabold text-orange-600">+{totalConsumed}</span>
+          <div className="p-2 rounded-xl bg-slate-50">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight block">Food</span>
+            <span className="text-sm font-black text-orange-600">+{totalConsumed}</span>
           </div>
-          <div className="p-1.5 rounded-xl bg-slate-50">
-            <span className="text-[8px] font-bold text-slate-400 uppercase block">Burned</span>
-            <span className="text-xs font-extrabold text-emerald-600">-{totalBurned}</span>
+          <div className="p-2 rounded-xl bg-slate-50">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight block">Burned</span>
+            <span className="text-sm font-black text-emerald-600">-{totalBurned}</span>
           </div>
-          <div className="p-1.5 rounded-xl bg-slate-50">
-            <span className="text-[8px] font-bold text-slate-400 uppercase block">Net</span>
-            <span className="text-xs font-extrabold text-slate-800">{netCalories}</span>
+          <div className="p-2 rounded-xl bg-slate-50">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight block">Net</span>
+            <span className="text-sm font-black text-slate-800">{netCalories}</span>
           </div>
         </div>
 

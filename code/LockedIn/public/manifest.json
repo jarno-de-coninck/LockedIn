@@ -1,7 +1,7 @@
 {
-  "name": "LockedIn — Athletic OS",
+  "name": "LockedIn",
   "short_name": "LockedIn",
-  "description": "Athletic fitness tracker, periodized workout architect, and sports nutrition app.",
+  "description": "LockedIn fitness tracker",
   "start_url": "./",
   "id": "./",
   "scope": "./",

@@ -357,42 +357,43 @@ export default function ProfileModal({
                 type="button"
                 onClick={handleAiEstimate}
                 disabled={isAiEstimating}
-                className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-black flex items-center gap-1 active-press shadow-xs disabled:opacity-50"
+                className="px-2.5 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center gap-1.5 active-press shadow-xs disabled:opacity-50"
               >
                 {isAiEstimating ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <Bot className="w-3 h-3" />
+                  <Bot className="w-3.5 h-3.5" />
                 )}
-                <span>Ask Coach Lock</span>
+                <span>Ask Coach</span>
               </button>
             </div>
 
-            {/* Goal Strategy Options: Lose, Maintain, Gain */}
+            {/* 3 Quick Presets */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">
-                Choose Your Calorie Target:
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Select Calorie Target
               </span>
+
               <div className="grid grid-cols-3 gap-1.5">
                 {/* 1. Lose Weight */}
                 <button
                   type="button"
                   onClick={() => applyGoalType('lose')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
                     calorieGoalType === 'lose'
                       ? 'bg-orange-500 text-white border-orange-400 shadow-xs'
                       : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-1">
-                    <TrendingDown className="w-3 h-3" />
-                    <span className="text-[11px] font-extrabold block">Lose Weight</span>
+                    <TrendingDown className="w-3.5 h-3.5" />
+                    <span className="text-xs font-black block">Lose</span>
                   </div>
-                  <span className="text-xs font-black font-mono block mt-0.5">
-                    {Math.round(calculatedMaintenance - 450)} <span className="text-[8px] font-normal">kcal</span>
+                  <span className="text-sm font-black font-mono block mt-1">
+                    {Math.round(calculatedMaintenance - 450)} <span className="text-[10px] font-normal">kcal</span>
                   </span>
-                  <span className={`text-[8px] block mt-0.5 leading-tight ${calorieGoalType === 'lose' ? 'text-orange-100' : 'text-slate-400'}`}>
-                    -450 kcal deficit (Fat loss)
+                  <span className={`text-[10px] block mt-0.5 font-medium leading-tight ${calorieGoalType === 'lose' ? 'text-orange-100' : 'text-slate-400'}`}>
+                    -450 kcal
                   </span>
                 </button>
 
@@ -400,21 +401,21 @@ export default function ProfileModal({
                 <button
                   type="button"
                   onClick={() => applyGoalType('maintain')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
                     calorieGoalType === 'maintain'
                       ? 'bg-emerald-500 text-white border-emerald-400 shadow-xs'
                       : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-1">
-                    <Minus className="w-3 h-3" />
-                    <span className="text-[11px] font-extrabold block">Maintain</span>
+                    <Minus className="w-3.5 h-3.5" />
+                    <span className="text-xs font-black block">Maintain</span>
                   </div>
-                  <span className="text-xs font-black font-mono block mt-0.5">
-                    {calculatedMaintenance} <span className="text-[8px] font-normal">kcal</span>
+                  <span className="text-sm font-black font-mono block mt-1">
+                    {calculatedMaintenance} <span className="text-[10px] font-normal">kcal</span>
                   </span>
-                  <span className={`text-[8px] block mt-0.5 leading-tight ${calorieGoalType === 'maintain' ? 'text-emerald-100' : 'text-slate-400'}`}>
-                    0 kcal (Recomposition)
+                  <span className={`text-[10px] block mt-0.5 font-medium leading-tight ${calorieGoalType === 'maintain' ? 'text-emerald-100' : 'text-slate-400'}`}>
+                    0 kcal
                   </span>
                 </button>
 
@@ -422,21 +423,21 @@ export default function ProfileModal({
                 <button
                   type="button"
                   onClick={() => applyGoalType('gain')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
                     calorieGoalType === 'gain'
                       ? 'bg-blue-500 text-white border-blue-400 shadow-xs'
                       : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="text-[11px] font-extrabold block">Gain Weight</span>
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span className="text-xs font-black block">Gain</span>
                   </div>
-                  <span className="text-xs font-black font-mono block mt-0.5">
-                    {Math.round(calculatedMaintenance + 350)} <span className="text-[8px] font-normal">kcal</span>
+                  <span className="text-sm font-black font-mono block mt-1">
+                    {Math.round(calculatedMaintenance + 350)} <span className="text-[10px] font-normal">kcal</span>
                   </span>
-                  <span className={`text-[8px] block mt-0.5 leading-tight ${calorieGoalType === 'gain' ? 'text-blue-100' : 'text-slate-400'}`}>
-                    +350 kcal (Lean bulk)
+                  <span className={`text-[10px] block mt-0.5 font-medium leading-tight ${calorieGoalType === 'gain' ? 'text-blue-100' : 'text-slate-400'}`}>
+                    +350 kcal
                   </span>
                 </button>
               </div>
