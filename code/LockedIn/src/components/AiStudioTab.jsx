@@ -442,6 +442,11 @@ export default function AiStudioTab({
         >
           <Bot className="w-3.5 h-3.5 text-white" />
           <span>{t('coachMode')}</span>
+          {!getGroqApiKey() && (
+            <span className="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-amber-400 border border-amber-500/30 font-mono">
+              Offline
+            </span>
+          )}
         </button>
       </div>
 
@@ -971,98 +976,162 @@ export default function AiStudioTab({
           ========================================================================= */}
       {aiMode === 'coach' && (
         <div className="space-y-4 animate-slide-up">
-          {/* Quick Context Pill */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-xs">
-                <Bot className="w-4 h-4" />
+          {!getGroqApiKey() ? (
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Bot className="w-7 h-7" />
               </div>
-              <span className="text-xs font-black text-white">{t('coachActive')}</span>
-            </div>
-            <span className="text-xs font-black text-orange-400">
-              ⚡ {remainingCalories} {t('kcalLeft')}
-            </span>
-          </div>
+              <div className="space-y-1.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase">
+                  🔒 AI Key Required
+                </span>
+                <h3 className="text-sm font-black text-white">Coach Lock is Disabled (No AI Key)</h3>
+                <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed font-medium">
+                  Coach Lock is a conversational neural AI powered by <strong className="text-orange-400 font-mono">openai/gpt-oss-20b</strong> on GroqCloud. Without an API key, Coach Lock cannot reply.
+                </p>
+              </div>
 
-          {/* Suggestion Chips */}
-          <div className="flex flex-wrap gap-1.5">
-            {COACH_PROMPTS.map((q, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleAskCoach(q)}
-                className="py-1.5 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[11px] font-bold transition-all active-press flex items-center gap-1 shadow-sm"
-              >
-                <span>{q}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Messages Thread */}
-          <div className="space-y-3 pt-1">
-            {coachMessages.map((msg) => {
-              const isUser = msg.sender === 'user';
-              return (
-                <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
-                  <div
-                    className={`max-w-[92%] rounded-3xl p-4 shadow-md border ${
-                      isUser
-                        ? 'bg-orange-500 text-white border-orange-400'
-                        : 'bg-slate-900 text-slate-200 border-slate-800'
-                    }`}
+              {/* Free GroqCloud guide */}
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-left space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">
+                    ⚡ Free Groq API Key (10 Seconds)
+                  </span>
+                  <a
+                    href="https://console.groq.com/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-bold text-orange-400 hover:text-orange-300 underline flex items-center gap-0.5"
                   >
-                    {!isUser && (
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                        <span className="text-[10px] font-black text-orange-400 uppercase tracking-wider">Coach Lock</span>
-                        <span className="text-[10px] text-slate-400">{msg.time}</span>
-                      </div>
-                    )}
+                    console.groq.com/keys ↗
+                  </a>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-snug font-medium">
+                  1. Sign in to <strong className="text-white">GroqCloud</strong> (100% free, no credit card).<br />
+                  2. Create an API Key and copy it.<br />
+                  3. Paste below to unlock Coach Lock live chat!
+                </p>
+              </div>
 
-                    {isUser ? (
-                      <p className="text-xs font-bold">{msg.text}</p>
-                    ) : (
-                      renderFormattedText(msg.text)
-                    )}
+              {/* Inline Key Form */}
+              <form onSubmit={handleSaveInlineKey} className="flex gap-2 pt-1">
+                <input
+                  type="password"
+                  value={inlineKey}
+                  onChange={(e) => setInlineKey(e.target.value)}
+                  placeholder="Paste your gsk_... key here"
+                  className="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500"
+                />
+                <button
+                  type="submit"
+                  disabled={isCheckingAi || !inlineKey.trim()}
+                  className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-xs font-black shrink-0 active-press transition-colors flex items-center gap-1 shadow-md shadow-orange-500/20"
+                >
+                  {isCheckingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Unlock Coach'}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <>
+              {/* Quick Context Pill */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-xs">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-black text-white">{t('coachActive')}</span>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      openai/gpt-oss-20b
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-
-            {isCoachThinking && (
-              <div className="flex items-start">
-                <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 shadow-md flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-orange-400 animate-spin" />
-                  <span className="text-xs text-slate-400 font-bold">Analyzing athletic telemetry...</span>
-                </div>
+                <span className="text-xs font-black text-orange-400 font-mono">
+                  ⚡ {remainingCalories} {t('kcalLeft')}
+                </span>
               </div>
-            )}
-          </div>
 
-          {/* Integrated Input */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAskCoach();
-            }}
-            className="sticky bottom-16 pt-2"
-          >
-            <div className="relative flex items-center shadow-2xl rounded-2xl bg-slate-900 border border-slate-800 p-1">
-              <input
-                type="text"
-                value={coachQuestion}
-                onChange={(e) => setCoachQuestion(e.target.value)}
-                placeholder={t('askCoachPlaceholder')}
-                className="w-full px-3.5 py-2.5 text-xs bg-transparent text-white focus:outline-none placeholder:text-slate-500 font-bold"
-              />
-              <button
-                type="submit"
-                disabled={!coachQuestion.trim() || isCoachThinking}
-                className="w-9 h-9 flex items-center justify-center rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-slate-800 text-white transition-colors shrink-0 active-press shadow-md shadow-orange-500/20"
+              {/* Suggestion Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {COACH_PROMPTS.map((q, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleAskCoach(q)}
+                    className="py-1.5 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[11px] font-bold transition-all active-press flex items-center gap-1 shadow-sm"
+                  >
+                    <span>{q}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Messages Thread */}
+              <div className="space-y-3 pt-1">
+                {coachMessages.map((msg) => {
+                  const isUser = msg.sender === 'user';
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                      <div
+                        className={`max-w-[92%] rounded-3xl p-4 shadow-md border ${
+                          isUser
+                            ? 'bg-orange-500 text-white border-orange-400'
+                            : 'bg-slate-900 text-slate-200 border-slate-800'
+                        }`}
+                      >
+                        {!isUser && (
+                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+                            <span className="text-[10px] font-black text-orange-400 uppercase tracking-wider">Coach Lock</span>
+                            <span className="text-[10px] text-slate-400">{msg.time}</span>
+                          </div>
+                        )}
+
+                        {isUser ? (
+                          <p className="text-xs font-bold">{msg.text}</p>
+                        ) : (
+                          renderFormattedText(msg.text)
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {isCoachThinking && (
+                  <div className="flex items-start">
+                    <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 shadow-md flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-orange-400 animate-spin" />
+                      <span className="text-xs text-slate-400 font-bold">Analyzing telemetry with openai/gpt-oss-20b...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Integrated Input */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAskCoach();
+                }}
+                className="sticky bottom-16 pt-2"
               >
-                {isCoachThinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              </button>
-            </div>
-          </form>
+                <div className="relative flex items-center shadow-2xl rounded-2xl bg-slate-900 border border-slate-800 p-1">
+                  <input
+                    type="text"
+                    value={coachQuestion}
+                    onChange={(e) => setCoachQuestion(e.target.value)}
+                    placeholder={t('askCoachPlaceholder')}
+                    className="w-full px-3.5 py-2.5 text-xs bg-transparent text-white focus:outline-none placeholder:text-slate-500 font-bold"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!coachQuestion.trim() || isCoachThinking}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-slate-800 text-white transition-colors shrink-0 active-press shadow-md shadow-orange-500/20"
+                  >
+                    {isCoachThinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
         </div>
       )}
     </div>
