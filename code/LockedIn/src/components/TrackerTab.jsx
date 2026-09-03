@@ -78,6 +78,37 @@ export default function TrackerTab({
   const isFullyLockedIn = completedMissionsCount === 3;
   const earnedXp = (isWorkoutDoneToday ? 100 : 0) + (isCalorieGoalSatisfied ? 75 : 0) + (activeMeals.length * 25);
 
+  // Funny & Hype "Locked In" Tiers
+  const getLockedInStatus = (count) => {
+    switch (count) {
+      case 3:
+        return {
+          badge: '100% LOCKED IN 🔒🔥',
+          pillClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]',
+          ringStatus: '100% LOCKED IN 🔒🔥',
+        };
+      case 2:
+        return {
+          badge: "67% LOCKED IN 🍳",
+          pillClass: 'bg-orange-500/20 text-orange-400 border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.15)]',
+          ringStatus: "67% LOCKED IN (HE COOKIN')",
+        };
+      case 1:
+        return {
+          badge: '33% LOCKED IN ⚡',
+          pillClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          ringStatus: '33% LOCKED IN (WARMING UP)',
+        };
+      default:
+        return {
+          badge: '0% LOCKED IN 💀',
+          pillClass: 'bg-slate-850 text-slate-400 border-slate-700/80',
+          ringStatus: '0% LOCKED IN (WAKE UP BRO)',
+        };
+    }
+  };
+  const lockedInStatusInfo = getLockedInStatus(completedMissionsCount);
+
   // SVG Energy Halo calculations
   const radius = 78;
   const circumference = 2 * Math.PI * radius;
@@ -273,14 +304,10 @@ export default function TrackerTab({
           </div>
 
           <div
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black border ${
-              isFullyLockedIn
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                : 'bg-orange-500/15 text-orange-400 border-orange-500/30'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border transition-all ${lockedInStatusInfo.pillClass}`}
           >
             <Trophy className="w-3.5 h-3.5" />
-            <span>{Math.round((completedMissionsCount / 3) * 100)}% {t('score')}</span>
+            <span>{lockedInStatusInfo.badge}</span>
           </div>
         </div>
 
@@ -332,13 +359,13 @@ export default function TrackerTab({
 
               {/* Status Tag */}
               <span
-                className={`mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                className={`mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                   isFullyLockedIn
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                    : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                    : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
                 }`}
               >
-                {isFullyLockedIn ? t('lockedInStatus') : t('fuelingStatus')}
+                {lockedInStatusInfo.ringStatus}
               </span>
             </div>
           </div>
@@ -437,8 +464,8 @@ export default function TrackerTab({
               {t('dailyQuests')} ({completedMissionsCount}/3)
             </h3>
           </div>
-          <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30">
-            {Math.round((completedMissionsCount / 3) * 100)}%
+          <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border transition-all ${lockedInStatusInfo.pillClass}`}>
+            {lockedInStatusInfo.badge}
           </span>
         </div>
 

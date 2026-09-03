@@ -124,7 +124,7 @@ export default function DailyHistoryModal({
                         )}
                         {day.isFullyLockedIn && (
                           <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-[9px] font-black border border-emerald-500/30">
-                            LockedIn ✓
+                            🔒 100% Locked In 🔥
                           </span>
                         )}
                       </div>

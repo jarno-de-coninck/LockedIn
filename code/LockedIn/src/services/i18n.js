@@ -33,7 +33,7 @@ export const TRANSLATIONS = {
     netCals: 'Net Energy',
     dailyTarget: 'Daily Target',
     xpEarned: 'XP Earned',
-    score: 'LockedIn Score',
+    score: 'Locked In',
 
     // Quests
     dailyQuests: 'Daily Quests',
@@ -165,7 +165,7 @@ export const TRANSLATIONS = {
     netCals: 'Netto Energie',
     dailyTarget: 'Dagelijks Doel',
     xpEarned: 'XP Verdiend',
-    score: 'LockedIn Score',
+    score: 'Locked In',
 
     // Quests
     dailyQuests: 'Dagelijkse Missies',
@@ -292,7 +292,7 @@ export const TRANSLATIONS = {
     netCals: 'Netto-Energie',
     dailyTarget: 'Tagesziel',
     xpEarned: 'XP Verdient',
-    score: 'LockedIn Punktzahl',
+    score: 'Locked In',
     dailyQuests: 'Tages-Quests',
     trainingDone: 'Training beendet',
     trainingPending: 'Heutiges Training starten',
@@ -402,8 +402,8 @@ export const TRANSLATIONS = {
     burnedOut: 'Quemado',
     netCals: 'Energía Neta',
     dailyTarget: 'Objetivo Diario',
-    xpEarned: 'XP Ganada',
-    score: 'Puntuación LockedIn',
+    xpEarned: 'XP Ganados',
+    score: 'Locked In',
     dailyQuests: 'Misiones Diarias',
     trainingDone: 'Entreno Completado',
     trainingPending: 'Empezar Entreno de Hoy',
