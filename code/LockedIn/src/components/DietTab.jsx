@@ -442,23 +442,20 @@ export default function DietTab({
                         {item.title}
                       </h4>
 
-                      {/* Full-Name Aesthetic Macro Pills */}
-                      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-black">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
-                          <span>Protein</span>
-                          <span className="text-white font-mono ml-0.5">{item.protein || Math.round((item.calories * 0.35) / 4)}g</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-black">
-                          <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0" />
-                          <span>Carbs</span>
-                          <span className="text-white font-mono ml-0.5">{item.carbs || Math.round((item.calories * 0.45) / 4)}g</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                          <span>Fats</span>
-                          <span className="text-white font-mono ml-0.5">{item.fats || Math.round((item.calories * 0.20) / 9)}g</span>
-                        </span>
+                      {/* Fixed 3-Column Macro Grid - Guaranteed 100% Horizontal & Vertical Alignment */}
+                      <div className="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-slate-800/60">
+                        <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-orange-500/10 border border-orange-500/25 text-center">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">Protein</span>
+                          <span className="text-xs font-black text-white font-mono mt-0.5">{item.protein || Math.round((item.calories * 0.35) / 4)}g</span>
+                        </div>
+                        <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-sky-500/10 border border-sky-500/25 text-center">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-sky-400">Carbs</span>
+                          <span className="text-xs font-black text-white font-mono mt-0.5">{item.carbs || Math.round((item.calories * 0.45) / 4)}g</span>
+                        </div>
+                        <div className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-center">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Fats</span>
+                          <span className="text-xs font-black text-white font-mono mt-0.5">{item.fats || Math.round((item.calories * 0.20) / 9)}g</span>
+                        </div>
                       </div>
                     </div>
 

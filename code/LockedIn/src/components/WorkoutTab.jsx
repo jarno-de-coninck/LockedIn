@@ -546,103 +546,119 @@ export default function WorkoutTab({
                     </div>
                   </div>
 
-                  {/* Sets List with 1-Tap Steppers */}
+                  {/* Sets List with 1-Tap Steppers (Guaranteed Zero Overflow & Full Inside UI) */}
                   <div className="space-y-2.5">
                     {ex.sets.map((s) => (
                       <div
                         key={s.setNumber}
-                        className={`p-2.5 rounded-2xl transition-all flex items-center justify-between gap-1 w-full border ${
+                        className={`p-3 rounded-2xl transition-all border space-y-2.5 ${
                           s.completed
-                            ? 'bg-emerald-950/30 text-emerald-200 border-emerald-500/40'
-                            : 'bg-slate-950/80 text-slate-200 border-slate-800/80'
+                            ? 'bg-emerald-950/25 border-emerald-500/40 shadow-xs'
+                            : 'bg-slate-950/80 border-slate-800/80'
                         }`}
                       >
-                        {/* Set Label */}
-                        <span className="text-xs font-black text-slate-400 w-7 text-center shrink-0">
-                          #{s.setNumber}
-                        </span>
-
-                        {/* Weight Stepper */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustWeight(ex.id, s.setNumber, -2.5)}
-                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
-                          >
-                            -
-                          </button>
-
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={s.weight}
-                              onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'weight', e.target.value)}
-                              className="w-14 sm:w-16 h-9 text-center text-sm font-black rounded-xl border border-slate-700 bg-slate-900 text-white focus:outline-none focus:border-orange-500 font-mono"
-                            />
-                            <span className="text-[9px] font-bold text-slate-400 block text-center -mt-0.5">kg</span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustWeight(ex.id, s.setNumber, 2.5)}
-                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
-                          >
-                            +
-                          </button>
-                        </div>
-
-                        {/* Reps Stepper */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustReps(ex.id, s.setNumber, -1)}
-                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
-                          >
-                            -
-                          </button>
-
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={s.reps}
-                              onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'reps', e.target.value)}
-                              className="w-12 sm:w-14 h-9 text-center text-sm font-black rounded-xl border border-slate-700 bg-slate-900 text-white focus:outline-none focus:border-orange-500 font-mono"
-                            />
-                            <span className="text-[9px] font-bold text-slate-400 block text-center -mt-0.5">reps</span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustReps(ex.id, s.setNumber, 1)}
-                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
-                          >
-                            +
-                          </button>
-                        </div>
-
-                        {/* Checkmark & Delete Set */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleSet(ex.id, s.setNumber)}
-                            className={`w-9 h-9 sm:w-10 sm:h-9 rounded-xl flex items-center justify-center transition-all active-press ${
+                        {/* Row 1: Set Badge + Done Toggle & Delete (Inside Card Header) */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs font-black px-2.5 py-1 rounded-xl border ${
                               s.completed
-                                ? 'bg-emerald-500 text-slate-950 shadow-md'
-                                : 'bg-slate-900 border border-slate-700 text-transparent hover:border-slate-500'
-                            }`}
-                            title="Mark set done"
-                          >
-                            <Check className="w-4 h-4 stroke-[3]" />
-                          </button>
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : 'bg-slate-900 text-slate-400 border-slate-800'
+                            }`}>
+                              SET {s.setNumber}
+                            </span>
+                            {s.completed && (
+                              <span className="text-[11px] font-black text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                <span>Done</span>
+                              </span>
+                            )}
+                          </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSet(ex.id, s.setNumber)}
-                            className="w-8 h-8 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 text-slate-500 hover:text-rose-400 flex items-center justify-center transition-colors"
-                            title="Delete set"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSet(ex.id, s.setNumber)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all active-press ${
+                                s.completed
+                                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/25'
+                                  : 'bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300'
+                              }`}
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>{s.completed ? 'Completed' : 'Mark Done'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSet(ex.id, s.setNumber)}
+                              className="w-8 h-8 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 text-slate-500 hover:text-rose-400 flex items-center justify-center transition-colors"
+                              title="Delete set"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Row 2: Weight & Reps Steppers (Grid 2-cols: 100% Inside UI, Wide Steppers) */}
+                        <div className="grid grid-cols-2 gap-2 pt-0.5">
+                          {/* Weight Stepper */}
+                          <div className="p-1 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustWeight(ex.id, s.setNumber, -2.5)}
+                              className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm flex items-center justify-center active-press shrink-0"
+                            >
+                              -
+                            </button>
+
+                            <div className="flex flex-col items-center justify-center px-1 min-w-0 flex-1">
+                              <input
+                                type="text"
+                                value={s.weight}
+                                onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'weight', e.target.value)}
+                                className="w-full text-center text-sm font-black text-white bg-transparent focus:outline-none font-mono"
+                              />
+                              <span className="text-[9px] font-black uppercase text-slate-400 -mt-0.5">kg</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustWeight(ex.id, s.setNumber, 2.5)}
+                              className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm flex items-center justify-center active-press shrink-0"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          {/* Reps Stepper */}
+                          <div className="p-1 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustReps(ex.id, s.setNumber, -1)}
+                              className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm flex items-center justify-center active-press shrink-0"
+                            >
+                              -
+                            </button>
+
+                            <div className="flex flex-col items-center justify-center px-1 min-w-0 flex-1">
+                              <input
+                                type="text"
+                                value={s.reps}
+                                onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'reps', e.target.value)}
+                                className="w-full text-center text-sm font-black text-white bg-transparent focus:outline-none font-mono"
+                              />
+                              <span className="text-[9px] font-black uppercase text-slate-400 -mt-0.5">reps</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustReps(ex.id, s.setNumber, 1)}
+                              className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black text-sm flex items-center justify-center active-press shrink-0"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
