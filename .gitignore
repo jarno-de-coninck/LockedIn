@@ -1,18 +1,47 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# macOS
+# Testing
+coverage/
+
+# Production & Build outputs
+dist/
+build/
+*.local
+
+# Android & Gradle
+.gradle/
+**/android/.gradle/
+**/android/build/
+**/android/app/build/
+**/android/capacitor-cordova-android-plugins/build/
+*.apk
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
-
-# Linux
 *~
 .directory
