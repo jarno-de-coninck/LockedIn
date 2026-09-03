@@ -1431,3 +1431,102 @@ Schema:
     };
   }
 }
+
+/**
+ * AI & Scientific Maintenance / Target Calorie Estimator
+ */
+export async function estimateMaintenanceWithAi({
+  gender = 'male',
+  height = 180,
+  weight = 78,
+  age = 22,
+  activityLevel = 'moderate',
+  goalType = 'maintain',
+}) {
+  const w = Number(weight) || 78;
+  const h = Number(height) || 180;
+  const a = Number(age) || 22;
+
+  // 1. Scientific Mifflin-St Jeor Formula
+  let bmr = 10 * w + 6.25 * h - 5 * a;
+  if (gender === 'male') bmr += 5;
+  else if (gender === 'female') bmr -= 161;
+  else bmr -= 78;
+
+  const multipliers = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    heavy: 1.725,
+    athlete: 1.9,
+  };
+  const multiplier = multipliers[activityLevel] || 1.55;
+  const maintenance = Math.round(bmr * multiplier);
+
+  let targetCalories = maintenance;
+  let defaultAdvice = '';
+  let proteinGrams = Math.round(w * 1.8);
+
+  if (goalType === 'lose') {
+    targetCalories = Math.round(maintenance - 450);
+    proteinGrams = Math.round(w * 2.2);
+    defaultAdvice = `Calibrated for a sustainable 450 kcal deficit. High protein (${proteinGrams}g) protects muscle mass while shedding fat.`;
+  } else if (goalType === 'gain') {
+    targetCalories = Math.round(maintenance + 350);
+    proteinGrams = Math.round(w * 2.0);
+    defaultAdvice = `Calibrated for a lean 350 kcal surplus. Optimal fuel for progressive overload and muscle hypertrophy without excess fat gain.`;
+  } else {
+    targetCalories = maintenance;
+    proteinGrams = Math.round(w * 1.8);
+    defaultAdvice = `Calibrated for steady weight maintenance and body recomposition with balanced athletic energy.`;
+  }
+
+  // 2. Query AI if available for personalized coach insight
+  try {
+    const systemPrompt = `You are "Coach Lock", an elite sports nutritionist and performance coach.
+Analyze the athlete's biometrics and provide a scientifically calibrated maintenance and calorie target with actionable advice.
+Respond ONLY with a JSON object matching this schema:
+{
+  "maintenance": ${maintenance},
+  "targetCalories": ${targetCalories},
+  "proteinGrams": ${proteinGrams},
+  "advice": "1 or 2 punchy sentences explaining the calorie target and how to hit it."
+}`;
+
+    const userPrompt = `Athlete: ${gender}, ${w}kg, ${h}cm, ${a} years old, Activity: ${activityLevel}, Primary Goal: ${goalType} weight.
+Calculated BMR: ${Math.round(bmr)} kcal, TDEE: ${maintenance} kcal, Target: ${targetCalories} kcal.
+Provide final calibrated values and advice. Return RAW JSON ONLY.`;
+
+    const res = await callChatCompletions({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.3,
+      max_tokens: 300,
+    });
+
+    const parsed = cleanJsonOutput(res.content);
+    if (parsed && typeof parsed.targetCalories === 'number') {
+      return {
+        maintenance: Math.round(parsed.maintenance || maintenance),
+        targetCalories: Math.round(parsed.targetCalories || targetCalories),
+        proteinGrams: Math.round(parsed.proteinGrams || proteinGrams),
+        advice: parsed.advice || defaultAdvice,
+        isMock: false,
+        source: res.source,
+      };
+    }
+  } catch (err) {
+    console.warn('AI maintenance estimate error, using scientific calculation:', err.message);
+  }
+
+  return {
+    maintenance,
+    targetCalories,
+    proteinGrams,
+    advice: defaultAdvice,
+    isMock: true,
+  };
+}
+
