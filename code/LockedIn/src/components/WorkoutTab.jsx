@@ -517,11 +517,11 @@ export default function WorkoutTab({
                 >
                   {/* Exercise Header */}
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
-                    <div className="flex items-center gap-2 min-w-0 pr-2">
-                      <span className="w-6 h-6 rounded-lg bg-slate-950 text-orange-400 text-xs font-black flex items-center justify-center shrink-0 border border-slate-800">
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <span className="w-7 h-7 rounded-xl bg-slate-950 text-orange-400 text-xs font-black flex items-center justify-center shrink-0 border border-slate-800 shadow-xs">
                         {exIdx + 1}
                       </span>
-                      <h4 className="text-xs font-black text-white truncate">
+                      <h4 className="text-sm font-black text-white truncate">
                         {ex.name}
                       </h4>
                     </div>
@@ -530,35 +530,35 @@ export default function WorkoutTab({
                       <button
                         type="button"
                         onClick={() => handleCompleteAllSets(ex.id)}
-                        className="text-[11px] font-black px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-emerald-950/50 text-slate-300 hover:text-emerald-300 border border-slate-800 flex items-center gap-1 active-press"
+                        className="text-xs font-black px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-emerald-950/50 text-slate-300 hover:text-emerald-300 border border-slate-800 flex items-center gap-1.5 active-press"
                       >
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <CheckCheck className="w-4 h-4 text-emerald-400" />
                         <span>{t('allDone')}</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleRemoveExercise(ex.id)}
-                        className="w-7 h-7 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 flex items-center justify-center"
+                        className="w-8 h-8 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 flex items-center justify-center transition-colors"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
                   {/* Sets List with 1-Tap Steppers */}
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {ex.sets.map((s) => (
                       <div
                         key={s.setNumber}
-                        className={`p-2 rounded-2xl transition-all flex items-center justify-between gap-1 w-full border ${
+                        className={`p-2.5 rounded-2xl transition-all flex items-center justify-between gap-1 w-full border ${
                           s.completed
                             ? 'bg-emerald-950/30 text-emerald-200 border-emerald-500/40'
-                            : 'bg-slate-950/70 text-slate-200 border-slate-800/80'
+                            : 'bg-slate-950/80 text-slate-200 border-slate-800/80'
                         }`}
                       >
                         {/* Set Label */}
-                        <span className="text-xs font-black text-slate-400 w-6 text-center shrink-0">
+                        <span className="text-xs font-black text-slate-400 w-7 text-center shrink-0">
                           #{s.setNumber}
                         </span>
 
@@ -567,7 +567,7 @@ export default function WorkoutTab({
                           <button
                             type="button"
                             onClick={() => handleAdjustWeight(ex.id, s.setNumber, -2.5)}
-                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
+                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
                           >
                             -
                           </button>
@@ -577,15 +577,15 @@ export default function WorkoutTab({
                               type="text"
                               value={s.weight}
                               onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'weight', e.target.value)}
-                              className="w-12 text-center py-1 text-xs font-black rounded-lg border border-slate-700 bg-slate-900 text-white focus:outline-none"
+                              className="w-14 sm:w-16 h-9 text-center text-sm font-black rounded-xl border border-slate-700 bg-slate-900 text-white focus:outline-none focus:border-orange-500 font-mono"
                             />
-                            <span className="text-[8px] font-bold text-slate-400 block text-center -mt-0.5">kg</span>
+                            <span className="text-[9px] font-bold text-slate-400 block text-center -mt-0.5">kg</span>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => handleAdjustWeight(ex.id, s.setNumber, 2.5)}
-                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
+                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
                           >
                             +
                           </button>
@@ -596,7 +596,7 @@ export default function WorkoutTab({
                           <button
                             type="button"
                             onClick={() => handleAdjustReps(ex.id, s.setNumber, -1)}
-                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
+                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
                           >
                             -
                           </button>
@@ -606,26 +606,26 @@ export default function WorkoutTab({
                               type="text"
                               value={s.reps}
                               onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'reps', e.target.value)}
-                              className="w-10 text-center py-1 text-xs font-black rounded-lg border border-slate-700 bg-slate-900 text-white focus:outline-none"
+                              className="w-12 sm:w-14 h-9 text-center text-sm font-black rounded-xl border border-slate-700 bg-slate-900 text-white focus:outline-none focus:border-orange-500 font-mono"
                             />
-                            <span className="text-[8px] font-bold text-slate-400 block text-center -mt-0.5">reps</span>
+                            <span className="text-[9px] font-bold text-slate-400 block text-center -mt-0.5">reps</span>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => handleAdjustReps(ex.id, s.setNumber, 1)}
-                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
+                            className="w-8 h-9 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-700 text-sm font-black text-slate-200 flex items-center justify-center active-press hover:bg-slate-800"
                           >
                             +
                           </button>
                         </div>
 
                         {/* Checkmark & Delete Set */}
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleToggleSet(ex.id, s.setNumber)}
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active-press ${
+                            className={`w-9 h-9 sm:w-10 sm:h-9 rounded-xl flex items-center justify-center transition-all active-press ${
                               s.completed
                                 ? 'bg-emerald-500 text-slate-950 shadow-md'
                                 : 'bg-slate-900 border border-slate-700 text-transparent hover:border-slate-500'
@@ -777,7 +777,7 @@ export default function WorkoutTab({
                     key={day}
                     type="button"
                     onClick={() => setSelectedDay(day)}
-                    className={`py-2 px-1 rounded-2xl text-center transition-all ${
+                    className={`py-2.5 px-1 rounded-2xl text-center transition-all ${
                       isSelected
                         ? 'bg-orange-500 text-white shadow-md'
                         : isToday
@@ -785,10 +785,10 @@ export default function WorkoutTab({
                         : 'bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800/60'
                     }`}
                   >
-                    <span className="text-[10px] font-bold block uppercase opacity-80">
+                    <span className="text-[11px] font-bold block uppercase opacity-85">
                       {day.slice(0, 3)}
                     </span>
-                    <span className="text-[11px] font-black block mt-0.5">
+                    <span className="text-sm font-black block mt-0.5">
                       {isRest ? '🛌' : '⚡'}
                     </span>
                   </button>
@@ -802,38 +802,38 @@ export default function WorkoutTab({
             <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-black text-orange-400 uppercase tracking-wider block">
                     {selectedDay} • {currentDaySchedule.type || 'Workout'}
                   </span>
-                  <h4 className="text-xs font-black text-white mt-0.5">
+                  <h4 className="text-base font-black text-white mt-1 leading-snug">
                     {currentDaySchedule.title}
                   </h4>
                 </div>
                 {currentDaySchedule.duration && (
-                  <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" /> {currentDaySchedule.duration}
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+                    <Clock className="w-3.5 h-3.5 text-orange-400" /> {currentDaySchedule.duration}
                   </span>
                 )}
               </div>
 
               {currentDaySchedule.focus && (
-                <p className="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800/60 font-medium">
+                <p className="text-xs text-slate-200 bg-slate-950/80 p-3 rounded-2xl border border-slate-800/80 font-medium leading-relaxed">
                   {currentDaySchedule.focus}
                 </p>
               )}
 
               {currentDaySchedule.exercises && currentDaySchedule.exercises.length > 0 && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {currentDaySchedule.exercises.map((ex, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/60 flex items-center justify-between"
+                      className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between shadow-xs"
                     >
                       <div className="min-w-0 pr-2">
-                        <p className="text-xs font-black text-white truncate">{ex.name}</p>
-                        {ex.notes && <p className="text-[10px] text-slate-400 truncate">{ex.notes}</p>}
+                        <p className="text-sm font-black text-white truncate">{ex.name}</p>
+                        {ex.notes && <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">{ex.notes}</p>}
                       </div>
-                      <span className="text-[11px] font-black text-orange-400 shrink-0">
+                      <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 font-mono shrink-0">
                         {ex.sets} • {ex.reps}
                       </span>
                     </div>
@@ -845,13 +845,13 @@ export default function WorkoutTab({
                 <button
                   type="button"
                   onClick={() => handleStartScheduledWorkout(currentDaySchedule)}
-                  className="w-full py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
+                  className="w-full py-4 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-black active-press transition-all flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25"
                 >
                   <Play className="w-4 h-4 fill-white" />
                   <span>{t('startWorkout')} ({selectedDay})</span>
                 </button>
               ) : (
-                <div className="text-center py-2 text-xs font-bold text-slate-400">
+                <div className="text-center py-4 text-xs font-bold text-slate-400 bg-slate-950/60 rounded-2xl border border-slate-800">
                   {t('restDay')}
                 </div>
               )}

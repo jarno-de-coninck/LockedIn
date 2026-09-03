@@ -216,6 +216,29 @@ async function callChatCompletions({ messages, temperature = 0.4, max_tokens = 1
    DIET PLAN & RECIPES (EXACT CALORIE TARGET MATCHING)
    ========================================================================= */
 
+export function computeRealisticMacros(calories, dietType = 'High Protein') {
+  const cals = Math.max(50, Number(calories) || 500);
+
+  if (dietType && (dietType.includes('Keto') || dietType.includes('Low Carb'))) {
+    const p = Math.round((cals * 0.30) / 4);
+    const c = Math.max(5, Math.round((cals * 0.10) / 4));
+    const f = Math.max(5, Math.round((cals * 0.60) / 9));
+    return { protein: p, carbs: c, fats: f };
+  } else if (dietType && (dietType.includes('Balanced') || dietType.includes('Plant'))) {
+    const p = Math.round((cals * 0.25) / 4);
+    const c = Math.round((cals * 0.50) / 4);
+    const f = Math.max(4, Math.round((cals * 0.25) / 9));
+    return { protein: p, carbs: c, fats: f };
+  } else {
+    // High Protein Athletic Split (35% Protein, 45% Carbs, 20% Fats)
+    // Physically accurate: (protein*4) + (carbs*4) + (fats*9) equals total calories
+    const p = Math.round((cals * 0.35) / 4);
+    const c = Math.round((cals * 0.45) / 4);
+    const f = Math.max(3, Math.round((cals * 0.20) / 9));
+    return { protein: p, carbs: c, fats: f };
+  }
+}
+
 function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
   const goal = Number(targetGoal) || 2000;
   
@@ -225,6 +248,11 @@ function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
   const dCals = Math.round(goal * 0.30);
   const sCals = Math.max(50, goal - (bCals + lCals + dCals));
 
+  const bMacros = computeRealisticMacros(bCals, dietType);
+  const lMacros = computeRealisticMacros(lCals, dietType);
+  const dMacros = computeRealisticMacros(dCals, dietType);
+  const sMacros = computeRealisticMacros(sCals, dietType);
+
   const templates = {
     'High Protein': [
       {
@@ -232,9 +260,9 @@ function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
         meal: 'Breakfast',
         title: 'Power Scramble with Spinach, Turkey Bacon & Sourdough',
         calories: bCals,
-        protein: Math.round(bCals * 0.09),
-        carbs: Math.round(bCals * 0.08),
-        fats: Math.round(bCals * 0.03),
+        protein: bMacros.protein,
+        carbs: bMacros.carbs,
+        fats: bMacros.fats,
         prepTime: '12 mins',
         ingredients: [
           '4 Liquid Egg Whites + 2 Whole Eggs',
@@ -255,9 +283,9 @@ function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
         meal: 'Lunch',
         title: 'Grilled Lemon Herb Chicken Bowl with Jasmine Rice & Broccoli',
         calories: lCals,
-        protein: Math.round(lCals * 0.10),
-        carbs: Math.round(lCals * 0.10),
-        fats: Math.round(lCals * 0.025),
+        protein: lMacros.protein,
+        carbs: lMacros.carbs,
+        fats: lMacros.fats,
         prepTime: '20 mins',
         ingredients: [
           '200g Lean Chicken Breast',
@@ -278,9 +306,9 @@ function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
         meal: 'Dinner',
         title: 'Pan-Seared Atlantic Salmon with Sweet Potato Mash & Asparagus',
         calories: dCals,
-        protein: Math.round(dCals * 0.08),
-        carbs: Math.round(dCals * 0.07),
-        fats: Math.round(dCals * 0.04),
+        protein: dMacros.protein,
+        carbs: dMacros.carbs,
+        fats: dMacros.fats,
         prepTime: '22 mins',
         ingredients: [
           '180g Fresh Salmon Fillet',
@@ -301,9 +329,9 @@ function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
         meal: 'Snack',
         title: 'Vanilla Whey Isolate Parfait with Blueberries & Almonds',
         calories: sCals,
-        protein: Math.round(sCals * 0.12),
-        carbs: Math.round(sCals * 0.06),
-        fats: Math.round(sCals * 0.03),
+        protein: sMacros.protein,
+        carbs: sMacros.carbs,
+        fats: sMacros.fats,
         prepTime: '3 mins',
         ingredients: [
           '1 Scoop Vanilla Whey Isolate',
@@ -416,13 +444,15 @@ function getSingleMealFallback(mealSlot, targetCals, dietType = 'High Protein') 
   const pool = alternates[mealSlot] || alternates.Breakfast;
   const picked = pool[Math.floor(Math.random() * pool.length)];
 
+  const realistic = computeRealisticMacros(cals, dietType);
+
   return {
     meal: mealSlot,
     title: picked.title,
     calories: cals,
-    protein: Math.round(cals * 0.09),
-    carbs: Math.round(cals * 0.08),
-    fats: Math.round(cals * 0.03),
+    protein: realistic.protein,
+    carbs: realistic.carbs,
+    fats: realistic.fats,
     prepTime: picked.prepTime,
     ingredients: picked.ingredients,
     instructions: picked.instructions,
@@ -605,15 +635,16 @@ export async function generateCustomMealFromPrompt({ promptText, mealSlot = 'Lun
 
   if (provider === 'fallback') {
     await new Promise((resolve) => setTimeout(resolve, 350));
+    const realistic = computeRealisticMacros(cals, dietType);
     return {
       meal: {
         id: `custom_${Date.now()}`,
         meal: mealSlot,
         title: userCravings ? `Chef's ${userCravings.slice(0, 35)}` : `${dietType} Power Plate`,
         calories: cals,
-        protein: Math.round(cals * 0.08),
-        carbs: Math.round(cals * 0.09),
-        fats: Math.round(cals * 0.03),
+        protein: realistic.protein,
+        carbs: realistic.carbs,
+        fats: realistic.fats,
         prepTime: '15 mins',
         ingredients: [userCravings || 'High quality protein source', 'Fibrous leafy greens', 'Healthy fats (olive oil / avocado)'],
         instructions: ['Measure fresh ingredients.', 'Cook protein and veggies over medium heat.', 'Garnish and serve fresh.'],

@@ -438,18 +438,28 @@ export default function DietTab({
 
                     {/* Food Title */}
                     <div>
-                      <h4 className="text-xs font-black text-white leading-snug">
+                      <h4 className="text-sm font-black text-white leading-snug">
                         {item.title}
                       </h4>
-                      {item.protein && (
-                        <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-300 font-bold">
-                          <span><strong className="text-orange-400">P:</strong> {item.protein}g</span>
-                          <span>•</span>
-                          <span><strong className="text-blue-400">C:</strong> {item.carbs}g</span>
-                          <span>•</span>
-                          <span><strong className="text-emerald-400">F:</strong> {item.fats}g</span>
-                        </div>
-                      )}
+
+                      {/* Full-Name Aesthetic Macro Pills */}
+                      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-black">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+                          <span>Protein</span>
+                          <span className="text-white font-mono ml-0.5">{item.protein || Math.round((item.calories * 0.35) / 4)}g</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-black">
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0" />
+                          <span>Carbs</span>
+                          <span className="text-white font-mono ml-0.5">{item.carbs || Math.round((item.calories * 0.45) / 4)}g</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                          <span>Fats</span>
+                          <span className="text-white font-mono ml-0.5">{item.fats || Math.round((item.calories * 0.20) / 9)}g</span>
+                        </span>
+                      </div>
                     </div>
 
                     {/* INLINE RECIPE ACCORDION */}

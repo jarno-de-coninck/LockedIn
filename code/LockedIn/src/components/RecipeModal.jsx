@@ -65,12 +65,24 @@ export default function RecipeModal({
           </button>
         </div>
 
-        {/* Clean Macro Row */}
-        <div className="px-4 py-2.5 bg-slate-950/80 text-xs font-bold text-slate-300 flex items-center justify-between border-b border-slate-800 shrink-0">
-          <span className="text-orange-400 font-black">{meal.calories} kcal</span>
-          <span><strong className="text-orange-400">P:</strong> {meal.protein || Math.round(meal.calories * 0.08)}g</span>
-          <span><strong className="text-blue-400">C:</strong> {meal.carbs || Math.round(meal.calories * 0.09)}g</span>
-          <span><strong className="text-emerald-400">F:</strong> {meal.fats || Math.round(meal.calories * 0.03)}g</span>
+        {/* Full-Name Aesthetic Macro Grid */}
+        <div className="px-4 py-3 bg-slate-950/80 grid grid-cols-4 gap-2 border-b border-slate-800 shrink-0 text-center">
+          <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight block">Calories</span>
+            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.calories}</span>
+          </div>
+          <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/30">
+            <span className="text-[10px] font-black text-orange-400 uppercase tracking-tight block">Protein</span>
+            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.protein || Math.round((meal.calories * 0.35) / 4)}g</span>
+          </div>
+          <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/30">
+            <span className="text-[10px] font-black text-sky-400 uppercase tracking-tight block">Carbs</span>
+            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.carbs || Math.round((meal.calories * 0.45) / 4)}g</span>
+          </div>
+          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-tight block">Fats</span>
+            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.fats || Math.round((meal.calories * 0.20) / 9)}g</span>
+          </div>
         </div>
 
         {/* Scrollable Body */}
