@@ -816,17 +816,17 @@ export default function WorkoutTab({
           {/* 2. SELECTED DAY DRILL CARD (RULE OF ONE PRIMARY ACTION) */}
           {currentDaySchedule && (
             <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1 pr-2">
                   <span className="text-[11px] font-black text-orange-400 uppercase tracking-wider block">
                     {selectedDay} • {currentDaySchedule.type || 'Workout'}
                   </span>
-                  <h4 className="text-base font-black text-white mt-1 leading-snug">
+                  <h4 className="text-base font-black text-white mt-1 leading-snug truncate">
                     {currentDaySchedule.title}
                   </h4>
                 </div>
                 {currentDaySchedule.duration && (
-                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 shrink-0">
                     <Clock className="w-3.5 h-3.5 text-orange-400" /> {currentDaySchedule.duration}
                   </span>
                 )}

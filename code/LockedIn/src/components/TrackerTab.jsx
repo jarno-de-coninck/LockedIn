@@ -404,17 +404,17 @@ export default function TrackerTab({
       {/* =========================================================================
           3. TODAY'S TRAINING SESSION SUMMARY (RULE OF ONE PRIMARY ACTION)
           ========================================================================= */}
-      <div className="bg-slate-900/90 rounded-3xl p-4.5 border border-slate-800/80 shadow-lg space-y-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-xs">
-              <Dumbbell className="w-5 h-5" />
+      <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3 overflow-hidden">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center shrink-0 shadow-xs">
+              <Dumbbell className="w-4 h-4" />
             </div>
-            <div>
-              <span className="text-[11px] uppercase font-black tracking-wider text-orange-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] uppercase font-black tracking-wider text-orange-400 block">
                 {t('todaysWorkout')}
               </span>
-              <h3 className="text-sm sm:text-base font-black text-white truncate max-w-[210px] mt-0.5">
+              <h3 className="text-sm font-black text-white truncate mt-0.5">
                 {scheduledForToday?.title || `${todayName} Session`}
               </h3>
             </div>
@@ -423,40 +423,40 @@ export default function TrackerTab({
           <button
             type="button"
             onClick={onNavigateToWorkouts}
-            className="text-xs font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 active-press"
+            className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-black text-orange-400 flex items-center gap-1 shrink-0 active-press transition-colors"
           >
             <span>{isWorkoutDoneToday ? t('reviewWorkout') : t('startWorkout')}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
           </button>
         </div>
 
         {isWorkoutDoneToday ? (
-          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div>
-                <p className="text-sm font-black text-emerald-200">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-black text-emerald-200 truncate">
                   {workouts.length > 0 ? workouts[0].title : t('restDay')}
                 </p>
-                <span className="text-xs text-emerald-400/80 font-bold">
+                <span className="text-xs text-emerald-400/80 font-bold block truncate">
                   {workouts.length > 0
                     ? `${workouts[0].duration}m • -${workouts[0].caloriesBurned} kcal`
                     : t('restFocus')}
                 </span>
               </div>
             </div>
-            <span className="text-xs font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            <span className="text-xs font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
               {t('completed')}
             </span>
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between gap-3">
-            <div className="min-w-0 pr-1">
+          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between gap-2.5">
+            <div className="min-w-0 flex-1 pr-1">
               <p className="text-xs text-slate-200 font-bold truncate">
                 {scheduledForToday?.focus || 'Scheduled athletic session'}
               </p>
               {scheduledForToday?.duration && (
-                <span className="text-[11px] text-slate-400 font-medium block mt-0.5">
+                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
                   ⏱ {scheduledForToday.duration}
                 </span>
               )}
@@ -464,7 +464,7 @@ export default function TrackerTab({
             <button
               type="button"
               onClick={onNavigateToWorkouts}
-              className="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press shadow-md shadow-orange-500/20 shrink-0 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press shadow-md shadow-orange-500/20 shrink-0 transition-colors"
             >
               {t('startWorkout')}
             </button>
@@ -475,17 +475,17 @@ export default function TrackerTab({
       {/* =========================================================================
           4. 4-MEAL NUTRITION SCHEDULE GLANCE
           ========================================================================= */}
-      <div className="bg-slate-900/80 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+      <div className="bg-slate-900/80 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3 overflow-hidden">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0 shadow-xs">
               <UtensilsCrossed className="w-4 h-4" />
             </div>
-            <div>
-              <span className="text-[11px] uppercase font-black tracking-wider text-slate-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 block">
                 {t('nutritionSchedule')}
               </span>
-              <h3 className="text-xs font-black text-white">
+              <h3 className="text-xs font-black text-white truncate">
                 {meals.length} / 4 {t('mealsLoggedOf')}
               </h3>
             </div>
@@ -494,10 +494,10 @@ export default function TrackerTab({
           <button
             type="button"
             onClick={onNavigateToDiet}
-            className="text-xs font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 active-press"
+            className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 shrink-0 active-press transition-colors"
           >
             <span>{t('planRecipes')}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
           </button>
         </div>
 
