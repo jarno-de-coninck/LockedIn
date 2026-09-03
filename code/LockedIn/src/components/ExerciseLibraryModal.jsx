@@ -47,8 +47,6 @@ export default function ExerciseLibraryModal({
   onSelectExercise,
   activeSport = 'tennis',
 }) {
-  if (!isOpen) return null;
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -57,6 +55,8 @@ export default function ExerciseLibraryModal({
     const matchesSearch = !searchQuery.trim() || ex.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCat && matchesSearch;
   });
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-fade-in">

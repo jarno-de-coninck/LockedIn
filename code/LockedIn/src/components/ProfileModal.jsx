@@ -43,8 +43,6 @@ export default function ProfileModal({
   trainingGoal,
   setTrainingGoal,
 }) {
-  if (!isOpen) return null;
-
   const { language, setLanguage, t } = useLanguage();
   const [gender, setGender] = useState(userProfile?.gender || 'male');
   const [height, setHeight] = useState(userProfile?.height || 180);
@@ -101,6 +99,8 @@ export default function ProfileModal({
     heightInMeters > 0 && Number(weight) > 0
       ? (Number(weight) / (heightInMeters * heightInMeters)).toFixed(1)
       : '24.1';
+
+  if (!isOpen) return null;
 
   const handleTestGroq = async () => {
     setTestingGroq(true);

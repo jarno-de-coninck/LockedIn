@@ -73,8 +73,9 @@ export function calculateRealStreak(meals = [], workouts = []) {
     }
   }
 
-  // Count backwards day by day
-  while (true) {
+  // Count backwards day by day with safe upper bound
+  let safetyCount = 3650;
+  while (safetyCount-- > 0) {
     const dateStr = getLocalDateString(cursor);
     if (activeDaysSet.has(dateStr)) {
       streak++;

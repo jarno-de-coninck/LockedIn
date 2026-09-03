@@ -20,9 +20,8 @@ const SPORTS = [
   { id: 'cycling', name: 'Cycling', icon: '🚴‍♂️' },
 ];
 
-export default function OnboardingModal({ isOpen, onComplete }) {
+export default function OnboardingModal({ isOpen, onComplete, onSkip }) {
   const { t } = useLanguage();
-  if (!isOpen) return null;
 
   const [gender, setGender] = useState('male');
   const [height, setHeight] = useState('180');
@@ -68,6 +67,8 @@ export default function OnboardingModal({ isOpen, onComplete }) {
       ? (Number(weight) / (heightInMeters * heightInMeters)).toFixed(1)
       : '24.1';
 
+  if (!isOpen) return null;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const profile = {
@@ -93,9 +94,9 @@ export default function OnboardingModal({ isOpen, onComplete }) {
           <div className="flex justify-center mb-1">
             <BrandLogo size="md" showText={true} textDark={false} />
           </div>
-          <h2 className="text-base font-black text-white">Welcome, Athlete</h2>
+          <h2 className="text-base font-black text-white">Athlete Biometric Registration</h2>
           <p className="text-xs text-slate-400 font-medium">
-            Let's personalize your biometrics and daily target.
+            Enter your real data so your calories and training are 100% accurate.
           </p>
         </div>
 
@@ -312,6 +313,16 @@ export default function OnboardingModal({ isOpen, onComplete }) {
             <span>Lock In My Profile</span>
             <ArrowRight className="w-4 h-4 stroke-[3]" />
           </button>
+
+          {onSkip && (
+            <button
+              type="button"
+              onClick={onSkip}
+              className="w-full py-2 text-center text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Skip for now (use 78kg • 2,000 kcal standard)
+            </button>
+          )}
         </form>
       </div>
     </div>

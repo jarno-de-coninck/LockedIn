@@ -30,8 +30,6 @@ export default function CustomProgramModal({
   setTrainingSchedule,
   activeSport = 'weightlifting',
 }) {
-  if (!isOpen) return null;
-
   const [builderMode, setBuilderMode] = useState('prompt'); // 'prompt' | 'manual'
   const [daysPerWeek, setDaysPerWeek] = useState(trainingSchedule?.daysPerWeek || 4);
   const [promptText, setPromptText] = useState('');
@@ -58,6 +56,8 @@ export default function CustomProgramModal({
       ],
     }));
   });
+
+  if (!isOpen) return null;
 
   const showToast = (msg) => {
     setToastMsg(msg);
