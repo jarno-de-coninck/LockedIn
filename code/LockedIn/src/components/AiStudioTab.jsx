@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   UtensilsCrossed,
@@ -95,6 +95,74 @@ export default function AiStudioTab({
   const totalConsumed = meals.reduce((a, m) => a + (Number(m.calories) || 0), 0);
   const totalBurned = workouts.reduce((a, w) => a + (Number(w.caloriesBurned) || 0), 0);
   const remainingCalories = goal - (totalConsumed - totalBurned);
+
+  // AI Status & Inline Key State
+  const [showKeyConfig, setShowKeyConfig] = useState(false);
+  const [inlineKey, setInlineKey] = useState(
+    localStorage.getItem('lockedin_custom_groq_key') || ''
+  );
+  const [aiStatus, setAiStatus] = useState(null);
+  const [isCheckingAi, setIsCheckingAi] = useState(false);
+
+  const checkAiAvailability = async (keyToTest = null) => {
+    setIsCheckingAi(true);
+    const key =
+      keyToTest !== null
+        ? keyToTest.trim()
+        : localStorage.getItem('lockedin_custom_groq_key') ||
+          import.meta.env.VITE_GROQ_API_KEY ||
+          '';
+
+    if (!key) {
+      setAiStatus({
+        connected: false,
+        message: 'No Groq API key set. Enter your key below to connect.',
+      });
+      setIsCheckingAi(false);
+      return;
+    }
+
+    const t0 = Date.now();
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      const latency = Date.now() - t0;
+      if (res.ok) {
+        setAiStatus({
+          connected: true,
+          message: `Live AI Online (openai/gpt-oss-20b • ${latency}ms)`,
+          latency,
+        });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setAiStatus({
+          connected: false,
+          message: `Key rejected (${res.status}): ${err.error?.message || 'Invalid API Key'}`,
+        });
+      }
+    } catch (e) {
+      setAiStatus({
+        connected: false,
+        message: `Network error reaching Groq: ${e.message}`,
+      });
+    } finally {
+      setIsCheckingAi(false);
+    }
+  };
+
+  useEffect(() => {
+    checkAiAvailability();
+  }, []);
+
+  const handleSaveInlineKey = async (e) => {
+    e.preventDefault();
+    if (!inlineKey.trim()) return;
+    localStorage.setItem('lockedin_custom_groq_key', inlineKey.trim());
+    localStorage.setItem('lockedin_ai_provider', 'groq');
+    await checkAiAvailability(inlineKey.trim());
+    setShowKeyConfig(false);
+  };
 
   // 1. Generate Diet Plan
   const handleGenerateDiet = async () => {
@@ -287,6 +355,89 @@ export default function AiStudioTab({
           <Bot className="w-3.5 h-3.5 text-orange-500" />
           <span>Coach Lock</span>
         </button>
+      </div>
+
+      {/* 1.5 LIVE AI ENGINE STATUS & KEY BAR */}
+      <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-xs space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              className={`p-1.5 rounded-lg ${
+                aiStatus?.connected
+                  ? 'bg-emerald-50 text-emerald-600'
+                  : 'bg-amber-50 text-amber-600'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-extrabold text-slate-900">Coach Lock AI</span>
+                <span className="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold bg-orange-100 text-orange-700">
+                  openai/gpt-oss-20b
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    aiStatus?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                  }`}
+                />
+                <span>{aiStatus ? aiStatus.message : 'Checking AI status...'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => checkAiAvailability()}
+              disabled={isCheckingAi}
+              className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold active-press transition-all"
+              title="Test connection"
+            >
+              {isCheckingAi ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Ping'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowKeyConfig(!showKeyConfig)}
+              className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold active-press transition-all"
+            >
+              {showKeyConfig ? 'Close' : 'Enter Key'}
+            </button>
+          </div>
+        </div>
+
+        {/* Inline Key Input when expanded or when not connected */}
+        {(showKeyConfig || (aiStatus && !aiStatus.connected)) && (
+          <form
+            onSubmit={handleSaveInlineKey}
+            className="pt-2 border-t border-slate-100 space-y-1.5 animate-scale-up"
+          >
+            <label className="text-[10px] font-bold text-slate-600 block">
+              Enter / Update Groq API Key
+            </label>
+            <div className="flex gap-1.5">
+              <input
+                type="password"
+                value={inlineKey}
+                onChange={(e) => setInlineKey(e.target.value)}
+                placeholder="gsk_..."
+                className="flex-1 px-2.5 py-1.5 text-xs font-mono rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-orange-500 focus:outline-hidden"
+              />
+              <button
+                type="submit"
+                disabled={isCheckingAi}
+                className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold shrink-0 hover:bg-slate-800 active-press transition-all flex items-center gap-1"
+              >
+                {isCheckingAi ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save & Connect'}
+              </button>
+            </div>
+            <p className="text-[9px] text-slate-400">
+              Your key is stored privately in your phone's browser and connects directly to Groq Cloud.
+            </p>
+          </form>
+        )}
       </div>
 
       {/* =========================================================================
