@@ -474,6 +474,37 @@ export default function AiStudioTab({
               </div>
             </div>
 
+            {/* Workout Frequency Selector */}
+            {trainingModeType === 'schedule' && (
+              <div className="space-y-1.5 pt-1 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Workout Frequency
+                  </label>
+                  <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                    {scheduleDays} Training Days / Week
+                  </span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[2, 3, 4, 5, 6].map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setScheduleDays(days)}
+                      className={`py-2 rounded-xl border text-center transition-all ${
+                        scheduleDays === days
+                          ? 'bg-slate-900 text-white border-slate-900 font-black shadow-xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100 font-bold'
+                      }`}
+                    >
+                      <span className="text-xs font-black block">{days}</span>
+                      <span className="text-[8px] font-semibold block uppercase opacity-75">Days</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={handleGenerateTraining}

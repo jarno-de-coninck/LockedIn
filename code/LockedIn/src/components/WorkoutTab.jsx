@@ -747,12 +747,14 @@ export default function WorkoutTab({
           <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Active Program
-                </span>
-                <h3 className="text-xs font-black text-slate-900 mt-0.5">
-                  {trainingSchedule?.programTitle || 'Weekly Training Plan'}
-                </h3>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <h3 className="text-xs font-black text-slate-900">
+                    {trainingSchedule?.programTitle || 'Weekly Training Plan'}
+                  </h3>
+                  <span className="px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[9px] font-extrabold text-orange-700">
+                    {trainingSchedule?.daysPerWeek || (trainingSchedule?.schedule?.filter((s) => s.type !== 'Rest').length) || 4}d/wk
+                  </span>
+                </div>
               </div>
 
               <button
