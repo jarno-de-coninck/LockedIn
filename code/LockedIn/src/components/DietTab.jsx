@@ -16,12 +16,13 @@ import {
 } from 'lucide-react';
 import RecipeModal from './RecipeModal';
 import { regenerateSingleMeal, generateCustomMealFromPrompt } from '../services/groq';
+import { useLanguage } from '../services/i18n';
 
 const MEAL_THEMES = {
-  Breakfast: { badge: 'bg-amber-100 text-amber-800' },
-  Lunch: { badge: 'bg-orange-100 text-orange-800' },
-  Dinner: { badge: 'bg-indigo-100 text-indigo-800' },
-  Snack: { badge: 'bg-emerald-100 text-emerald-800' },
+  Breakfast: { badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+  Lunch: { badge: 'bg-orange-500/20 text-orange-300 border-orange-500/30' },
+  Dinner: { badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' },
+  Snack: { badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
 };
 
 const CRAVING_SUGGESTIONS = [
@@ -41,6 +42,7 @@ export default function DietTab({
   setActiveTab,
   onNavigateToAiStudio,
 }) {
+  const { t } = useLanguage();
   const [dietView, setDietView] = useState('to_eat'); // 'to_eat' | 'eaten'
   const [selectedRecipeMeal, setSelectedRecipeMeal] = useState(null);
   const [expandedCardId, setExpandedCardId] = useState(null);
@@ -179,16 +181,16 @@ export default function DietTab({
   };
 
   return (
-    <div className="space-y-3.5 pb-28 animate-fade-in w-full">
+    <div className="space-y-4 pb-28 animate-fade-in w-full">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-full shadow-lg flex items-center gap-1.5 animate-slide-up border border-slate-700">
-          <CheckCircle2 className="w-3.5 h-3.5 text-orange-400" />
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900/95 text-white text-xs font-bold rounded-full shadow-2xl flex items-center gap-2 animate-slide-up border border-orange-500/40 backdrop-blur-md">
+          <CheckCircle2 className="w-4 h-4 text-orange-400" />
           <span>{toastMsg}</span>
         </div>
       )}
 
-      {/* Recipe Modal (Slide-up drawer) */}
+      {/* Recipe Modal */}
       <RecipeModal
         isOpen={Boolean(selectedRecipeMeal)}
         onClose={() => setSelectedRecipeMeal(null)}
@@ -199,70 +201,70 @@ export default function DietTab({
       />
 
       {/* 1. NUTRITION HUD & 2-TAB SWITCHER */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+      <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-orange-50 text-orange-600">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-2xl bg-orange-500/20 text-orange-400 border border-orange-500/30">
               <UtensilsCrossed className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
-                Daily Intake
+              <span className="text-[11px] uppercase font-black tracking-wider text-slate-400 block">
+                {t('dailyIntake')}
               </span>
-              <h2 className="text-sm font-extrabold text-slate-900">
-                {totalFoodConsumed} <span className="text-xs text-slate-400 font-normal">/ {goal} kcal</span>
+              <h2 className="text-base font-black text-white">
+                {totalFoodConsumed} <span className="text-xs text-slate-400 font-bold">/ {goal} kcal</span>
               </h2>
             </div>
           </div>
-          <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-700">
-            {remainingKcal} kcal left
+          <span className="text-xs font-black px-3 py-1 rounded-full bg-slate-950 text-orange-400 border border-slate-800">
+            {remainingKcal} {t('kcalLeft')}
           </span>
         </div>
 
         {/* 2-Segment Toggle */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl">
+        <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800">
           <button
             type="button"
             onClick={() => setDietView('to_eat')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 active-press ${
+            className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active-press ${
               dietView === 'to_eat'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <ListChecks className="w-3.5 h-3.5" />
-            <span>To Eat ({pendingPlanMeals.length})</span>
+            <span>{t('toEat')} ({pendingPlanMeals.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setDietView('eaten')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 active-press ${
+            className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active-press ${
               dietView === 'eaten'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Eaten ({meals.length})</span>
+            <span>{t('eaten')} ({meals.length})</span>
           </button>
         </div>
       </div>
 
       {/* 2. SUGGEST / CRAVING RECIPE ARCHITECT */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-slate-900/90 rounded-3xl border border-slate-800/80 shadow-lg overflow-hidden">
         <button
           type="button"
           onClick={() => setShowCravingBuilder(!showCravingBuilder)}
-          className="w-full p-3.5 flex items-center justify-between text-left active-press transition-colors hover:bg-slate-50/80"
+          className="w-full p-4 flex items-center justify-between text-left active-press transition-colors hover:bg-slate-800/40"
         >
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5" />
             </div>
             <div>
-              <h3 className="text-xs font-extrabold text-slate-900">Suggest Ingredients / Meals</h3>
-              <p className="text-[10px] text-slate-400">Generate custom recipes based on cravings</p>
+              <h3 className="text-xs font-black text-white">{t('suggestMeals')}</h3>
+              <p className="text-[11px] text-slate-400 font-bold">{t('customCraving')}</p>
             </div>
           </div>
           {showCravingBuilder ? (
@@ -273,22 +275,22 @@ export default function DietTab({
         </button>
 
         {showCravingBuilder && (
-          <div className="p-3.5 pt-0 border-t border-slate-100 space-y-3 animate-slide-up">
+          <div className="p-4 pt-0 border-t border-slate-800 space-y-3 animate-slide-up">
             {/* Slot Selector */}
             <div className="space-y-1">
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                Target Slot
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                {t('targetSlot')}
               </span>
-              <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
+              <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950/80 rounded-xl border border-slate-800">
                 {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((slot) => (
                   <button
                     key={slot}
                     type="button"
                     onClick={() => setCravingSlot(slot)}
-                    className={`py-1 text-[11px] font-bold rounded-lg transition-all ${
+                    className={`py-1.5 text-xs font-black rounded-lg transition-all ${
                       cravingSlot === slot
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-orange-500 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-white'
                     }`}
                   >
                     {slot}
@@ -299,26 +301,26 @@ export default function DietTab({
 
             {/* Input */}
             <div className="space-y-1.5">
-              <div className="relative flex items-center shadow-2xs rounded-xl border border-slate-200 bg-slate-50 focus-within:bg-white focus-within:border-orange-500 p-1">
+              <div className="relative flex items-center rounded-2xl border border-slate-800 bg-slate-950 p-1">
                 <input
                   type="text"
                   value={cravingInput}
                   onChange={(e) => setCravingInput(e.target.value)}
                   placeholder="e.g. Salmon, sweet potato and avocado..."
-                  className="w-full px-2.5 py-1.5 text-xs bg-transparent focus:outline-none placeholder:text-slate-400 font-medium"
+                  className="w-full px-3 py-2 text-xs bg-transparent text-white focus:outline-none placeholder:text-slate-500 font-bold"
                 />
                 <button
                   type="button"
                   onClick={() => handleGenerateFromCraving()}
                   disabled={!cravingInput.trim() || isGeneratingCustom}
-                  className="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 text-white text-xs font-bold transition-all shrink-0 active-press flex items-center gap-1 shadow-2xs"
+                  className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-slate-800 text-white text-xs font-black transition-all shrink-0 active-press flex items-center gap-1 shadow-md shadow-orange-500/20"
                 >
                   {isGeneratingCustom ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
                     <>
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>Architect</span>
+                      <span>{t('architectBtn')}</span>
                     </>
                   )}
                 </button>
@@ -327,9 +329,6 @@ export default function DietTab({
 
             {/* 1-Tap Suggestions */}
             <div className="space-y-1 pt-1">
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                Quick Ideas
-              </span>
               <div className="space-y-1">
                 {CRAVING_SUGGESTIONS.map((item, idx) => (
                   <button
@@ -337,10 +336,10 @@ export default function DietTab({
                     type="button"
                     onClick={() => handleGenerateFromCraving(item)}
                     disabled={isGeneratingCustom}
-                    className="w-full text-left p-2 rounded-xl bg-slate-50 hover:bg-orange-50 border border-slate-100 text-slate-700 text-[11px] font-medium transition-all active-press flex items-center justify-between"
+                    className="w-full text-left p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800/80 text-slate-300 text-xs font-bold transition-all active-press flex items-center justify-between"
                   >
                     <span className="truncate pr-2">{item}</span>
-                    <Sparkles className="w-3 h-3 text-orange-500 shrink-0" />
+                    <Sparkles className="w-3.5 h-3.5 text-orange-400 shrink-0" />
                   </button>
                 ))}
               </div>
@@ -350,19 +349,19 @@ export default function DietTab({
       </div>
 
       {/* =========================================================================
-          TAB 1: WHAT YOU STILL NEED TO EAT (WITH INLINE ACCORDION)
+          TAB 1: WHAT YOU STILL NEED TO EAT
           ========================================================================= */}
       {dietView === 'to_eat' && (
         <div className="space-y-3 animate-slide-up">
           <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Planned Schedule ({goal} kcal)
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+              {t('dailyTarget')} ({goal} kcal)
             </span>
             {onNavigateToAiStudio && (
               <button
                 type="button"
                 onClick={onNavigateToAiStudio}
-                className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 active-press"
+                className="text-xs font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 active-press"
               >
                 <Sparkles className="w-3 h-3" />
                 <span>{dietPlan?.length > 0 ? 'Full Plan' : 'Generate'}</span>
@@ -371,37 +370,37 @@ export default function DietTab({
           </div>
 
           {dietPlan.length === 0 ? (
-            <div className="text-center py-8 px-4 rounded-2xl border border-dashed border-slate-200 bg-white shadow-xs space-y-2">
-              <div className="w-10 h-10 mx-auto rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+            <div className="text-center py-8 px-4 rounded-3xl border border-dashed border-slate-800 bg-slate-900/60 shadow-lg space-y-2">
+              <div className="w-10 h-10 mx-auto rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
                 <UtensilsCrossed className="w-5 h-5" />
               </div>
-              <p className="text-xs font-bold text-slate-800">No active meal plan</p>
-              <p className="text-[11px] text-slate-400 max-w-[240px] mx-auto">
+              <p className="text-xs font-black text-white">No active meal plan</p>
+              <p className="text-xs text-slate-400 max-w-[240px] mx-auto font-medium">
                 Suggest ingredients above or architect a complete 4-meal plan in AI Studio!
               </p>
               {onNavigateToAiStudio && (
                 <button
                   type="button"
                   onClick={onNavigateToAiStudio}
-                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold active-press transition-all"
+                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all shadow-md shadow-orange-500/25"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   <span>Generate in AI Studio</span>
                 </button>
               )}
             </div>
           ) : pendingPlanMeals.length === 0 ? (
-            <div className="text-center py-8 px-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1.5 animate-fade-in">
-              <div className="w-10 h-10 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center">
+            <div className="text-center py-8 px-4 rounded-3xl bg-emerald-950/40 border border-emerald-500/30 space-y-2 animate-fade-in">
+              <div className="w-10 h-10 mx-auto rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center">
                 <Check className="w-5 h-5 stroke-[3]" />
               </div>
-              <h4 className="text-xs font-extrabold text-emerald-900">All Planned Meals Logged!</h4>
-              <p className="text-[11px] text-emerald-700">Check the Eaten tab to review your day</p>
+              <h4 className="text-xs font-black text-emerald-200">{t('allMealsLogged')}</h4>
+              <p className="text-xs text-emerald-400/80 font-bold">Check the Eaten tab to review your day</p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {pendingPlanMeals.map((item, idx) => {
-                const theme = MEAL_THEMES[item.meal] || { badge: 'bg-slate-100 text-slate-700' };
+                const theme = MEAL_THEMES[item.meal] || { badge: 'bg-slate-800 text-slate-300 border-slate-700' };
                 const isSwapping = regeneratingMealId === item.id;
                 const isExpanded = expandedCardId === item.id;
 
@@ -416,64 +415,62 @@ export default function DietTab({
                 return (
                   <div
                     key={item.id || idx}
-                    className={`bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3 transition-all ${
+                    className={`bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3 transition-all ${
                       isSwapping ? 'opacity-50 pointer-events-none' : ''
                     }`}
                   >
                     {/* Header: Slot + Calories */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${theme.badge}`}>
+                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${theme.badge}`}>
                           {item.meal}
                         </span>
                         {item.prepTime && (
-                          <span className="text-[10px] text-slate-400 font-medium">
+                          <span className="text-[11px] text-slate-400 font-bold">
                             ⏱ {item.prepTime}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-extrabold text-slate-900">
-                        {item.calories} <span className="text-[10px] font-normal text-slate-400">kcal</span>
+                      <span className="text-xs font-black text-orange-400">
+                        {item.calories} <span className="text-[10px] text-slate-400 font-normal">kcal</span>
                       </span>
                     </div>
 
                     {/* Food Title */}
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                      <h4 className="text-xs font-black text-white leading-snug">
                         {item.title}
                       </h4>
                       {item.protein && (
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500">
-                          <span><strong>P:</strong> {item.protein}g</span>
+                        <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-300 font-bold">
+                          <span><strong className="text-orange-400">P:</strong> {item.protein}g</span>
                           <span>•</span>
-                          <span><strong>C:</strong> {item.carbs}g</span>
+                          <span><strong className="text-blue-400">C:</strong> {item.carbs}g</span>
                           <span>•</span>
-                          <span><strong>F:</strong> {item.fats}g</span>
+                          <span><strong className="text-emerald-400">F:</strong> {item.fats}g</span>
                         </div>
                       )}
                     </div>
 
-                    {/* INLINE RECIPE ACCORDION DETAILS (NO POPUP REQUIRED) */}
+                    {/* INLINE RECIPE ACCORDION */}
                     {isExpanded && (
-                      <div className="pt-2 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 animate-slide-up">
-                        {/* Ingredients */}
+                      <div className="pt-2 border-t border-slate-800 space-y-2.5 text-xs text-slate-300 animate-slide-up">
                         <div className="space-y-1">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
                             Ingredients
                           </span>
-                          <ul className="space-y-1 list-disc list-inside text-slate-600 text-[11px] pl-1">
+                          <ul className="space-y-1 list-disc list-inside text-slate-300 text-xs pl-1">
                             {ingredients.map((ing, iIdx) => (
                               <li key={iIdx}>{ing}</li>
                             ))}
                           </ul>
                         </div>
 
-                        {/* Instructions */}
                         <div className="space-y-1">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
                             Preparation Steps
                           </span>
-                          <ol className="space-y-1.5 list-decimal list-inside text-slate-600 text-[11px] pl-1">
+                          <ol className="space-y-1.5 list-decimal list-inside text-slate-300 text-xs pl-1">
                             {instructions.map((step, sIdx) => (
                               <li key={sIdx}>{step}</li>
                             ))}
@@ -483,34 +480,34 @@ export default function DietTab({
                     )}
 
                     {/* Action Row */}
-                    <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
+                    <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
                       <button
                         type="button"
                         onClick={() => setExpandedCardId(isExpanded ? null : item.id)}
-                        className="flex-1 py-1.5 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1 active-press"
+                        className="flex-1 py-2 px-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-black transition-all flex items-center justify-center gap-1 active-press"
                       >
-                        <BookOpen className="w-3 h-3 text-slate-500" />
-                        <span>{isExpanded ? 'Hide' : 'Recipe'}</span>
+                        <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{isExpanded ? t('hideRecipe') : t('viewRecipe')}</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleSwapSingleMeal(item)}
                         disabled={isSwapping}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/70 text-slate-600 text-xs font-bold transition-all flex items-center gap-1 active-press"
+                        className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-black transition-all flex items-center gap-1 active-press"
                         title="Regenerate single meal"
                       >
-                        {isSwapping ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                        <span>Swap</span>
+                        {isSwapping ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 text-orange-400" />}
+                        <span>{t('swapMeal')}</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleLogPlanMeal(item)}
-                        className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center gap-1 active-press shadow-xs"
+                        className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black transition-all flex items-center gap-1 active-press shadow-md shadow-orange-500/20"
                       >
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        <span>Log</span>
+                        <Check className="w-4 h-4 stroke-[3]" />
+                        <span>{t('logMeal')}</span>
                       </button>
                     </div>
                   </div>
@@ -527,8 +524,8 @@ export default function DietTab({
       {dietView === 'eaten' && (
         <div className="space-y-3 animate-slide-up">
           <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Logged Food History ({meals.length})
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+              {t('eaten')} ({meals.length})
             </span>
             {meals.length > 0 && (
               <button
@@ -539,33 +536,32 @@ export default function DietTab({
                     showToast('Cleared log');
                   }
                 }}
-                className="text-[10px] font-bold text-slate-400 hover:text-rose-600 transition-colors"
+                className="text-xs font-bold text-slate-500 hover:text-rose-400 transition-colors"
               >
-                Clear All
+                {t('clearAll')}
               </button>
             )}
           </div>
 
           {meals.length === 0 ? (
-            <div className="text-center py-8 px-4 rounded-2xl border border-dashed border-slate-200 bg-white shadow-xs space-y-1.5">
-              <p className="text-xs font-bold text-slate-800">No meals logged yet today</p>
-              <p className="text-[11px] text-slate-400">Log from your plan or use the custom form below</p>
+            <div className="text-center py-8 px-4 rounded-3xl border border-dashed border-slate-800 bg-slate-900/60 shadow-lg space-y-1.5">
+              <p className="text-xs font-bold text-slate-400">{t('noMealsYet')}</p>
             </div>
           ) : (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {meals.map((meal) => (
                 <div
                   key={meal.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs"
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-900 border border-slate-800/80 shadow-md"
                 >
                   <div className="min-w-0 flex-1 pr-2">
-                    <p className="text-xs font-bold text-slate-900 truncate">{meal.name}</p>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">{meal.time || 'Logged'}</span>
+                    <p className="text-xs font-black text-white truncate">{meal.name}</p>
+                    <span className="text-[11px] text-slate-400 font-bold block mt-0.5">{meal.time || 'Logged'}</span>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-extrabold text-slate-800">
-                      {meal.calories} <span className="text-[10px] font-normal text-slate-400">kcal</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-black text-orange-400">
+                      {meal.calories} <span className="text-[10px] text-slate-500">kcal</span>
                     </span>
                     <button
                       type="button"
@@ -573,9 +569,9 @@ export default function DietTab({
                         setMeals((prev) => prev.filter((m) => m.id !== meal.id));
                         showToast(`Removed "${meal.name}"`);
                       }}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -584,17 +580,17 @@ export default function DietTab({
           )}
 
           {/* Quick Custom Food Add */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              + Custom Food Entry
+          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+              + {t('customFoodEntry')}
             </span>
-            <form onSubmit={handleQuickAdd} className="grid grid-cols-12 gap-1.5">
+            <form onSubmit={handleQuickAdd} className="grid grid-cols-12 gap-2">
               <input
                 type="text"
                 value={quickMealName}
                 onChange={(e) => setQuickMealName(e.target.value)}
                 placeholder="Food title"
-                className="col-span-7 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                className="col-span-7 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white focus:outline-none focus:border-orange-500 font-bold"
               />
               <input
                 type="number"
@@ -603,13 +599,13 @@ export default function DietTab({
                 value={quickMealCals}
                 onChange={(e) => setQuickMealCals(e.target.value)}
                 placeholder="kcal"
-                className="col-span-3 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-semibold"
+                className="col-span-3 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white focus:outline-none focus:border-orange-500 font-black text-center"
               />
               <button
                 type="submit"
-                className="col-span-2 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold active-press flex items-center justify-center"
+                className="col-span-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press flex items-center justify-center shadow-md shadow-orange-500/20"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
               </button>
             </form>
           </div>

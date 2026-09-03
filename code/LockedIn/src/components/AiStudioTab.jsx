@@ -18,6 +18,7 @@ import {
   generateWeeklySchedule,
   askNutritionistCoach,
 } from '../services/groq';
+import { useLanguage } from '../services/i18n';
 
 const DIET_PRESETS = [
   { id: 'High Protein', label: 'High Protein', desc: 'Lean proteins & muscle recovery' },
@@ -64,6 +65,7 @@ export default function AiStudioTab({
   setTrainingGoal,
   setActiveTab,
 }) {
+  const { t } = useLanguage();
   const [aiMode, setAiMode] = useState('diet'); // 'diet' | 'training' | 'coach'
 
   // Diet Mode State
@@ -87,7 +89,7 @@ export default function AiStudioTab({
     {
       id: 1,
       sender: 'coach',
-      text: `👋 Hey! I'm **Coach Lock**, your personal AI Athletic Director & Sports Nutritionist. Ask me about drills, pre-match fueling, or macro splits!`,
+      text: `👋 Hey! I'm **Coach Lock**, your personal Olympic Athletic Director & Sports Nutritionist. Ask me about drills, pre-match fueling, or macro splits!`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -280,11 +282,11 @@ export default function AiStudioTab({
     if (!text) return null;
     const lines = text.split('\n');
     return (
-      <div className="space-y-1 text-xs leading-relaxed">
+      <div className="space-y-1.5 text-xs leading-relaxed">
         {lines.map((line, idx) => {
           if (line.startsWith('### ')) {
             return (
-              <h5 key={idx} className="font-extrabold text-slate-900 mt-2 mb-1 text-xs">
+              <h5 key={idx} className="font-black text-orange-400 mt-2 mb-1 text-xs uppercase tracking-wider">
                 {line.replace('### ', '')}
               </h5>
             );
@@ -292,14 +294,14 @@ export default function AiStudioTab({
           if (line.startsWith('• ') || line.startsWith('- ') || line.startsWith('* ')) {
             const rawContent = line.replace(/^[•\-\*]\s*/, '');
             return (
-              <div key={idx} className="flex items-start gap-1.5 ml-1">
-                <span className="text-orange-500 font-bold">•</span>
+              <div key={idx} className="flex items-start gap-2 ml-1 text-slate-200">
+                <span className="text-orange-400 font-bold">•</span>
                 <span dangerouslySetInnerHTML={{ __html: formatBold(rawContent) }} />
               </div>
             );
           }
           return (
-            <p key={idx} dangerouslySetInnerHTML={{ __html: formatBold(line) }} />
+            <p key={idx} className="text-slate-200" dangerouslySetInnerHTML={{ __html: formatBold(line) }} />
           );
         })}
       </div>
@@ -309,68 +311,68 @@ export default function AiStudioTab({
   const formatBold = (str) => {
     if (!str) return '';
     return str
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-white">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em class="italic text-orange-300">$1</em>');
   };
 
   return (
-    <div className="space-y-4 pb-28 animate-fade-in">
+    <div className="space-y-4 pb-28 animate-fade-in w-full">
       {/* 1. STUDIO SWITCHER */}
-      <div className="bg-slate-100 p-1 rounded-xl grid grid-cols-3 gap-1">
+      <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-2xl grid grid-cols-3 gap-1 shadow-lg">
         <button
           type="button"
           onClick={() => setAiMode('diet')}
-          className={`py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 active-press ${
+          className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active-press ${
             aiMode === 'diet'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-orange-500 text-white shadow-md'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           <UtensilsCrossed className="w-3.5 h-3.5" />
-          <span>Diet</span>
+          <span>{t('dietMode')}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setAiMode('training')}
-          className={`py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 active-press ${
+          className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active-press ${
             aiMode === 'training'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-orange-500 text-white shadow-md'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           <Dumbbell className="w-3.5 h-3.5" />
-          <span>Training</span>
+          <span>{t('trainingMode')}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setAiMode('coach')}
-          className={`py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 active-press ${
+          className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active-press ${
             aiMode === 'coach'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-orange-500 text-white shadow-md'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Bot className="w-3.5 h-3.5 text-orange-500" />
-          <span>Coach Lock</span>
+          <Bot className="w-3.5 h-3.5 text-white" />
+          <span>{t('coachMode')}</span>
         </button>
       </div>
 
       {/* Show connection warning & key input ONLY when NOT connected */}
       {aiStatus && !aiStatus.connected && (
-        <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-3.5 space-y-2.5 animate-slide-up">
+        <div className="bg-amber-950/40 border border-amber-500/40 rounded-3xl p-4 space-y-3 animate-slide-up">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs font-bold text-amber-900 block">
-                  AI Engine Offline — Using Fallback Mode
+                <span className="text-xs font-black text-amber-200 block">
+                  AI Engine Offline — Using Fallback
                 </span>
-                <span className="text-[10px] text-amber-700 block">
-                  Enter your Groq API key below to activate live Coach Lock AI.
+                <span className="text-[11px] text-amber-400/80 font-medium block">
+                  Enter your Groq API key to activate live Coach Lock.
                 </span>
               </div>
             </div>
@@ -378,26 +380,26 @@ export default function AiStudioTab({
               type="button"
               onClick={() => checkAiAvailability()}
               disabled={isCheckingAi}
-              className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-800 text-[10px] font-bold active-press transition-all"
+              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/30 text-amber-300 text-xs font-black active-press transition-colors"
             >
-              {isCheckingAi ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Retry'}
+              {isCheckingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Retry'}
             </button>
           </div>
 
-          <form onSubmit={handleSaveInlineKey} className="flex gap-1.5 pt-1">
+          <form onSubmit={handleSaveInlineKey} className="flex gap-2 pt-1">
             <input
               type="password"
               value={inlineKey}
               onChange={(e) => setInlineKey(e.target.value)}
               placeholder="Paste your gsk_... key here"
-              className="flex-1 px-2.5 py-1.5 text-xs font-mono rounded-lg border border-amber-300 bg-white text-slate-800 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-amber-500/30 bg-slate-950 text-white placeholder:text-slate-600 focus:border-orange-500 focus:outline-none"
             />
             <button
               type="submit"
               disabled={isCheckingAi}
-              className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 active-press transition-all flex items-center gap-1"
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shrink-0 active-press transition-colors flex items-center gap-1 shadow-md"
             >
-              {isCheckingAi ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Connect'}
+              {isCheckingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Connect'}
             </button>
           </form>
         </div>
@@ -407,24 +409,24 @@ export default function AiStudioTab({
           MODE 1: DIET PLAN ARCHITECT
           ========================================================================= */}
       {aiMode === 'diet' && (
-        <div className="space-y-3.5 animate-slide-up">
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+        <div className="space-y-4 animate-slide-up">
+          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Diet Architect
+                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                  {t('dietMode')}
                 </span>
-                <h3 className="text-xs font-extrabold text-slate-900 mt-0.5">
+                <h3 className="text-xs font-black text-white mt-0.5">
                   Calibrated for {goal} kcal target
                 </h3>
               </div>
-              <span className="text-xs font-extrabold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+              <span className="text-xs font-black text-orange-400 bg-orange-500/15 px-3 py-1 rounded-full border border-orange-500/30">
                 {goal} kcal
               </span>
             </div>
 
             {/* Presets */}
-            <div className="grid grid-cols-2 gap-1.5 pt-1">
+            <div className="grid grid-cols-2 gap-2 pt-1">
               {DIET_PRESETS.map((p) => {
                 const isSel = selectedDietPreset === p.id;
                 return (
@@ -432,14 +434,14 @@ export default function AiStudioTab({
                     key={p.id}
                     type="button"
                     onClick={() => setSelectedDietPreset(p.id)}
-                    className={`text-left p-2.5 rounded-xl border transition-all active-press ${
+                    className={`text-left p-3 rounded-2xl border transition-all active-press ${
                       isSel
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200/60'
+                        ? 'bg-orange-500 text-white border-orange-400 shadow-md'
+                        : 'bg-slate-950/70 hover:bg-slate-800/60 text-slate-300 border-slate-800'
                     }`}
                   >
-                    <p className="text-xs font-bold">{p.label}</p>
-                    <p className={`text-[9px] mt-0.5 ${isSel ? 'text-slate-300' : 'text-slate-400'}`}>
+                    <p className="text-xs font-black">{p.label}</p>
+                    <p className={`text-[10px] mt-1 font-medium ${isSel ? 'text-orange-100' : 'text-slate-400'}`}>
                       {p.desc}
                     </p>
                   </button>
@@ -451,7 +453,7 @@ export default function AiStudioTab({
               type="button"
               onClick={handleGenerateDiet}
               disabled={isGeneratingDiet}
-              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold active-press transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-xs"
+              className="w-full py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-orange-500/25"
             >
               {isGeneratingDiet ? (
                 <>
@@ -461,14 +463,14 @@ export default function AiStudioTab({
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Generate {selectedDietPreset} Plan</span>
+                  <span>{t('generateDietBtn')} ({selectedDietPreset})</span>
                 </>
               )}
             </button>
 
             {dietNote && (
-              <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1">
-                <Info className="w-3 h-3 text-orange-500" />
+              <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1">
+                <Info className="w-3.5 h-3.5 text-orange-400" />
                 <span>{dietNote}</span>
               </p>
             )}
@@ -476,26 +478,26 @@ export default function AiStudioTab({
 
           {/* Generated Diet Preview */}
           {dietPlan && dietPlan.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                   Active 4-Meal Plan
                 </span>
-                <span className="text-xs font-bold text-slate-500">
+                <span className="text-xs font-black text-orange-400">
                   {dietPlan.reduce((a, m) => a + (Number(m.calories) || 0), 0)} / {goal} kcal
                 </span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {dietPlan.map((m, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-2xs flex items-center justify-between">
+                  <div key={idx} className="bg-slate-900/90 rounded-2xl p-3.5 border border-slate-800/80 shadow-md flex items-center justify-between">
                     <div>
-                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-100 text-slate-700 uppercase">
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 uppercase">
                         {m.meal}
                       </span>
-                      <p className="text-xs font-bold text-slate-900 mt-1">{m.title}</p>
+                      <p className="text-xs font-black text-white mt-1">{m.title}</p>
                     </div>
-                    <span className="text-xs font-extrabold text-slate-900">{m.calories} kcal</span>
+                    <span className="text-xs font-black text-orange-400">{m.calories} kcal</span>
                   </div>
                 ))}
               </div>
@@ -503,9 +505,9 @@ export default function AiStudioTab({
               <button
                 type="button"
                 onClick={() => setActiveTab('diet')}
-                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold active-press transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 border border-slate-800 shadow-md"
               >
-                <span>Open in Diet Tab</span>
+                <span>{t('openInDiet')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -517,19 +519,19 @@ export default function AiStudioTab({
           MODE 2: TRAINING & SCHEDULE ARCHITECT
           ========================================================================= */}
       {aiMode === 'training' && (
-        <div className="space-y-3.5 animate-slide-up">
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              Training Architect
+        <div className="space-y-4 animate-slide-up">
+          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+              {t('trainingMode')}
             </span>
 
             {/* Mode Switcher */}
-            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl">
+            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800">
               <button
                 type="button"
                 onClick={() => setTrainingModeType('schedule')}
-                className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  trainingModeType === 'schedule' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                className={`py-2 text-xs font-black rounded-xl transition-all ${
+                  trainingModeType === 'schedule' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-400'
                 }`}
               >
                 7-Day Roadmap
@@ -537,8 +539,8 @@ export default function AiStudioTab({
               <button
                 type="button"
                 onClick={() => setTrainingModeType('session')}
-                className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  trainingModeType === 'session' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                className={`py-2 text-xs font-black rounded-xl transition-all ${
+                  trainingModeType === 'session' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-400'
                 }`}
               >
                 Single Session
@@ -546,43 +548,43 @@ export default function AiStudioTab({
             </div>
 
             {/* Sport Chips */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sport</label>
-              <div className="grid grid-cols-5 gap-1">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">Sport</label>
+              <div className="grid grid-cols-5 gap-1.5">
                 {SPORTS.map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => setActiveSport(s.id)}
-                    className={`py-2 rounded-xl border text-center transition-all ${
+                    className={`py-2.5 rounded-2xl border text-center transition-all ${
                       activeSport === s.id
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200/60'
+                        ? 'bg-orange-500 text-white border-orange-400 shadow-md'
+                        : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-white'
                     }`}
                   >
-                    <span className="text-base block">{s.icon}</span>
-                    <span className="text-[9px] font-bold block mt-0.5 truncate">{s.name}</span>
+                    <span className="text-lg block">{s.icon}</span>
+                    <span className="text-[10px] font-black block mt-0.5 truncate">{s.name}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Goal Chips */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Focus</label>
-              <div className="grid grid-cols-2 gap-1">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">Focus</label>
+              <div className="grid grid-cols-2 gap-2">
                 {TRAINING_GOALS.map((g) => (
                   <button
                     key={g.id}
                     type="button"
                     onClick={() => setTrainingGoal(g.label)}
-                    className={`py-2 px-2.5 rounded-xl border text-left transition-all ${
+                    className={`py-2.5 px-3 rounded-2xl border text-left transition-all ${
                       trainingGoal === g.label
-                        ? 'bg-slate-900 text-white border-slate-900'
-                        : 'bg-slate-50 text-slate-700 border-slate-200/60'
+                        ? 'bg-orange-500 text-white border-orange-400 shadow-md'
+                        : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'
                     }`}
                   >
-                    <span className="text-xs font-bold block">{g.label}</span>
+                    <span className="text-xs font-black block">{g.label}</span>
                   </button>
                 ))}
               </div>
@@ -590,12 +592,12 @@ export default function AiStudioTab({
 
             {/* Workout Frequency Selector */}
             {trainingModeType === 'schedule' && (
-              <div className="space-y-1.5 pt-1 border-t border-slate-100">
+              <div className="space-y-2 pt-1 border-t border-slate-800">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                     Workout Frequency
                   </label>
-                  <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                  <span className="text-[10px] font-black text-orange-300 bg-orange-500/20 px-2.5 py-0.5 rounded-md border border-orange-500/30">
                     {scheduleDays} Training Days / Week
                   </span>
                 </div>
@@ -605,14 +607,14 @@ export default function AiStudioTab({
                       key={days}
                       type="button"
                       onClick={() => setScheduleDays(days)}
-                      className={`py-2 rounded-xl border text-center transition-all ${
+                      className={`py-2 rounded-2xl border text-center transition-all ${
                         scheduleDays === days
-                          ? 'bg-slate-900 text-white border-slate-900 font-black shadow-xs'
-                          : 'bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100 font-bold'
+                          ? 'bg-orange-500 text-white border-orange-400 font-black shadow-md'
+                          : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-white font-bold'
                       }`}
                     >
                       <span className="text-xs font-black block">{days}</span>
-                      <span className="text-[8px] font-semibold block uppercase opacity-75">Days</span>
+                      <span className="text-[9px] font-bold block uppercase opacity-75">Days</span>
                     </button>
                   ))}
                 </div>
@@ -623,7 +625,7 @@ export default function AiStudioTab({
               type="button"
               onClick={handleGenerateTraining}
               disabled={isGeneratingTraining}
-              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold active-press transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-xs"
+              className="w-full py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-orange-500/25"
             >
               {isGeneratingTraining ? (
                 <>
@@ -639,7 +641,7 @@ export default function AiStudioTab({
             </button>
 
             {trainingNote && (
-              <p className="text-[10px] text-slate-400 text-center">{trainingNote}</p>
+              <p className="text-xs text-slate-400 text-center">{trainingNote}</p>
             )}
           </div>
         </div>
@@ -649,28 +651,28 @@ export default function AiStudioTab({
           MODE 3: CONVERSATIONAL AI COACH (COACH LOCK)
           ========================================================================= */}
       {aiMode === 'coach' && (
-        <div className="space-y-3.5 animate-slide-up">
+        <div className="space-y-4 animate-slide-up">
           {/* Quick Context Pill */}
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 text-white shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-orange-500 flex items-center justify-center text-white">
-                <Bot className="w-3.5 h-3.5" />
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-xs">
+                <Bot className="w-4 h-4" />
               </div>
-              <span className="text-xs font-extrabold text-white">Coach Lock Active</span>
+              <span className="text-xs font-black text-white">{t('coachActive')}</span>
             </div>
-            <span className="text-[10px] font-bold text-orange-400">
-              ⚡ {remainingCalories} kcal left
+            <span className="text-xs font-black text-orange-400">
+              ⚡ {remainingCalories} {t('kcalLeft')}
             </span>
           </div>
 
           {/* Suggestion Chips */}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {COACH_PROMPTS.map((q, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleAskCoach(q)}
-                className="py-1 px-2.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-medium transition-all active-press flex items-center gap-1 shadow-2xs"
+                className="py-1.5 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[11px] font-bold transition-all active-press flex items-center gap-1 shadow-sm"
               >
                 <span>{q}</span>
               </button>
@@ -678,27 +680,27 @@ export default function AiStudioTab({
           </div>
 
           {/* Messages Thread */}
-          <div className="space-y-2.5 pt-1">
+          <div className="space-y-3 pt-1">
             {coachMessages.map((msg) => {
               const isUser = msg.sender === 'user';
               return (
                 <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                   <div
-                    className={`max-w-[92%] rounded-2xl p-3.5 shadow-2xs border ${
+                    className={`max-w-[92%] rounded-3xl p-4 shadow-md border ${
                       isUser
-                        ? 'bg-slate-900 text-white border-slate-900'
-                        : 'bg-white text-slate-800 border-slate-200/80'
+                        ? 'bg-orange-500 text-white border-orange-400'
+                        : 'bg-slate-900 text-slate-200 border-slate-800'
                     }`}
                   >
                     {!isUser && (
-                      <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100">
-                        <span className="text-[10px] font-extrabold text-slate-900 uppercase">Coach Lock</span>
-                        <span className="text-[9px] text-slate-400">{msg.time}</span>
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+                        <span className="text-[10px] font-black text-orange-400 uppercase tracking-wider">Coach Lock</span>
+                        <span className="text-[10px] text-slate-400">{msg.time}</span>
                       </div>
                     )}
 
                     {isUser ? (
-                      <p className="text-xs font-semibold">{msg.text}</p>
+                      <p className="text-xs font-bold">{msg.text}</p>
                     ) : (
                       renderFormattedText(msg.text)
                     )}
@@ -709,15 +711,15 @@ export default function AiStudioTab({
 
             {isCoachThinking && (
               <div className="flex items-start">
-                <div className="bg-white rounded-xl p-2.5 border border-slate-200 shadow-2xs flex items-center gap-2">
-                  <Loader2 className="w-3.5 h-3.5 text-orange-500 animate-spin" />
-                  <span className="text-xs text-slate-500">Analyzing performance data...</span>
+                <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 shadow-md flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 text-orange-400 animate-spin" />
+                  <span className="text-xs text-slate-400 font-bold">Analyzing athletic telemetry...</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Clean Integrated Input */}
+          {/* Integrated Input */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -725,20 +727,20 @@ export default function AiStudioTab({
             }}
             className="sticky bottom-16 pt-2"
           >
-            <div className="relative flex items-center shadow-lg rounded-2xl bg-white border border-slate-200/80 p-1">
+            <div className="relative flex items-center shadow-2xl rounded-2xl bg-slate-900 border border-slate-800 p-1">
               <input
                 type="text"
                 value={coachQuestion}
                 onChange={(e) => setCoachQuestion(e.target.value)}
-                placeholder="Ask about drills, macro splits, recovery..."
-                className="w-full px-3.5 py-2 text-xs bg-transparent focus:outline-none placeholder:text-slate-400 font-medium"
+                placeholder={t('askCoachPlaceholder')}
+                className="w-full px-3.5 py-2.5 text-xs bg-transparent text-white focus:outline-none placeholder:text-slate-500 font-bold"
               />
               <button
                 type="submit"
                 disabled={!coachQuestion.trim() || isCoachThinking}
-                className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 text-white transition-colors shrink-0 active-press"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-slate-800 text-white transition-colors shrink-0 active-press shadow-md shadow-orange-500/20"
               >
-                {isCoachThinking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {isCoachThinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>
             </div>
           </form>

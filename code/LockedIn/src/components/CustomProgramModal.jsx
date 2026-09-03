@@ -15,8 +15,8 @@ import { generateWeeklyScheduleFromPrompt } from '../services/groq';
 
 const INSPIRATION_PROMPTS = [
   '4-Day Upper / Lower Hypertrophy & Strength Split',
-  '3-Day Push / Pull / Legs (PPL) with 1 day of Tennis Footwork',
-  '5-Day Bodybuilding Split with Chest & Arms specialization',
+  '3-Day Push / Pull / Legs (PPL) with 1 day of Agility',
+  '5-Day Athletic Performance with speed drills & lifting',
   '4-Day MMA Conditioning, Heavy Bag & Wrestling Stamina',
   '4-Day Runner Engine: Intervals, Tempo, Hill Sprints & Long Run',
 ];
@@ -105,46 +105,46 @@ export default function CustomProgramModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3 sm:p-4 animate-fade-in">
-      <div className="w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col max-h-[85dvh] overflow-hidden animate-scale-up">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-fade-in">
+      <div className="w-full max-w-sm sm:max-w-md bg-slate-900 border border-slate-800 text-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[88dvh] overflow-hidden animate-slide-up">
         {/* Header */}
-        <div className="p-3.5 border-b border-slate-100 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 flex items-center justify-center">
               <Dumbbell className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-extrabold text-slate-900">Custom Split Builder</h3>
-              <p className="text-[10px] text-slate-400">Prompt AI or build manually</p>
+              <h3 className="text-xs font-black text-white">Custom Split Builder</h3>
+              <p className="text-[11px] text-slate-400 font-bold">Prompt AI or build manually</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Builder Mode Toggle */}
-        <div className="p-3 border-b border-slate-100 bg-slate-50 shrink-0">
-          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/80 rounded-xl">
+        <div className="p-3 border-b border-slate-800 bg-slate-950/60 shrink-0">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950 rounded-2xl border border-slate-800">
             <button
               type="button"
               onClick={() => setBuilderMode('prompt')}
-              className={`py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                builderMode === 'prompt' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+              className={`py-2 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                builderMode === 'prompt' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+              <Sparkles className="w-3.5 h-3.5" />
               <span>Prompt AI</span>
             </button>
             <button
               type="button"
               onClick={() => setBuilderMode('manual')}
-              className={`py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                builderMode === 'manual' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+              className={`py-2 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                builderMode === 'manual' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -154,20 +154,20 @@ export default function CustomProgramModal({
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {builderMode === 'prompt' ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {/* Workout Frequency Selector */}
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">
+                  <span className="text-[11px] font-black text-slate-300 uppercase tracking-wider">
                     Workout Frequency
                   </span>
-                  <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                  <span className="text-[10px] font-black text-orange-300 bg-orange-500/20 px-2.5 py-0.5 rounded-md border border-orange-500/30">
                     {daysPerWeek} Training Days / Wk
                   </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1 pt-0.5">
+                <div className="grid grid-cols-5 gap-1.5 pt-1">
                   {[2, 3, 4, 5, 6].map((num) => (
                     <button
                       key={num}
@@ -175,22 +175,19 @@ export default function CustomProgramModal({
                       onClick={() => setDaysPerWeek(num)}
                       className={`py-2 rounded-xl border text-center transition-all ${
                         daysPerWeek === num
-                          ? 'bg-slate-900 text-white border-slate-900 font-black shadow-xs'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100 font-bold'
+                          ? 'bg-orange-500 text-white border-orange-400 font-black shadow-md'
+                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white font-bold'
                       }`}
                     >
                       <span className="text-xs font-black block">{num}</span>
-                      <span className="text-[8px] font-semibold block uppercase opacity-75">Days</span>
+                      <span className="text-[9px] font-bold block uppercase opacity-75">Days</span>
                     </button>
                   ))}
                 </div>
-                <p className="text-[9px] text-slate-500 font-medium">
-                  Generates {daysPerWeek} training sessions and {7 - daysPerWeek} rest & recovery days.
-                </p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
                   Describe Your Split
                 </label>
                 <textarea
@@ -198,7 +195,7 @@ export default function CustomProgramModal({
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                   placeholder="e.g., 4-day split with 2 heavy upper/lower lifting days + 2 agility & sprint sessions"
-                  className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full p-3 text-xs rounded-2xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500 font-medium"
                 />
               </div>
 
@@ -206,64 +203,63 @@ export default function CustomProgramModal({
                 type="button"
                 onClick={() => handleGenerateFromPrompt()}
                 disabled={!promptText.trim() || isGenerating}
-                className="w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold active-press transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-orange-500/25"
               >
                 {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 <span>{isGenerating ? 'Architecting Split...' : 'Generate 7-Day Program'}</span>
               </button>
 
               {/* Suggestions */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+              <div className="space-y-2 pt-2 border-t border-slate-800">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
                   1-Tap Inspiration
                 </span>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {INSPIRATION_PROMPTS.map((p, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => handleGenerateFromPrompt(p)}
                       disabled={isGenerating}
-                      className="w-full text-left p-2 rounded-xl bg-slate-50 hover:bg-orange-50 border border-slate-200/60 text-slate-700 text-xs font-medium transition-all active-press flex items-center justify-between"
+                      className="w-full text-left p-3 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold transition-all active-press flex items-center justify-between"
                     >
-                      <span className="truncate pr-2">{p}</span>
-                      <ArrowRight className="w-3 h-3 text-orange-500 shrink-0" />
+                      <span className="pr-2">{p}</span>
+                      <Sparkles className="w-3.5 h-3.5 text-orange-400 shrink-0" />
                     </button>
                   ))}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Program Name
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                  Program Title
                 </label>
                 <input
                   type="text"
                   value={manualTitle}
                   onChange={(e) => setManualTitle(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white focus:outline-none focus:border-orange-500 font-bold"
                 />
               </div>
 
-              {/* Day List */}
               <div className="space-y-2">
                 {manualDays.map((d, dIdx) => (
-                  <div key={d.day} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                  <div key={d.day} className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-slate-900">{d.day}</span>
+                      <span className="text-xs font-black text-white">{d.day}</span>
                       <select
                         value={d.type}
                         onChange={(e) => {
                           const val = e.target.value;
                           setManualDays((prev) =>
                             prev.map((item, idx) =>
-                              idx === dIdx ? { ...item, type: val } : item
+                              idx === dIdx ? { ...item, type: val, duration: val === 'Rest' ? '0m' : '45m' } : item
                             )
                           );
                         }}
-                        className="text-[10px] font-bold bg-white border border-slate-200 rounded px-1.5 py-0.5"
+                        className="px-2 py-1 text-xs rounded-lg border border-slate-800 bg-slate-900 text-slate-300 focus:outline-none"
                       >
                         <option value="Strength">Strength</option>
                         <option value="Agility">Agility</option>
@@ -278,13 +274,10 @@ export default function CustomProgramModal({
                       onChange={(e) => {
                         const val = e.target.value;
                         setManualDays((prev) =>
-                          prev.map((item, idx) =>
-                            idx === dIdx ? { ...item, title: val } : item
-                          )
+                          prev.map((item, idx) => (idx === dIdx ? { ...item, title: val } : item))
                         );
                       }}
-                      placeholder="Session Title"
-                      className="w-full px-2 py-1 text-xs rounded border border-slate-200 bg-white"
+                      className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-800 bg-slate-900 text-white font-bold"
                     />
                   </div>
                 ))}
@@ -293,10 +286,10 @@ export default function CustomProgramModal({
               <button
                 type="button"
                 onClick={handleSaveManual}
-                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold active-press transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
               >
-                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                <span>Save Program Split</span>
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>Save Custom Program</span>
               </button>
             </div>
           )}

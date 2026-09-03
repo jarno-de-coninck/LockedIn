@@ -1,5 +1,6 @@
 import React from 'react';
-import { Activity, Dumbbell, UtensilsCrossed, Sparkles } from 'lucide-react';
+import { Flame, Dumbbell, UtensilsCrossed, Sparkles } from 'lucide-react';
+import { useLanguage } from '../services/i18n';
 
 export default function BottomNav({
   activeTab,
@@ -7,29 +8,31 @@ export default function BottomNav({
   loggedMealsCount = 0,
   loggedWorkoutsCount = 0,
 }) {
+  const { t } = useLanguage();
+
   const tabs = [
     {
       id: 'today',
-      label: 'Today',
-      icon: Activity,
+      label: t('today'),
+      icon: Flame,
     },
     {
       id: 'workouts',
-      label: 'Workouts',
+      label: t('workouts'),
       icon: Dumbbell,
       badge: loggedWorkoutsCount > 0 ? loggedWorkoutsCount : null,
-      badgeColor: 'bg-slate-900',
+      badgeColor: 'bg-emerald-500',
     },
     {
       id: 'diet',
-      label: 'Diet',
+      label: t('diet'),
       icon: UtensilsCrossed,
       badge: loggedMealsCount > 0 ? loggedMealsCount : null,
       badgeColor: 'bg-orange-500',
     },
     {
       id: 'ai',
-      label: 'AI Studio',
+      label: t('aiStudio'),
       icon: Sparkles,
       sparkle: true,
     },
@@ -37,12 +40,12 @@ export default function BottomNav({
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 sm:border-x sm:border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 sm:border-x sm:border-slate-800/80 shadow-[0_-8px_30px_rgba(0,0,0,0.6)]"
       style={{
-        paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
       }}
     >
-      <div className="w-full grid grid-cols-4 px-2 pt-1.5">
+      <div className="w-full grid grid-cols-4 px-2 pt-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -52,25 +55,27 @@ export default function BottomNav({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`tap-target relative flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all duration-200 active-press select-none ${
+              className={`tap-target relative flex flex-col items-center justify-center py-1 px-1 rounded-2xl transition-all duration-200 active-press select-none ${
                 isActive
-                  ? 'text-orange-600 font-bold'
-                  : 'text-slate-400 hover:text-slate-600 font-medium'
+                  ? 'text-orange-400 font-black'
+                  : 'text-slate-500 hover:text-slate-300 font-bold'
               }`}
             >
               <div className="relative">
                 <div
-                  className={`p-1 rounded-xl transition-all duration-200 ${
-                    isActive ? 'bg-orange-50 text-orange-600 scale-105' : 'text-slate-400'
+                  className={`p-1.5 rounded-xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-orange-500/15 text-orange-400 shadow-[0_0_16px_rgba(249,115,22,0.3)] scale-110'
+                      : 'text-slate-500'
                   }`}
                 >
                   <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 </div>
 
-                {/* Badge */}
+                {/* Badge Count */}
                 {tab.badge && (
                   <span
-                    className={`absolute -top-1 -right-1 min-w-[15px] h-3.5 px-1 rounded-full text-white text-[8px] font-extrabold flex items-center justify-center shadow-xs ${
+                    className={`absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-white text-[10px] font-black flex items-center justify-center shadow-md border border-slate-950 ${
                       tab.badgeColor || 'bg-orange-500'
                     }`}
                   >
@@ -80,8 +85,8 @@ export default function BottomNav({
               </div>
 
               <span
-                className={`text-[10px] mt-0.5 tracking-tight ${
-                  isActive ? 'text-orange-600 font-bold' : 'text-slate-500 font-medium'
+                className={`text-[11px] mt-1 tracking-tight transition-colors ${
+                  isActive ? 'text-white font-black' : 'text-slate-500 font-semibold'
                 }`}
               >
                 {tab.label}

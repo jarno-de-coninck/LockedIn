@@ -23,9 +23,9 @@ import {
 } from 'lucide-react';
 import ExerciseLibraryModal from './ExerciseLibraryModal';
 import CustomProgramModal from './CustomProgramModal';
+import { useLanguage } from '../services/i18n';
 
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 const DURATION_PRESETS = [30, 45, 60, 75, 90];
 
 export default function WorkoutTab({
@@ -37,6 +37,7 @@ export default function WorkoutTab({
   trainingGoal = 'Strength & Muscle',
   onNavigateToAiStudio,
 }) {
+  const { t } = useLanguage();
   const todayName = DAYS_OF_WEEK[new Date().getDay()];
   const [selectedDay, setSelectedDay] = useState(todayName);
   const [toastMsg, setToastMsg] = useState('');
@@ -359,7 +360,7 @@ export default function WorkoutTab({
     setIsTimerRunning(false);
     setSessionSeconds(0);
     setCustomDurationMins(null);
-    showToast(`Workout Saved! ${durationMins}m logged (-${estBurn} kcal)`);
+    showToast(`Workout Saved! ${durationMins}m (-${estBurn} kcal)`);
   };
 
   const handleDiscardWorkout = () => {
@@ -398,7 +399,6 @@ export default function WorkoutTab({
   };
 
   const currentDaySchedule = trainingSchedule?.schedule?.find((s) => s.day === selectedDay);
-
   const totalActiveSets = activeSession?.exercises?.reduce((a, e) => a + (e.sets?.length || 0), 0) || 0;
   const completedActiveSets = activeSession?.exercises?.reduce(
     (a, e) => a + (e.sets?.filter((s) => s.completed).length || 0),
@@ -409,8 +409,8 @@ export default function WorkoutTab({
     <div className="space-y-4 pb-28 animate-fade-in w-full">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-full shadow-lg flex items-center gap-1.5 animate-slide-up border border-slate-700">
-          <CheckCircle2 className="w-3.5 h-3.5 text-orange-400" />
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900/95 text-white text-xs font-bold rounded-full shadow-2xl flex items-center gap-2 animate-slide-up border border-orange-500/40 backdrop-blur-md">
+          <CheckCircle2 className="w-4 h-4 text-orange-400" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -438,12 +438,12 @@ export default function WorkoutTab({
       {activeSession ? (
         <div className="space-y-3.5 animate-slide-up">
           {/* Sticky Session HUD Bar */}
-          <div className="sticky top-0 z-20 -mx-3.5 -mt-3 sm:-mx-4 sm:-mt-4 px-4 py-3 bg-slate-900 text-white shadow-md flex items-center justify-between">
+          <div className="sticky top-0 z-20 -mx-3.5 -mt-3 sm:-mx-4 sm:-mt-4 px-4 py-3 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 text-white shadow-xl flex items-center justify-between">
             <div className="min-w-0 pr-2">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-400">
-                  {completedActiveSets}/{totalActiveSets} Sets Done
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-[11px] font-black uppercase tracking-wider text-orange-400">
+                  {completedActiveSets}/{totalActiveSets} {t('setsDone')}
                 </span>
               </div>
               <h3 className="text-xs font-black truncate text-white">
@@ -454,16 +454,16 @@ export default function WorkoutTab({
             <div className="flex items-center gap-2 shrink-0">
               <div
                 onClick={() => setCustomDurationMins((d) => (d || effectiveDurationMins) + 5)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center font-mono text-xs font-black text-slate-200 cursor-pointer active-press transition-colors"
-                title="Tap to adjust time (+5m)"
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-center font-mono text-xs font-black text-orange-400 cursor-pointer active-press transition-colors border border-slate-800"
+                title="Tap to add +5m"
               >
-                ⏱ {effectiveDurationMins}m
+                ⏱ {formatStopwatch(sessionSeconds)}
               </div>
 
               <button
                 type="button"
                 onClick={handleDiscardWorkout}
-                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-900 hover:bg-rose-950/80 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors border border-slate-800"
                 title="Discard workout"
               >
                 <X className="w-4 h-4" />
@@ -473,29 +473,29 @@ export default function WorkoutTab({
 
           {/* Floating Rest Countdown Bar */}
           {isResting && (
-            <div className="p-3 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between shadow-lg animate-fade-in border border-slate-700">
-              <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-orange-400 animate-spin" />
+            <div className="p-3.5 rounded-3xl bg-slate-900 border border-orange-500/40 text-white flex items-center justify-between shadow-2xl animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <Timer className="w-5 h-5 text-orange-400 animate-spin" />
                 <div>
-                  <p className="text-xs font-bold">Rest Countdown</p>
-                  <p className="text-[9px] text-slate-400">Catch your breath for the next set</p>
+                  <p className="text-xs font-black text-white">{t('restCountdown')}</p>
+                  <p className="text-[10px] text-slate-400 font-bold">Breathe & recover</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-black font-mono text-orange-400">
+                <span className="text-base font-black font-mono text-orange-400">
                   {restSeconds}s
                 </span>
                 <button
                   type="button"
                   onClick={() => setRestSeconds((s) => s + 30)}
-                  className="px-2 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-[10px] font-bold text-slate-200"
+                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black text-slate-200"
                 >
                   +30s
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsResting(false)}
-                  className="px-2 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-[10px] font-bold text-slate-300"
+                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black text-slate-400"
                 >
                   Skip
                 </button>
@@ -511,17 +511,17 @@ export default function WorkoutTab({
               return (
                 <div
                   key={ex.id}
-                  className={`bg-white rounded-2xl p-4 shadow-xs border transition-all ${
-                    allDone ? 'border-emerald-200 bg-emerald-50/20' : 'border-slate-200/80'
+                  className={`bg-slate-900/90 rounded-3xl p-4 shadow-lg border transition-all space-y-3 ${
+                    allDone ? 'border-emerald-500/40 bg-emerald-950/20' : 'border-slate-800/80'
                   }`}
                 >
                   {/* Exercise Header */}
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
                     <div className="flex items-center gap-2 min-w-0 pr-2">
-                      <span className="w-6 h-6 rounded-lg bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-slate-950 text-orange-400 text-xs font-black flex items-center justify-center shrink-0 border border-slate-800">
                         {exIdx + 1}
                       </span>
-                      <h4 className="text-xs font-black text-slate-900 truncate">
+                      <h4 className="text-xs font-black text-white truncate">
                         {ex.name}
                       </h4>
                     </div>
@@ -530,16 +530,16 @@ export default function WorkoutTab({
                       <button
                         type="button"
                         onClick={() => handleCompleteAllSets(ex.id)}
-                        className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 flex items-center gap-1 active-press"
+                        className="text-[11px] font-black px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-emerald-950/50 text-slate-300 hover:text-emerald-300 border border-slate-800 flex items-center gap-1 active-press"
                       >
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>All Done</span>
+                        <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{t('allDone')}</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleRemoveExercise(ex.id)}
-                        className="w-6 h-6 rounded-lg text-slate-300 hover:text-rose-500 flex items-center justify-center"
+                        className="w-7 h-7 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 flex items-center justify-center"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -551,23 +551,23 @@ export default function WorkoutTab({
                     {ex.sets.map((s) => (
                       <div
                         key={s.setNumber}
-                        className={`p-1.5 rounded-xl transition-all flex items-center justify-between gap-1 w-full border ${
+                        className={`p-2 rounded-2xl transition-all flex items-center justify-between gap-1 w-full border ${
                           s.completed
-                            ? 'bg-emerald-50 text-emerald-950 border-emerald-200'
-                            : 'bg-slate-50 text-slate-800 border-slate-100'
+                            ? 'bg-emerald-950/30 text-emerald-200 border-emerald-500/40'
+                            : 'bg-slate-950/70 text-slate-200 border-slate-800/80'
                         }`}
                       >
                         {/* Set Label */}
-                        <span className="text-[11px] font-black text-slate-400 w-5 text-center shrink-0">
+                        <span className="text-xs font-black text-slate-400 w-6 text-center shrink-0">
                           #{s.setNumber}
                         </span>
 
                         {/* Weight Stepper */}
-                        <div className="flex items-center gap-0.5 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleAdjustWeight(ex.id, s.setNumber, -2.5)}
-                            className="w-5 h-6 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-600 flex items-center justify-center active-press"
+                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
                           >
                             -
                           </button>
@@ -577,26 +577,26 @@ export default function WorkoutTab({
                               type="text"
                               value={s.weight}
                               onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'weight', e.target.value)}
-                              className="w-11 text-center py-0.5 text-xs font-black rounded border border-slate-200 bg-white focus:outline-none"
+                              className="w-12 text-center py-1 text-xs font-black rounded-lg border border-slate-700 bg-slate-900 text-white focus:outline-none"
                             />
-                            <span className="text-[7px] font-bold text-slate-400 block text-center -mt-0.5">kg</span>
+                            <span className="text-[8px] font-bold text-slate-400 block text-center -mt-0.5">kg</span>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => handleAdjustWeight(ex.id, s.setNumber, 2.5)}
-                            className="w-5 h-6 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-600 flex items-center justify-center active-press"
+                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
                           >
                             +
                           </button>
                         </div>
 
                         {/* Reps Stepper */}
-                        <div className="flex items-center gap-0.5 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleAdjustReps(ex.id, s.setNumber, -1)}
-                            className="w-5 h-6 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-600 flex items-center justify-center active-press"
+                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
                           >
                             -
                           </button>
@@ -606,42 +606,42 @@ export default function WorkoutTab({
                               type="text"
                               value={s.reps}
                               onChange={(e) => handleDirectInput(ex.id, s.setNumber, 'reps', e.target.value)}
-                              className="w-9 text-center py-0.5 text-xs font-black rounded border border-slate-200 bg-white focus:outline-none"
+                              className="w-10 text-center py-1 text-xs font-black rounded-lg border border-slate-700 bg-slate-900 text-white focus:outline-none"
                             />
-                            <span className="text-[7px] font-bold text-slate-400 block text-center -mt-0.5">reps</span>
+                            <span className="text-[8px] font-bold text-slate-400 block text-center -mt-0.5">reps</span>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => handleAdjustReps(ex.id, s.setNumber, 1)}
-                            className="w-5 h-6 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-600 flex items-center justify-center active-press"
+                            className="w-6 h-7 rounded-lg bg-slate-900 border border-slate-700 text-xs font-black text-slate-300 flex items-center justify-center active-press"
                           >
                             +
                           </button>
                         </div>
 
-                        {/* Checkmark & Delete Set Buttons */}
-                        <div className="flex items-center gap-1 shrink-0">
+                        {/* Checkmark & Delete Set */}
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleToggleSet(ex.id, s.setNumber)}
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all active-press ${
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active-press ${
                               s.completed
-                                ? 'bg-emerald-500 text-white shadow-xs'
-                                : 'bg-white border border-slate-300 text-transparent hover:border-slate-400'
+                                ? 'bg-emerald-500 text-slate-950 shadow-md'
+                                : 'bg-slate-900 border border-slate-700 text-transparent hover:border-slate-500'
                             }`}
                             title="Mark set done"
                           >
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <Check className="w-4 h-4 stroke-[3]" />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleRemoveSet(ex.id, s.setNumber)}
-                            className="w-7 h-7 rounded-lg bg-white hover:bg-rose-50 border border-slate-200 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors active-press"
-                            title="Delete this set"
+                            className="w-8 h-8 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 text-slate-500 hover:text-rose-400 flex items-center justify-center transition-colors"
+                            title="Delete set"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -652,50 +652,47 @@ export default function WorkoutTab({
                   <button
                     type="button"
                     onClick={() => handleAddSet(ex.id)}
-                    className="w-full mt-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1 active-press"
+                    className="w-full py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-black transition-all flex items-center justify-center gap-1 active-press"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Set</span>
+                    <Plus className="w-4 h-4" />
+                    <span>{t('addSet')}</span>
                   </button>
                 </div>
               );
             })}
           </div>
 
-          {/* Add Exercise Floating Button */}
+          {/* Add Exercise Button */}
           <button
             type="button"
             onClick={() => setIsExerciseModalOpen(true)}
-            className="w-full py-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:bg-slate-50 text-slate-900 text-xs font-black flex items-center justify-center gap-2 active-press transition-all"
+            className="w-full py-3.5 rounded-3xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-white text-xs font-black flex items-center justify-center gap-2 active-press transition-all shadow-lg"
           >
-            <Plus className="w-4 h-4 text-orange-500" />
-            <span>Add Exercise to Workout</span>
+            <Plus className="w-4 h-4 text-orange-400" />
+            <span>{t('addExercise')}</span>
           </button>
 
-          {/* =========================================================================
-              MANUAL DURATION ADJUSTMENT CARD BEFORE FINISHING
-              ========================================================================= */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2.5">
+          {/* Manual Duration Adjustment Card */}
+          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                ⏱ Workout Duration
+              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                ⏱ {t('workoutDuration')}
               </span>
-              <span className="text-xs font-extrabold text-orange-600">
+              <span className="text-xs font-black text-orange-400">
                 {effectiveDurationMins} minutes
               </span>
             </div>
 
-            {/* Quick 1-Tap Duration Preset Chips */}
-            <div className="grid grid-cols-5 gap-1">
+            <div className="grid grid-cols-5 gap-1.5">
               {DURATION_PRESETS.map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => setCustomDurationMins(m)}
-                  className={`py-1.5 text-xs font-bold rounded-xl transition-all active-press ${
+                  className={`py-2 text-xs font-black rounded-xl transition-all active-press ${
                     effectiveDurationMins === m
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-orange-500 text-white shadow-md'
+                      : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
                   }`}
                 >
                   {m}m
@@ -703,24 +700,23 @@ export default function WorkoutTab({
               ))}
             </div>
 
-            {/* Custom Minutes Stepper */}
-            <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-              <span className="text-[11px] text-slate-500">Fine-tune duration</span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+              <span className="text-[11px] text-slate-400 font-bold">{t('fineTune')}</span>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setCustomDurationMins(Math.max(5, effectiveDurationMins - 5))}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 active-press"
+                  className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-black text-slate-300 active-press"
                 >
                   -5m
                 </button>
-                <span className="font-mono text-xs font-bold text-slate-900 px-1">
+                <span className="font-mono text-xs font-black text-white px-1">
                   {effectiveDurationMins} min
                 </span>
                 <button
                   type="button"
                   onClick={() => setCustomDurationMins(effectiveDurationMins + 5)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 active-press"
+                  className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-black text-slate-300 active-press"
                 >
                   +5m
                 </button>
@@ -732,27 +728,29 @@ export default function WorkoutTab({
           <button
             type="button"
             onClick={handleFinishWorkout}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white text-xs font-black shadow-md shadow-orange-500/25 active-press flex items-center justify-center gap-2 transition-all"
+            className="w-full py-4 rounded-3xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 text-white text-xs font-black shadow-xl shadow-orange-500/25 active-press flex items-center justify-center gap-2 transition-all"
           >
-            <Check className="w-4 h-4 stroke-[3]" />
-            <span>Finish & Save ({effectiveDurationMins}m • {completedActiveSets}/{totalActiveSets} Sets)</span>
+            <Check className="w-5 h-5 stroke-[3]" />
+            <span>
+              {t('finishWorkout')} ({effectiveDurationMins}m • {completedActiveSets}/{totalActiveSets} {t('setsDone')})
+            </span>
           </button>
         </div>
       ) : (
         /* =========================================================================
            MODE 2: WORKOUT ROADMAP & HOME VIEW
            ========================================================================= */
-        <div className="space-y-3.5">
+        <div className="space-y-4">
           {/* 1. HERO ACTIVE PROGRAM CARD */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <h3 className="text-xs font-black text-slate-900">
-                    {trainingSchedule?.programTitle || 'Weekly Training Plan'}
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-black text-white">
+                    {trainingSchedule?.programTitle || t('weeklyPlan')}
                   </h3>
-                  <span className="px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[9px] font-extrabold text-orange-700">
-                    {trainingSchedule?.daysPerWeek || (trainingSchedule?.schedule?.filter((s) => s.type !== 'Rest').length) || 4}d/wk
+                  <span className="px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-[10px] font-black text-orange-300">
+                    {trainingSchedule?.daysPerWeek || 4}d/wk
                   </span>
                 </div>
               </div>
@@ -760,9 +758,9 @@ export default function WorkoutTab({
               <button
                 type="button"
                 onClick={() => setIsProgramModalOpen(true)}
-                className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active-press"
+                className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-black active-press"
               >
-                ✏️ Edit
+                ✏️ {t('editPlan')}
               </button>
             </div>
 
@@ -779,18 +777,18 @@ export default function WorkoutTab({
                     key={day}
                     type="button"
                     onClick={() => setSelectedDay(day)}
-                    className={`py-2 px-1 rounded-xl text-center transition-all ${
+                    className={`py-2 px-1 rounded-2xl text-center transition-all ${
                       isSelected
-                        ? 'bg-slate-900 text-white shadow-xs'
+                        ? 'bg-orange-500 text-white shadow-md'
                         : isToday
-                        ? 'bg-orange-50 border border-orange-200 text-orange-700'
-                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                        ? 'bg-slate-950 border border-orange-500/40 text-orange-400'
+                        : 'bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800/60'
                     }`}
                   >
-                    <span className="text-[9px] font-bold block uppercase opacity-80">
+                    <span className="text-[10px] font-bold block uppercase opacity-80">
                       {day.slice(0, 3)}
                     </span>
-                    <span className="text-[10px] font-black block mt-0.5">
+                    <span className="text-[11px] font-black block mt-0.5">
                       {isRest ? '🛌' : '⚡'}
                     </span>
                   </button>
@@ -799,27 +797,27 @@ export default function WorkoutTab({
             </div>
           </div>
 
-          {/* 2. SELECTED DAY DRILL CARD */}
+          {/* 2. SELECTED DAY DRILL CARD (RULE OF ONE PRIMARY ACTION) */}
           {currentDaySchedule && (
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+            <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
                     {selectedDay} • {currentDaySchedule.type || 'Workout'}
                   </span>
-                  <h4 className="text-xs font-black text-slate-900 mt-0.5">
+                  <h4 className="text-xs font-black text-white mt-0.5">
                     {currentDaySchedule.title}
                   </h4>
                 </div>
                 {currentDaySchedule.duration && (
-                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {currentDaySchedule.duration}
+                  <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" /> {currentDaySchedule.duration}
                   </span>
                 )}
               </div>
 
               {currentDaySchedule.focus && (
-                <p className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl">
+                <p className="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800/60 font-medium">
                   {currentDaySchedule.focus}
                 </p>
               )}
@@ -829,13 +827,13 @@ export default function WorkoutTab({
                   {currentDaySchedule.exercises.map((ex, idx) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-xl bg-slate-50 flex items-center justify-between"
+                      className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/60 flex items-center justify-between"
                     >
                       <div className="min-w-0 pr-2">
-                        <p className="text-xs font-bold text-slate-800 truncate">{ex.name}</p>
+                        <p className="text-xs font-black text-white truncate">{ex.name}</p>
                         {ex.notes && <p className="text-[10px] text-slate-400 truncate">{ex.notes}</p>}
                       </div>
-                      <span className="text-[10px] font-bold text-slate-500 shrink-0">
+                      <span className="text-[11px] font-black text-orange-400 shrink-0">
                         {ex.sets} • {ex.reps}
                       </span>
                     </div>
@@ -847,80 +845,80 @@ export default function WorkoutTab({
                 <button
                   type="button"
                   onClick={() => handleStartScheduledWorkout(currentDaySchedule)}
-                  className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
                 >
-                  <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>Start {selectedDay}'s Workout</span>
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>{t('startWorkout')} ({selectedDay})</span>
                 </button>
               ) : (
                 <div className="text-center py-2 text-xs font-bold text-slate-400">
-                  Scheduled Rest & Recovery Day
+                  {t('restDay')}
                 </div>
               )}
             </div>
           )}
 
-          {/* 3. QUICK START EMPTY WORKOUT OR MANUAL PAST LOG */}
+          {/* 3. QUICK START CUSTOM OR LOG PAST */}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={handleStartCustomWorkout}
-              className="py-3 px-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:bg-slate-50 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 active-press transition-all"
+              className="py-3 px-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-white text-xs font-black flex items-center justify-center gap-2 active-press transition-all shadow-md"
             >
-              <Plus className="w-4 h-4 text-orange-500" />
-              <span>Start Custom</span>
+              <Plus className="w-4 h-4 text-orange-400" />
+              <span>{t('customSession')}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowManualLogger(!showManualLogger)}
-              className="py-3 px-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:bg-slate-50 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 active-press transition-all"
+              className="py-3 px-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-white text-xs font-black flex items-center justify-center gap-2 active-press transition-all shadow-md"
             >
-              <Clock className="w-4 h-4 text-emerald-500" />
-              <span>Log Past Workout</span>
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <span>{t('logPastWorkout')}</span>
             </button>
           </div>
 
           {/* 4. MANUAL PAST WORKOUT ACCORDION FORM */}
           {showManualLogger && (
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3 animate-slide-up">
+            <div className="bg-slate-900/95 rounded-3xl p-4 border border-slate-800 shadow-xl space-y-3 animate-slide-up">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Log Finished Workout
+                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                  {t('logPastWorkout')}
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowManualLogger(false)}
-                  className="text-slate-400 hover:text-slate-700"
+                  className="text-slate-400 hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveManualWorkout} className="space-y-2.5">
+              <form onSubmit={handleSaveManualWorkout} className="space-y-3">
                 <input
                   type="text"
                   value={manualTitle}
                   onChange={(e) => setManualTitle(e.target.value)}
-                  placeholder={`e.g. 1h ${activeSport.toUpperCase()} Match or Leg Day`}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium"
+                  placeholder={`e.g. 1h ${activeSport.toUpperCase()} Match`}
+                  className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white focus:outline-none focus:border-orange-500 font-bold"
                 />
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[9px] font-bold text-slate-400 block mb-0.5">Duration (mins)</label>
+                    <label className="text-[10px] font-bold text-slate-400 block mb-1">Duration (mins)</label>
                     <input
                       type="number"
                       min="5"
                       max="300"
                       value={manualDuration}
                       onChange={(e) => setManualDuration(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-bold"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white focus:outline-none focus:border-orange-500 font-black"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[9px] font-bold text-slate-400 block mb-0.5">Calories Burned</label>
+                    <label className="text-[10px] font-bold text-slate-400 block mb-1">Calories Burned</label>
                     <input
                       type="number"
                       min="10"
@@ -928,12 +926,11 @@ export default function WorkoutTab({
                       value={manualCalories}
                       onChange={(e) => setManualCalories(e.target.value)}
                       placeholder={`~${Math.round((parseInt(manualDuration, 10) || 45) * 8.5)} kcal`}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-bold text-emerald-600"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-800 bg-slate-950 text-emerald-400 focus:outline-none focus:border-orange-500 font-black"
                     />
                   </div>
                 </div>
 
-                {/* Preset Chips */}
                 <div className="grid grid-cols-5 gap-1 pt-0.5">
                   {[20, 30, 45, 60, 90].map((mins) => (
                     <button
@@ -943,7 +940,7 @@ export default function WorkoutTab({
                         setManualDuration(String(mins));
                         setManualCalories(String(Math.round(mins * 9)));
                       }}
-                      className="py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                      className="py-1 text-xs font-black rounded-lg bg-slate-950 border border-slate-800 text-slate-300 hover:text-white"
                     >
                       {mins}m
                     </button>
@@ -952,9 +949,9 @@ export default function WorkoutTab({
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold active-press transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                  className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
                 >
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <Check className="w-4 h-4 stroke-[3]" />
                   <span>Save Manual Workout</span>
                 </button>
               </form>
@@ -962,27 +959,26 @@ export default function WorkoutTab({
           )}
 
           {/* 5. WORKOUT HISTORY */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              Completed Sessions ({workouts.length})
+          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+              {t('completedSessions')} ({workouts.length})
             </span>
 
             {workouts.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <p className="text-xs font-bold text-slate-700">No workouts recorded yet</p>
-                <p className="text-[11px] text-slate-400">Start a session or log a past workout above</p>
+              <div className="text-center py-6 border border-dashed border-slate-800 rounded-2xl bg-slate-950/50">
+                <p className="text-xs font-bold text-slate-400">{t('noWorkouts')}</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {workouts.map((w) => (
                   <div
                     key={w.id}
-                    className="p-3 rounded-xl bg-slate-50 space-y-1.5"
+                    className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/60 space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
                       <div className="min-w-0 pr-2">
-                        <h5 className="text-xs font-bold text-slate-900 truncate">{w.title}</h5>
-                        <span className="text-[10px] text-slate-400">
+                        <h5 className="text-xs font-black text-white truncate">{w.title}</h5>
+                        <span className="text-[11px] text-slate-400 font-bold">
                           {w.time} • {w.duration}m • -{w.caloriesBurned} kcal
                         </span>
                       </div>
@@ -992,9 +988,9 @@ export default function WorkoutTab({
                           setWorkouts((prev) => prev.filter((item) => item.id !== w.id));
                           showToast('Workout deleted');
                         }}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
@@ -1003,7 +999,7 @@ export default function WorkoutTab({
                         {w.exercises.map((ex, eIdx) => (
                           <span
                             key={eIdx}
-                            className="text-[9px] font-semibold px-2 py-0.5 rounded bg-white text-slate-600 border border-slate-200/60"
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-800"
                           >
                             {ex.name} ({ex.sets?.length || 0}s)
                           </span>

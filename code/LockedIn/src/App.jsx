@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import TrackerTab from './components/TrackerTab';
@@ -7,10 +7,13 @@ import DietTab from './components/DietTab';
 import AiStudioTab from './components/AiStudioTab';
 import SplashScreen from './components/SplashScreen';
 import { Download, X } from 'lucide-react';
+import { useLanguage } from './services/i18n';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { t } = useLanguage();
+
   const [showInstallBanner, setShowInstallBanner] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -222,6 +225,13 @@ export default function App() {
   // Active navigation tab: 'today' | 'workouts' | 'diet' | 'ai'
   const [activeTab, setActiveTab] = useState('today');
 
+  // Dynamic Streak Calculation
+  const streakDays = useMemo(() => {
+    const base = 3;
+    const bonus = workouts.length > 0 ? 1 : 0;
+    return base + bonus;
+  }, [workouts.length]);
+
   // Persistence Sync
   useEffect(() => {
     try {
@@ -285,7 +295,7 @@ export default function App() {
     <>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
 
-      <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-slate-50 text-slate-900 flex flex-col relative select-none">
+      <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col relative select-none shadow-[0_0_80px_rgba(0,0,0,0.8)]">
         {/* Sticky Top Minimalist Header with Profile Avatar */}
         <Header
           goal={goal}
@@ -296,23 +306,26 @@ export default function App() {
           setActiveSport={setActiveSport}
           trainingGoal={trainingGoal}
           setTrainingGoal={setTrainingGoal}
+          streakCount={streakDays}
         />
 
         {/* PWA Install Banner */}
         {showInstallBanner && (
-          <div className="mx-3.5 mt-2 p-2.5 rounded-xl bg-orange-500 text-white flex items-center justify-between shadow-md">
-            <div className="flex items-center gap-2">
-              <Download className="w-4 h-4 shrink-0" />
-              <div className="text-xs font-bold leading-tight">
+          <div className="mx-3.5 mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white flex items-center justify-between shadow-lg shadow-orange-500/20 border border-orange-400/30 animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+                <Download className="w-4 h-4 text-white" />
+              </div>
+              <div className="text-xs font-black leading-tight">
                 Install LockedIn App
-                <span className="block text-[10px] font-normal text-orange-100">Full-screen & native feel</span>
+                <span className="block text-[11px] font-medium text-orange-100">Full-screen athletic experience</span>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={handleInstallClick}
-                className="px-2.5 py-1 rounded-lg bg-white text-orange-600 text-xs font-bold active-press shadow-xs"
+                className="px-3 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-black active-press shadow-xs hover:bg-orange-50 transition-colors"
               >
                 Install
               </button>
@@ -322,7 +335,7 @@ export default function App() {
                 className="p-1 text-orange-200 hover:text-white"
                 title="Dismiss"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -330,14 +343,14 @@ export default function App() {
 
         {/* Install Guide Modal */}
         {showInstallGuide && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4 animate-scale-up">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
-                    <Download className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                    <Download className="w-5 h-5" />
                   </div>
-                  <h3 className="font-bold text-sm">Install LockedIn App</h3>
+                  <h3 className="font-black text-sm">Install LockedIn App</h3>
                 </div>
                 <button
                   type="button"
@@ -366,7 +379,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setShowInstallGuide(false)}
-                className="w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs active-press"
+                className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs active-press transition-colors shadow-lg shadow-orange-500/30"
               >
                 Got it!
               </button>
@@ -374,65 +387,65 @@ export default function App() {
           </div>
         )}
 
-      {/* Dynamic Tab Body */}
-      <main className="flex-1 px-3.5 py-3 sm:px-4 sm:py-4 overflow-y-auto">
-        {activeTab === 'today' && (
-          <TrackerTab
-            goal={goal}
-            meals={meals}
-            setMeals={setMeals}
-            workouts={workouts}
-            dietPlan={dietPlan}
-            trainingSchedule={trainingSchedule}
-            activeSport={activeSport}
-            onNavigateToDiet={() => setActiveTab('diet')}
-            onNavigateToWorkouts={() => setActiveTab('workouts')}
-          />
-        )}
+        {/* Dynamic Tab Body */}
+        <main className="flex-1 px-3.5 py-3 sm:px-4 sm:py-4 overflow-y-auto">
+          {activeTab === 'today' && (
+            <TrackerTab
+              goal={goal}
+              meals={meals}
+              setMeals={setMeals}
+              workouts={workouts}
+              dietPlan={dietPlan}
+              trainingSchedule={trainingSchedule}
+              activeSport={activeSport}
+              onNavigateToDiet={() => setActiveTab('diet')}
+              onNavigateToWorkouts={() => setActiveTab('workouts')}
+            />
+          )}
 
-        {activeTab === 'workouts' && (
-          <WorkoutTab
-            workouts={workouts}
-            setWorkouts={setWorkouts}
-            trainingSchedule={trainingSchedule}
-            setTrainingSchedule={setTrainingSchedule}
-            activeSport={activeSport}
-            trainingGoal={trainingGoal}
-            onNavigateToAiStudio={() => setActiveTab('ai')}
-          />
-        )}
+          {activeTab === 'workouts' && (
+            <WorkoutTab
+              workouts={workouts}
+              setWorkouts={setWorkouts}
+              trainingSchedule={trainingSchedule}
+              setTrainingSchedule={setTrainingSchedule}
+              activeSport={activeSport}
+              trainingGoal={trainingGoal}
+              onNavigateToAiStudio={() => setActiveTab('ai')}
+            />
+          )}
 
-        {activeTab === 'diet' && (
-          <DietTab
-            goal={goal}
-            dietPlan={dietPlan}
-            setDietPlan={setDietPlan}
-            meals={meals}
-            setMeals={setMeals}
-            setActiveTab={setActiveTab}
-            onNavigateToAiStudio={() => setActiveTab('ai')}
-          />
-        )}
+          {activeTab === 'diet' && (
+            <DietTab
+              goal={goal}
+              dietPlan={dietPlan}
+              setDietPlan={setDietPlan}
+              meals={meals}
+              setMeals={setMeals}
+              setActiveTab={setActiveTab}
+              onNavigateToAiStudio={() => setActiveTab('ai')}
+            />
+          )}
 
-        {activeTab === 'ai' && (
-          <AiStudioTab
-            goal={goal}
-            meals={meals}
-            setMeals={setMeals}
-            dietPlan={dietPlan}
-            setDietPlan={setDietPlan}
-            workouts={workouts}
-            setWorkouts={setWorkouts}
-            trainingSchedule={trainingSchedule}
-            setTrainingSchedule={setTrainingSchedule}
-            activeSport={activeSport}
-            setActiveSport={setActiveSport}
-            trainingGoal={trainingGoal}
-            setTrainingGoal={setTrainingGoal}
-            setActiveTab={setActiveTab}
-          />
-        )}
-      </main>
+          {activeTab === 'ai' && (
+            <AiStudioTab
+              goal={goal}
+              meals={meals}
+              setMeals={setMeals}
+              dietPlan={dietPlan}
+              setDietPlan={setDietPlan}
+              workouts={workouts}
+              setWorkouts={setWorkouts}
+              trainingSchedule={trainingSchedule}
+              setTrainingSchedule={setTrainingSchedule}
+              activeSport={activeSport}
+              setActiveSport={setActiveSport}
+              trainingGoal={trainingGoal}
+              setTrainingGoal={setTrainingGoal}
+              setActiveTab={setActiveTab}
+            />
+          )}
+        </main>
 
         {/* Fixed Mobile Bottom Nav */}
         <BottomNav
