@@ -37,12 +37,12 @@ export default function BottomNav({
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 sm:border-x sm:border-slate-200 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
       style={{
         paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))',
       }}
     >
-      <div className="max-w-md mx-auto grid grid-cols-4 px-2 pt-1.5">
+      <div className="w-full grid grid-cols-4 px-2 pt-1.5">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
