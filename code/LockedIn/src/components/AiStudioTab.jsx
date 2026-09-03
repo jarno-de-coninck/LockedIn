@@ -11,9 +11,14 @@ import {
   ArrowRight,
   Check,
   Info,
+  RotateCcw,
+  Plus,
+  Shuffle,
+  Flame,
 } from 'lucide-react';
 import {
   generateDietPlan,
+  regenerateSingleMeal,
   generateSportWorkout,
   generateWeeklySchedule,
   askNutritionistCoach,
@@ -21,10 +26,40 @@ import {
 import { useLanguage } from '../services/i18n';
 
 const DIET_PRESETS = [
-  { id: 'High Protein', label: 'High Protein', desc: 'Lean proteins & muscle recovery' },
-  { id: 'Keto / Low Carb', label: 'Keto / Low Carb', desc: 'Healthy fats & low carb' },
-  { id: 'Balanced', label: 'Balanced', desc: 'Complex carbs, protein & fats' },
-  { id: 'Plant-Based', label: 'Plant-Based', desc: 'Whole food plant proteins' },
+  { id: 'High Protein', label: '🥩 High Protein', desc: '35% Protein • 45% Carbs • 20% Fats' },
+  { id: 'Clean Bulking', label: '🥗 Clean Bulking', desc: '30% Protein • 50% Carbs • 20% Fats' },
+  { id: 'Fat Shred / Cutting', label: '⚡ Fat Shred', desc: '40% Protein • 35% Carbs • 25% Fats' },
+  { id: 'Keto / Low Carb', label: '🥑 Keto / Low Carb', desc: '30% Protein • 10% Carbs • 60% Fats' },
+  { id: 'Mediterranean', label: '🫒 Mediterranean', desc: '25% Protein • 45% Carbs • 30% Fats' },
+  { id: 'Plant-Based', label: '🥦 Plant-Based', desc: '25% Protein • 55% Carbs • 20% Fats' },
+];
+
+const CUISINES = [
+  { id: 'Chef Choice', label: '👨‍🍳 Chef Choice' },
+  { id: 'Mexican', label: '🌮 Mexican & Fajita' },
+  { id: 'Asian', label: '🥢 Asian & Teriyaki' },
+  { id: 'Mediterranean', label: '🫒 Mediterranean' },
+  { id: 'Italian', label: '🇮🇹 Italian Pasta' },
+  { id: 'American', label: '🥩 Steakhouse & BBQ' },
+];
+
+const DIETARY_RESTRICTIONS = [
+  { id: 'dairy-free', label: '🥛 Dairy-Free' },
+  { id: 'gluten-free', label: '🌾 Gluten-Free' },
+  { id: 'nut-free', label: '🥜 Nut-Free' },
+  { id: 'pescatarian', label: '🐟 Pescatarian' },
+  { id: 'halal', label: '☪️ Halal' },
+];
+
+const PANTRY_STAPLES = [
+  'Chicken Breast',
+  'Salmon Fillet',
+  'Sirloin Steak',
+  'Whole Eggs',
+  'Sweet Potato',
+  'Jasmine Rice',
+  'Greek Yogurt',
+  'Avocado',
 ];
 
 const SPORTS = [
@@ -70,6 +105,11 @@ export default function AiStudioTab({
 
   // Diet Mode State
   const [selectedDietPreset, setSelectedDietPreset] = useState('High Protein');
+  const [selectedCuisine, setSelectedCuisine] = useState('Chef Choice');
+  const [selectedRestrictions, setSelectedRestrictions] = useState([]);
+  const [pantryInput, setPantryInput] = useState('');
+  const [mealCount, setMealCount] = useState(4);
+  const [shufflingIdx, setShufflingIdx] = useState(null);
   const [isGeneratingDiet, setIsGeneratingDiet] = useState(false);
   const [dietNote, setDietNote] = useState('');
 
@@ -166,6 +206,43 @@ export default function AiStudioTab({
     setShowKeyConfig(false);
   };
 
+  const toggleRestriction = (id) => {
+    setSelectedRestrictions((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    );
+  };
+
+  const addPantryTag = (tag) => {
+    setPantryInput((prev) => {
+      const items = prev ? prev.split(',').map((s) => s.trim()).filter(Boolean) : [];
+      if (!items.includes(tag)) items.push(tag);
+      return items.join(', ');
+    });
+  };
+
+  const handleShuffleSingleMeal = async (mealSlot, mealIndex, targetCalories) => {
+    if (shufflingIdx !== null) return;
+    setShufflingIdx(mealIndex);
+    try {
+      const res = await regenerateSingleMeal({
+        mealSlot,
+        targetCalories,
+        dietType: selectedDietPreset,
+      });
+      if (res && res.meal) {
+        setDietPlan((prev) => {
+          const updated = [...prev];
+          updated[mealIndex] = { ...res.meal, id: mealIndex + 1, meal: mealSlot };
+          return updated;
+        });
+      }
+    } catch (e) {
+      console.warn('Shuffle meal error:', e);
+    } finally {
+      setShufflingIdx(null);
+    }
+  };
+
   // 1. Generate Diet Plan
   const handleGenerateDiet = async () => {
     if (isGeneratingDiet) return;
@@ -176,11 +253,19 @@ export default function AiStudioTab({
       const res = await generateDietPlan({
         goal,
         dietType: selectedDietPreset,
+        cuisine: selectedCuisine,
+        restrictions: selectedRestrictions,
+        customIngredients: pantryInput,
+        mealCount,
       });
 
       if (res && res.plan) {
         setDietPlan(res.plan);
-        setDietNote(res.isMock ? 'Generated with local culinary database' : `Generated via ${res.modelName || 'AI'}`);
+        setDietNote(
+          res.isMock
+            ? `Crafted with Athletic Culinary Engine (${selectedCuisine})`
+            : `AI Executive Chef Generated (${res.modelName || 'Groq'})`
+        );
       }
     } catch (err) {
       console.warn('Diet generation error:', err);
@@ -406,49 +491,184 @@ export default function AiStudioTab({
       )}
 
       {/* =========================================================================
-          MODE 1: DIET PLAN ARCHITECT
+          MODE 1: DIET PLAN ARCHITECT STUDIO
           ========================================================================= */}
       {aiMode === 'diet' && (
         <div className="space-y-4 animate-slide-up">
-          <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800/80 shadow-lg space-y-4">
+            {/* Header & Goal Pill */}
+            <div className="flex items-center justify-between gap-2">
               <div>
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                  {t('dietMode')}
+                  {t('dietMode') || 'Diet Architect'}
                 </span>
-                <h3 className="text-xs font-black text-white mt-0.5">
-                  Calibrated for {goal} kcal target
+                <h3 className="text-xs sm:text-sm font-black text-white mt-0.5">
+                  Olympic Meal Generation Studio
                 </h3>
               </div>
-              <span className="text-xs font-black text-orange-400 bg-orange-500/15 px-3 py-1 rounded-full border border-orange-500/30">
+              <span className="text-xs font-black text-orange-400 bg-orange-500/15 px-3 py-1 rounded-full border border-orange-500/30 shrink-0">
                 {goal} kcal
               </span>
             </div>
 
-            {/* Presets */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              {DIET_PRESETS.map((p) => {
-                const isSel = selectedDietPreset === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedDietPreset(p.id)}
-                    className={`text-left p-3 rounded-2xl border transition-all active-press ${
-                      isSel
-                        ? 'bg-orange-500 text-white border-orange-400 shadow-md'
-                        : 'bg-slate-950/70 hover:bg-slate-800/60 text-slate-300 border-slate-800'
-                    }`}
-                  >
-                    <p className="text-xs font-black">{p.label}</p>
-                    <p className={`text-[10px] mt-1 font-medium ${isSel ? 'text-orange-100' : 'text-slate-400'}`}>
-                      {p.desc}
-                    </p>
-                  </button>
-                );
-              })}
+            {/* Meal Count Switcher */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                Daily Structure
+              </span>
+              <div className="grid grid-cols-3 gap-1.5 bg-slate-950/80 p-1 rounded-2xl border border-slate-800">
+                {[
+                  { count: 3, label: '3 Meals', desc: 'B / L / D' },
+                  { count: 4, label: '4 Meals', desc: 'Standard Split' },
+                  { count: 5, label: '5 Meals', desc: 'Athlete Fuel' },
+                ].map((item) => {
+                  const isSel = mealCount === item.count;
+                  return (
+                    <button
+                      key={item.count}
+                      type="button"
+                      onClick={() => setMealCount(item.count)}
+                      className={`py-2 px-1 text-center rounded-xl transition-all active-press ${
+                        isSel
+                          ? 'bg-orange-500 text-white shadow-md'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <span className="text-xs font-black block">{item.label}</span>
+                      <span className="text-[9px] font-medium opacity-80 block">{item.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
+            {/* 1. Macro & Athletic Goal Style */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                1. Macro & Athletic Style
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {DIET_PRESETS.map((p) => {
+                  const isSel = selectedDietPreset === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedDietPreset(p.id)}
+                      className={`text-left p-2.5 rounded-2xl border transition-all active-press ${
+                        isSel
+                          ? 'bg-orange-500 text-white border-orange-400 shadow-md'
+                          : 'bg-slate-950/70 hover:bg-slate-800/60 text-slate-300 border-slate-800'
+                      }`}
+                    >
+                      <p className="text-xs font-black">{p.label}</p>
+                      <p
+                        className={`text-[9px] mt-0.5 font-medium leading-tight ${
+                          isSel ? 'text-orange-100' : 'text-slate-400'
+                        }`}
+                      >
+                        {p.desc}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Cuisine & Flavor Profile */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                2. Cuisine & Flavor Profile
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                {CUISINES.map((c) => {
+                  const isSel = selectedCuisine === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setSelectedCuisine(c.id)}
+                      className={`p-2 rounded-xl text-center border text-[11px] font-black transition-all active-press ${
+                        isSel
+                          ? 'bg-orange-500/20 text-orange-300 border-orange-500/50 shadow-sm'
+                          : 'bg-slate-950/60 text-slate-400 hover:text-white border-slate-800/80'
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Dietary Restrictions & Allergies */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                3. Dietary Restrictions & Allergies
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {DIETARY_RESTRICTIONS.map((r) => {
+                  const isSel = selectedRestrictions.includes(r.id);
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => toggleRestriction(r.id)}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-black border transition-all active-press flex items-center gap-1 ${
+                        isSel
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                          : 'bg-slate-950/60 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      {isSel && <Check className="w-3 h-3 text-emerald-400" />}
+                      <span>{r.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. Kitchen Pantry & Cravings */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                  4. Kitchen Pantry & Ingredients on Hand
+                </span>
+                {pantryInput && (
+                  <button
+                    type="button"
+                    onClick={() => setPantryInput('')}
+                    className="text-[10px] text-slate-500 hover:text-slate-300 font-bold"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                value={pantryInput}
+                onChange={(e) => setPantryInput(e.target.value)}
+                placeholder="e.g. Chicken breast, sweet potatoes, eggs, spinach..."
+                className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500 font-bold"
+              />
+
+              {/* Quick staple add pills */}
+              <div className="flex flex-wrap gap-1 pt-1">
+                <span className="text-[9px] text-slate-500 font-bold py-0.5">Quick add:</span>
+                {PANTRY_STAPLES.map((staple) => (
+                  <button
+                    key={staple}
+                    type="button"
+                    onClick={() => addPantryTag(staple)}
+                    className="px-2 py-0.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[10px] font-bold active-press transition-colors"
+                  >
+                    + {staple}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Generation Button */}
             <button
               type="button"
               onClick={handleGenerateDiet}
@@ -458,12 +678,14 @@ export default function AiStudioTab({
               {isGeneratingDiet ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating 4-Meal Plan...</span>
+                  <span>Chef Lock is Cooking {mealCount}-Meal Plan...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>{t('generateDietBtn')} ({selectedDietPreset})</span>
+                  <span>
+                    ⚡ Architect {mealCount}-Meal Plan ({selectedCuisine} • {selectedDietPreset})
+                  </span>
                 </>
               )}
             </button>
@@ -481,23 +703,81 @@ export default function AiStudioTab({
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                  Active 4-Meal Plan
+                  Architected {dietPlan.length}-Meal Menu
                 </span>
                 <span className="text-xs font-black text-orange-400">
                   {dietPlan.reduce((a, m) => a + (Number(m.calories) || 0), 0)} / {goal} kcal
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {dietPlan.map((m, idx) => (
-                  <div key={idx} className="bg-slate-900/90 rounded-2xl p-3.5 border border-slate-800/80 shadow-md flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 uppercase">
-                        {m.meal}
+                  <div
+                    key={idx}
+                    className="bg-slate-900/90 rounded-2xl p-3.5 border border-slate-800/80 shadow-md space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 uppercase shrink-0">
+                          {m.meal}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-bold shrink-0">
+                          ⏱️ {m.prepTime || '15 mins'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-orange-400 font-mono shrink-0">
+                        {m.calories} kcal
                       </span>
-                      <p className="text-xs font-black text-white mt-1">{m.title}</p>
                     </div>
-                    <span className="text-xs font-black text-orange-400">{m.calories} kcal</span>
+
+                    <p className="text-xs font-black text-white">{m.title}</p>
+
+                    {/* Accurate Macros Pill */}
+                    <div className="grid grid-cols-3 gap-1.5 py-1.5 px-2 rounded-xl bg-slate-950/80 border border-slate-800/60 text-center font-mono text-[11px]">
+                      <div>
+                        <span className="text-[9px] text-slate-500 font-bold block uppercase">
+                          Protein
+                        </span>
+                        <span className="font-black text-orange-400">{m.protein || 30}g</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-slate-500 font-bold block uppercase">
+                          Carbs
+                        </span>
+                        <span className="font-black text-amber-400">{m.carbs || 40}g</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-slate-500 font-bold block uppercase">
+                          Fats
+                        </span>
+                        <span className="font-black text-emerald-400">{m.fats || 12}g</span>
+                      </div>
+                    </div>
+
+                    {/* Ingredients snippet */}
+                    {Array.isArray(m.ingredients) && m.ingredients.length > 0 && (
+                      <p className="text-[11px] text-slate-400 truncate">
+                        🥗 <span className="font-medium">{m.ingredients.slice(0, 3).join(', ')}</span>
+                      </p>
+                    )}
+
+                    {/* Single Meal Shuffle Button */}
+                    <div className="pt-1 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleShuffleSingleMeal(m.meal, idx, m.calories)}
+                        disabled={shufflingIdx === idx}
+                        className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-black flex items-center gap-1 active-press transition-colors disabled:opacity-50"
+                        title="Regenerate only this dish"
+                      >
+                        {shufflingIdx === idx ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Shuffle className="w-3 h-3 text-orange-400" />
+                        )}
+                        <span>Shuffle Dish</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -507,7 +787,7 @@ export default function AiStudioTab({
                 onClick={() => setActiveTab('diet')}
                 className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 border border-slate-800 shadow-md"
               >
-                <span>{t('openInDiet')}</span>
+                <span>{t('openInDiet') || 'Open in Diet Tab'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

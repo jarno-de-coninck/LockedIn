@@ -11,13 +11,12 @@ const GROQ_DEFAULT_MODEL = 'llama-3.1-8b-instant';
 const GROQ_FALLBACK_MODEL = 'llama-3.3-70b-versatile';
 
 export const getActiveProvider = () => {
+  const customKey = getGroqApiKey();
+  if (customKey) return 'groq';
   const saved = localStorage.getItem('lockedin_ai_provider');
   if (saved) return saved;
   if (import.meta.env.VITE_GROQ_API_KEY) return 'groq';
-  if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
-    return 'groq';
-  }
-  return 'local';
+  return 'fallback';
 };
 
 export const getLocalAiEndpoint = () => {
@@ -220,18 +219,37 @@ export function computeRealisticMacros(calories, dietType = 'High Protein') {
   const cals = Math.max(50, Number(calories) || 500);
 
   if (dietType && (dietType.includes('Keto') || dietType.includes('Low Carb'))) {
+    // Keto / Low Carb: 30% Protein, 10% Carbs, 60% Fats
     const p = Math.round((cals * 0.30) / 4);
     const c = Math.max(5, Math.round((cals * 0.10) / 4));
     const f = Math.max(5, Math.round((cals * 0.60) / 9));
     return { protein: p, carbs: c, fats: f };
-  } else if (dietType && (dietType.includes('Balanced') || dietType.includes('Plant'))) {
-    const p = Math.round((cals * 0.25) / 4);
+  } else if (dietType && (dietType.includes('Bulk') || dietType.includes('Bulking'))) {
+    // Clean Bulking: 30% Protein, 50% Carbs, 20% Fats
+    const p = Math.round((cals * 0.30) / 4);
     const c = Math.round((cals * 0.50) / 4);
+    const f = Math.max(4, Math.round((cals * 0.20) / 9));
+    return { protein: p, carbs: c, fats: f };
+  } else if (dietType && (dietType.includes('Cut') || dietType.includes('Shred'))) {
+    // Fat Shred / Cutting: 40% Protein, 35% Carbs, 25% Fats
+    const p = Math.round((cals * 0.40) / 4);
+    const c = Math.round((cals * 0.35) / 4);
     const f = Math.max(4, Math.round((cals * 0.25) / 9));
     return { protein: p, carbs: c, fats: f };
+  } else if (dietType && dietType.includes('Mediterranean')) {
+    // Mediterranean Balance: 25% Protein, 45% Carbs, 30% Fats
+    const p = Math.round((cals * 0.25) / 4);
+    const c = Math.round((cals * 0.45) / 4);
+    const f = Math.max(5, Math.round((cals * 0.30) / 9));
+    return { protein: p, carbs: c, fats: f };
+  } else if (dietType && (dietType.includes('Plant') || dietType.includes('Vegan'))) {
+    // Plant-Based: 25% Protein, 55% Carbs, 20% Fats
+    const p = Math.round((cals * 0.25) / 4);
+    const c = Math.round((cals * 0.55) / 4);
+    const f = Math.max(4, Math.round((cals * 0.20) / 9));
+    return { protein: p, carbs: c, fats: f };
   } else {
-    // High Protein Athletic Split (35% Protein, 45% Carbs, 20% Fats)
-    // Physically accurate: (protein*4) + (carbs*4) + (fats*9) equals total calories
+    // High Protein Standard Athletic Split (35% Protein, 45% Carbs, 20% Fats)
     const p = Math.round((cals * 0.35) / 4);
     const c = Math.round((cals * 0.45) / 4);
     const f = Math.max(3, Math.round((cals * 0.20) / 9));
@@ -239,262 +257,565 @@ export function computeRealisticMacros(calories, dietType = 'High Protein') {
   }
 }
 
-export function getFallbackDietPlan(dietType = 'High Protein', targetGoal = 2000) {
-  const goal = Number(targetGoal) || 2000;
-  
-  // Exact mathematical split summing up to 100% of goal
-  const bCals = Math.round(goal * 0.25);
-  const lCals = Math.round(goal * 0.35);
-  const dCals = Math.round(goal * 0.30);
-  const sCals = Math.max(50, goal - (bCals + lCals + dCals));
+/* =========================================================================
+   ATHLETE DYNAMIC RECIPE CATALOG (36 DIVERSE DISHES ACROSS ALL CUISINES)
+   ========================================================================= */
 
-  const bMacros = computeRealisticMacros(bCals, dietType);
-  const lMacros = computeRealisticMacros(lCals, dietType);
-  const dMacros = computeRealisticMacros(dCals, dietType);
-  const sMacros = computeRealisticMacros(sCals, dietType);
+const ATHLETE_RECIPE_CATALOG = [
+  // --- BREAKFASTS ---
+  {
+    slot: 'Breakfast',
+    title: 'Power Scramble with Spinach, Turkey Bacon & Sourdough',
+    cuisine: 'American',
+    prepTime: '12 mins',
+    tags: ['dairy-free', 'halal', 'high-protein'],
+    keywords: ['egg', 'eggs', 'turkey', 'bacon', 'spinach', 'sourdough', 'bread', 'toast'],
+    ingredients: ['4 Liquid Egg Whites + 2 Whole Eggs', '2 Slices Lean Turkey Bacon', '1 Cup Fresh Baby Spinach', '1 Slice Artisan Sourdough Toast', '1/2 Tsp Olive Oil & Black Pepper'],
+    instructions: ['Crisp turkey bacon in skillet for 4 mins.', 'Add baby spinach until wilted.', 'Whisk eggs, scramble gently until fluffy, and serve on toasted sourdough.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'High-Protein Fluffy Oat Pancakes with Warm Blueberry Compote',
+    cuisine: 'Chef Choice',
+    prepTime: '14 mins',
+    tags: ['vegetarian', 'high-protein'],
+    keywords: ['oats', 'oatmeal', 'pancake', 'pancakes', 'berry', 'berries', 'blueberries', 'protein powder', 'whey'],
+    ingredients: ['60g Rolled Oats (Blended)', '1 Scoop Whey/Plant Isolate', '100g Egg Whites', '1/2 Tsp Cinnamon & Baking Powder', '60g Warm Blueberries & Sugar-Free Maple'],
+    instructions: ['Blend oats, protein powder, egg whites, and cinnamon.', 'Cook pancakes on non-stick griddle 2 mins per side.', 'Pour warm blueberry compote over top.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'Avocado & Smoked Salmon Sourdough with Poached Eggs',
+    cuisine: 'Mediterranean',
+    prepTime: '10 mins',
+    tags: ['pescatarian', 'dairy-free', 'high-protein'],
+    keywords: ['salmon', 'avocado', 'egg', 'eggs', 'sourdough', 'toast', 'fish'],
+    ingredients: ['2 Slices Artisan Sourdough Bread', '70g Wild Smoked Salmon', '1/2 Ripe Avocado (Mashed)', '2 Poached Eggs', 'Everything Bagel Seasoning & Fresh Dill'],
+    instructions: ['Toast sourdough until crispy.', 'Spread avocado, layer smoked salmon, and top with poached eggs and dill.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'Huevos Rancheros Breakfast Skillet with Black Beans & Salsa',
+    cuisine: 'Mexican',
+    prepTime: '12 mins',
+    tags: ['gluten-free', 'vegetarian', 'dairy-free', 'halal'],
+    keywords: ['egg', 'eggs', 'beans', 'black beans', 'salsa', 'corn', 'tortilla', 'avocado'],
+    ingredients: ['3 Whole Eggs', '1/2 Cup Rinsed Black Beans', '2 Warm Corn Tortillas', '3 Tbsp Fire-Roasted Salsa', '1/4 Avocado Diced & Fresh Cilantro'],
+    instructions: ['Warm black beans in skillet with cumin and sea salt.', 'Fry eggs sunny-side up in olive oil.', 'Plate over warm tortillas with beans, salsa, and avocado.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'Greek Yogurt Athlete Parfait with Raw Honey & Walnuts',
+    cuisine: 'Mediterranean',
+    prepTime: '4 mins',
+    tags: ['vegetarian', 'gluten-free', 'high-protein'],
+    keywords: ['yogurt', 'greek yogurt', 'honey', 'walnuts', 'berries', 'strawberries'],
+    ingredients: ['220g 0% Non-Fat Greek Yogurt', '1 Scoop Vanilla Protein', '60g Fresh Strawberries & Blueberries', '15g Crushed Raw Walnuts', '1 Tsp Wild Honey'],
+    instructions: ['Stir vanilla protein into Greek yogurt until thick and creamy.', 'Layer in a bowl with fresh berries, crushed walnuts, and a drizzle of raw honey.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'Seared Sirloin & Eggs Power Hash with Crispy Sweet Potatoes',
+    cuisine: 'American',
+    prepTime: '16 mins',
+    tags: ['gluten-free', 'dairy-free', 'high-protein', 'halal'],
+    keywords: ['steak', 'sirloin', 'beef', 'egg', 'eggs', 'sweet potato', 'potato'],
+    ingredients: ['120g Lean Sirloin Steak Strips', '2 Whole Eggs', '120g Sweet Potato (Cubed)', '1/2 Bell Pepper Diced', '1 Tsp Olive Oil, Garlic Powder & Smoked Paprika'],
+    instructions: ['Pan-fry sweet potato cubes and peppers until tender-crisp (8 mins).', 'Sear steak strips 2 mins on high.', 'Crack eggs into the pan to fry and serve together hot.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'Matcha Green Tea Overnight Oats with Chia Seeds & Almonds',
+    cuisine: 'Asian',
+    prepTime: '5 mins',
+    tags: ['plant-based', 'vegan', 'dairy-free', 'gluten-free'],
+    keywords: ['oats', 'matcha', 'chia', 'almonds', 'almond milk', 'berries'],
+    ingredients: ['60g Rolled Oats', '1 Tsp Ceremonial Matcha Powder', '1 Tbsp Chia Seeds', '1 Scoop Vanilla Plant Isolate', '180ml Unsweetened Almond Milk & Sliced Almonds'],
+    instructions: ['Whisk matcha and protein powder into almond milk.', 'Stir in oats and chia seeds, refrigerate, and top with sliced almonds.'],
+  },
+  {
+    slot: 'Breakfast',
+    title: 'Italian Frittata with Sun-Dried Tomatoes, Spinach & Mozzarella',
+    cuisine: 'Italian',
+    prepTime: '15 mins',
+    tags: ['gluten-free', 'vegetarian', 'high-protein'],
+    keywords: ['egg', 'eggs', 'tomato', 'spinach', 'mozzarella', 'cheese'],
+    ingredients: ['4 Egg Whites + 2 Whole Eggs', '1 Cup Baby Spinach', '30g Sun-Dried Tomatoes', '30g Shredded Part-Skim Mozzarella', 'Fresh Basil & Oregano'],
+    instructions: ['Sauté spinach and sun-dried tomatoes for 2 mins.', 'Pour whisked eggs into skillet, top with mozzarella, and bake/broil 8 mins until golden.'],
+  },
 
-  const templates = {
-    'High Protein': [
-      {
-        id: 1,
-        meal: 'Breakfast',
-        title: 'Power Scramble with Spinach, Turkey Bacon & Sourdough',
-        calories: bCals,
-        protein: bMacros.protein,
-        carbs: bMacros.carbs,
-        fats: bMacros.fats,
-        prepTime: '12 mins',
-        ingredients: [
-          '4 Liquid Egg Whites + 2 Whole Eggs',
-          '2 Slices Lean Turkey Bacon',
-          '1 Cup Fresh Baby Spinach',
-          '1 Slice Artisan Sourdough Toast',
-          '1/2 Tsp Olive Oil & Black Pepper',
-        ],
-        instructions: [
-          'Crisp the turkey bacon in a non-stick skillet over medium heat for 4 mins.',
-          'Add baby spinach and let it wilt for 1 minute.',
-          'Whisk whole eggs and egg whites, pour into skillet, and gently scramble until fluffy.',
-          'Serve warm alongside toasted sourdough bread with cracked black pepper.',
-        ],
-      },
-      {
-        id: 2,
-        meal: 'Lunch',
-        title: 'Grilled Lemon Herb Chicken Bowl with Jasmine Rice & Broccoli',
-        calories: lCals,
-        protein: lMacros.protein,
-        carbs: lMacros.carbs,
-        fats: lMacros.fats,
-        prepTime: '20 mins',
-        ingredients: [
-          '200g Lean Chicken Breast',
-          '1 Cup Cooked Jasmine Rice',
-          '1.5 Cups Steamed Broccoli Florets',
-          '1 Tbsp Lemon Juice & 1 Tsp Garlic Olive Oil',
-          'Oregano, Sea Salt & Paprika',
-        ],
-        instructions: [
-          'Season chicken breast with oregano, garlic oil, sea salt, paprika, and lemon juice.',
-          'Grill or pan-sear on medium-high heat for 6–7 minutes per side until cooked through.',
-          'Steam broccoli florets for 4 mins until tender-crisp.',
-          'Slice chicken and arrange over warm jasmine rice with broccoli.',
-        ],
-      },
-      {
-        id: 3,
-        meal: 'Dinner',
-        title: 'Pan-Seared Atlantic Salmon with Sweet Potato Mash & Asparagus',
-        calories: dCals,
-        protein: dMacros.protein,
-        carbs: dMacros.carbs,
-        fats: dMacros.fats,
-        prepTime: '22 mins',
-        ingredients: [
-          '180g Fresh Salmon Fillet',
-          '1 Medium Sweet Potato (Boiled & Mashed)',
-          '8-10 Fresh Asparagus Spears',
-          '1 Tsp Grass-Fed Butter or Olive Oil',
-          'Fresh Dill & Lemon Wedge',
-        ],
-        instructions: [
-          'Peel and boil sweet potato chunks for 12 mins, then mash with a pinch of sea salt.',
-          'Season salmon with sea salt, pepper, and fresh dill. Sear in a hot skillet for 4 mins per side.',
-          'Sauté asparagus in the pan for 3 mins.',
-          'Plate salmon over sweet potato mash with asparagus and fresh lemon.',
-        ],
-      },
-      {
-        id: 4,
-        meal: 'Snack',
-        title: 'Vanilla Whey Isolate Parfait with Blueberries & Almonds',
-        calories: sCals,
-        protein: sMacros.protein,
-        carbs: sMacros.carbs,
-        fats: sMacros.fats,
-        prepTime: '3 mins',
-        ingredients: [
-          '1 Scoop Vanilla Whey Isolate',
-          '170g 0% Non-Fat Greek Yogurt',
-          '50g Fresh Blueberries',
-          '10g Sliced Raw Almonds',
-        ],
-        instructions: [
-          'Stir whey isolate powder directly into Greek yogurt until smooth and creamy.',
-          'Top with fresh blueberries and crunchy sliced almonds.',
-          'Enjoy immediately for high-protein recovery!',
-        ],
-      },
-    ],
+  // --- LUNCHES ---
+  {
+    slot: 'Lunch',
+    title: 'Grilled Lemon Herb Chicken Bowl with Jasmine Rice & Broccoli',
+    cuisine: 'Mediterranean',
+    prepTime: '18 mins',
+    tags: ['gluten-free', 'dairy-free', 'halal', 'high-protein'],
+    keywords: ['chicken', 'chicken breast', 'rice', 'jasmine rice', 'broccoli', 'lemon'],
+    ingredients: ['200g Lean Chicken Breast', '1 Cup Cooked Jasmine Rice', '1.5 Cups Steamed Broccoli', '1 Tbsp Lemon Herb Vinaigrette', 'Oregano & Sea Salt'],
+    instructions: ['Season chicken breast with oregano, garlic, sea salt, and lemon.', 'Grill 6 mins per side until cooked through.', 'Slice over warm jasmine rice with tender broccoli.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Chipotle Flank Steak Power Bowl with Cilantro Lime Quinoa',
+    cuisine: 'Mexican',
+    prepTime: '16 mins',
+    tags: ['gluten-free', 'dairy-free', 'halal', 'high-protein'],
+    keywords: ['steak', 'beef', 'flank steak', 'quinoa', 'corn', 'beans', 'black beans', 'chipotle', 'avocado'],
+    ingredients: ['180g Lean Flank Steak', '3/4 Cup Cooked Quinoa', '1/3 Cup Black Beans & Roasted Sweet Corn', '2 Tbsp Fresh Pico de Gallo', '1/4 Avocado & Lime Wedge'],
+    instructions: ['Season steak with chipotle and cumin. Sear on high for 3 mins per side.', 'Assemble bowl with quinoa, black beans, corn, sliced steak, and fresh pico.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Teriyaki Atlantic Salmon with Edamame & Brown Rice',
+    cuisine: 'Asian',
+    prepTime: '18 mins',
+    tags: ['pescatarian', 'dairy-free', 'high-protein'],
+    keywords: ['salmon', 'fish', 'teriyaki', 'edamame', 'rice', 'brown rice', 'soy'],
+    ingredients: ['180g Fresh Atlantic Salmon Fillet', '3/4 Cup Steamed Brown Rice', '1/2 Cup Shelled Edamame', '1 Cup Steamed Snap Peas', '1.5 Tbsp Low-Sodium Teriyaki Glaze'],
+    instructions: ['Sear salmon fillet in a non-stick pan 4 mins per side.', 'Brush with teriyaki glaze until bubbling.', 'Serve over brown rice with edamame and snap peas.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Mediterranean Albacore Tuna & Rinsed Chickpea Mezze Salad',
+    cuisine: 'Mediterranean',
+    prepTime: '8 mins',
+    tags: ['pescatarian', 'gluten-free', 'dairy-free', 'high-protein'],
+    keywords: ['tuna', 'chickpeas', 'cucumber', 'tomatoes', 'olive oil', 'salad'],
+    ingredients: ['1 Large Can Solid White Tuna in Water', '3/4 Cup Rinsed Chickpeas', 'Diced English Cucumbers & Cherry Tomatoes', '1 Tbsp Extra Virgin Olive Oil & Lemon Juice', 'Cracked Black Pepper & Fresh Parsley'],
+    instructions: ['Drain tuna and combine with chickpeas, tomatoes, and cucumbers in a large bowl.', 'Toss thoroughly with olive oil, lemon juice, sea salt, and fresh parsley.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Beef Bolognese with High-Protein Penne & Grated Parmesan',
+    cuisine: 'Italian',
+    prepTime: '20 mins',
+    tags: ['high-protein', 'halal'],
+    keywords: ['beef', 'ground beef', 'pasta', 'penne', 'bolognese', 'marinara', 'parmesan'],
+    ingredients: ['180g 93/7 Extra Lean Ground Beef', '75g Protein Penne Pasta', '1/2 Cup Crushed San Marzano Marinara', '15g Grated Parmigiano-Reggiano', 'Minced Garlic & Fresh Basil'],
+    instructions: ['Boil protein penne until al dente.', 'Brown lean ground beef with minced garlic, add marinara, and simmer 6 mins.', 'Toss pasta in sauce and garnish with parmesan and basil.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Crispy Sesame Ginger Tofu Bowl with Snap Peas & Jasmine Rice',
+    cuisine: 'Asian',
+    prepTime: '16 mins',
+    tags: ['plant-based', 'vegan', 'gluten-free', 'dairy-free'],
+    keywords: ['tofu', 'rice', 'ginger', 'sesame', 'snap peas', 'vegan', 'plant'],
+    ingredients: ['220g Extra Firm Tofu (Cubed & Pressed)', '1 Cup Steamed Jasmine Rice', '1.5 Cups Snap Peas & Matchstick Carrots', '1 Tbsp Toasted Sesame Oil & Tamari', '1 Tsp Fresh Grated Ginger'],
+    instructions: ['Pan-sear tofu in sesame oil until golden and crispy (8 mins).', 'Sauté snap peas and carrots with ginger and tamari.', 'Plate over warm jasmine rice with toasted sesame seeds.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Smoked Deli Turkey & Ripe Avocado Artisan Wrap',
+    cuisine: 'American',
+    prepTime: '6 mins',
+    tags: ['dairy-free', 'high-protein'],
+    keywords: ['turkey', 'wrap', 'tortilla', 'avocado', 'lettuce', 'tomato'],
+    ingredients: ['160g Sliced Deli Smoked Turkey Breast', '1 Large Whole Wheat or Low-Carb Tortilla', '1/2 Ripe Avocado (Sliced)', 'Romaine Lettuce Leaves & Sliced Tomato', '1 Tsp Whole Grain Dijon Mustard'],
+    instructions: ['Layer whole wheat tortilla with turkey slices, avocado, tomato, and romaine.', 'Spread Dijon mustard, roll tightly, and slice diagonally to serve.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Thai Red Curry Chicken with Zucchini, Peppers & Coconut Rice',
+    cuisine: 'Asian',
+    prepTime: '18 mins',
+    tags: ['gluten-free', 'dairy-free', 'halal', 'high-protein'],
+    keywords: ['chicken', 'curry', 'thai', 'coconut', 'rice', 'peppers'],
+    ingredients: ['190g Diced Chicken Breast', '1 Tbsp Thai Red Curry Paste', '1/2 Cup Light Coconut Milk', '1 Cup Sliced Bell Peppers & Zucchini', '3/4 Cup Jasmine Rice'],
+    instructions: ['Sear chicken cubes in a wok for 5 mins.', 'Stir in red curry paste and coconut milk, add vegetables, and simmer 7 mins until thickened.', 'Serve over fragrant rice.'],
+  },
+  {
+    slot: 'Lunch',
+    title: 'Chimichurri Flank Steak Salad with Roasted Baby Peppers',
+    cuisine: 'Mexican',
+    prepTime: '15 mins',
+    tags: ['gluten-free', 'dairy-free', 'high-protein', 'halal'],
+    keywords: ['steak', 'beef', 'salad', 'peppers', 'chimichurri', 'greens'],
+    ingredients: ['180g Grilled Flank Steak (Sliced)', '3 Cups Mixed Baby Greens', '1/2 Cup Roasted Mini Sweet Peppers', '2 Tbsp Fresh Chimichurri (Parsley, Garlic, Olive Oil, Red Wine Vinegar)', 'Sea Salt'],
+    instructions: ['Grill or sear steak to medium rare (3 mins per side) and rest 5 mins.', 'Toss baby greens and roasted sweet peppers with chimichurri.', 'Fan steak slices over greens.'],
+  },
+
+  // --- DINNERS ---
+  {
+    slot: 'Dinner',
+    title: 'Pan-Seared Sirloin Steak with Roasted Sweet Potato & Garlic Asparagus',
+    cuisine: 'American',
+    prepTime: '20 mins',
+    tags: ['gluten-free', 'dairy-free', 'high-protein', 'halal'],
+    keywords: ['steak', 'sirloin', 'beef', 'sweet potato', 'potato', 'asparagus', 'garlic'],
+    ingredients: ['200g Lean Top Sirloin Steak', '1 Medium Sweet Potato (Baked)', '10 Fresh Asparagus Spears', '1 Tsp Olive Oil & Minced Garlic', 'Coarse Sea Salt & Cracked Black Pepper'],
+    instructions: ['Poke holes in sweet potato and microwave/bake until fork-tender.', 'Sear seasoned steak in a smoking-hot skillet with olive oil for 3.5 mins per side.', 'Sauté asparagus with garlic for 3 mins and serve together.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Wild Honey Glazed Salmon with Garlic Jasmine Rice & Green Beans',
+    cuisine: 'Asian',
+    prepTime: '18 mins',
+    tags: ['pescatarian', 'gluten-free', 'dairy-free', 'high-protein'],
+    keywords: ['salmon', 'fish', 'honey', 'rice', 'green beans', 'garlic'],
+    ingredients: ['190g Fresh Salmon Fillet', '1 Tbsp Pure Honey & 1 Tsp Soy Sauce/Tamari', '1 Cup Cooked Jasmine Rice', '1.5 Cups Crisp Green Beans', '1 Tsp Olive Oil'],
+    instructions: ['Whisk honey and tamari with minced garlic.', 'Sear salmon in a skillet 4 mins per side, brushing generously with honey glaze.', 'Sauté green beans in remaining pan juices and serve over rice.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Garlic Butter Jumbo Shrimp with Cherry Tomatoes & Protein Penne',
+    cuisine: 'Italian',
+    prepTime: '15 mins',
+    tags: ['pescatarian', 'high-protein'],
+    keywords: ['shrimp', 'prawns', 'pasta', 'garlic', 'tomatoes', 'butter'],
+    ingredients: ['220g Peeled Jumbo Shrimp', '70g Protein Penne or Whole Wheat Pasta', '1 Cup Sweet Cherry Tomatoes', '1 Tbsp Grass-Fed Butter & 3 Cloves Garlic', 'Fresh Parsley & Lemon Juice'],
+    instructions: ['Boil pasta until al dente.', 'Sauté garlic and cherry tomatoes in melted butter for 2 mins, add shrimp, and cook 3 mins until pink.', 'Toss pasta into skillet with fresh parsley.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Lean Beef & Turkey Smash Burgers with Air-Fried Sweet Potato Wedges',
+    cuisine: 'American',
+    prepTime: '20 mins',
+    tags: ['gluten-free', 'dairy-free', 'high-protein', 'halal'],
+    keywords: ['beef', 'turkey', 'burger', 'sweet potato', 'potato', 'fries'],
+    ingredients: ['190g 93/7 Lean Ground Beef or Turkey', '160g Sweet Potato (Cut into Wedges)', 'Crisp Lettuce Leaves & Sliced Ripe Tomato', '1 Tbsp Light Dijonnaise', 'Smoked Sea Salt'],
+    instructions: ['Toss sweet potato wedges with sea salt and air fry at 200°C for 14 mins.', 'Form 2 thin burger patties, sear in hot cast iron 2.5 mins per side.', 'Serve in crisp lettuce wrap with fries.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Pan-Roasted Atlantic Cod with Roasted Asparagus & Herbed Quinoa',
+    cuisine: 'Mediterranean',
+    prepTime: '18 mins',
+    tags: ['pescatarian', 'gluten-free', 'dairy-free', 'high-protein'],
+    keywords: ['cod', 'fish', 'white fish', 'quinoa', 'asparagus', 'lemon'],
+    ingredients: ['200g Fresh Atlantic Cod Fillet', '3/4 Cup Fluffy Cooked Quinoa', '1 Cup Roasted Asparagus Spears', '1 Tbsp Extra Virgin Olive Oil & Lemon Zest', 'Oregano & Flaky Salt'],
+    instructions: ['Roast asparagus at 200°C for 10 mins with olive oil.', 'Sear cod fillet in olive oil 4 mins per side until golden and flaky.', 'Plate over warm herbed quinoa with lemon zest.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Fajita Spiced Chicken Breast Skillet with Charred Peppers & Guacamole',
+    cuisine: 'Mexican',
+    prepTime: '16 mins',
+    tags: ['gluten-free', 'dairy-free', 'high-protein', 'halal'],
+    keywords: ['chicken', 'fajita', 'peppers', 'onions', 'guacamole', 'avocado'],
+    ingredients: ['210g Sliced Chicken Breast', '1 Large Bell Pepper & 1/2 Red Onion (Sliced)', '1 Tsp Fajita Spice (Cumin, Chili, Garlic)', '30g Fresh Guacamole', '1 Tbsp Olive Oil & Fresh Lime'],
+    instructions: ['Sauté chicken breast slices in hot skillet with fajita seasoning for 6 mins.', 'Add peppers and onions, cooking on high heat until slightly charred.', 'Top with guacamole and lime juice.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Rosemary Garlic Pork Tenderloin with Roasted Fingerling Potatoes',
+    cuisine: 'American',
+    prepTime: '22 mins',
+    tags: ['gluten-free', 'dairy-free', 'high-protein'],
+    keywords: ['pork', 'tenderloin', 'potatoes', 'rosemary', 'garlic'],
+    ingredients: ['190g Lean Pork Tenderloin Medallions', '150g Fingerling Potatoes (Halved)', '1 Cup Steamed Green Peas', '1 Tbsp Olive Oil, Fresh Rosemary & Garlic', 'Sea Salt'],
+    instructions: ['Roast potatoes in oven/air fryer at 200°C for 16 mins.', 'Sear pork medallions with rosemary and garlic for 4 mins per side.', 'Serve hot with steamed green peas.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Italian Turkey Meatballs in Rustic Marinara over Zucchini Noodles',
+    cuisine: 'Italian',
+    prepTime: '18 mins',
+    tags: ['gluten-free', 'high-protein', 'keto'],
+    keywords: ['turkey', 'meatballs', 'zucchini', 'marinara', 'italian', 'parmesan'],
+    ingredients: ['200g Lean Turkey Meatballs (Baked)', '2 Medium Zucchinis (Spiralized into Zoodles)', '1/2 Cup Marinara Sauce', '15g Grated Parmesan Cheese', 'Fresh Basil'],
+    instructions: ['Simmer baked turkey meatballs in rustic marinara for 6 mins.', 'Flash-sauté zucchini noodles in olive oil for 90 seconds (keep crisp).', 'Ladle meatballs and sauce over zoodles with parmesan.'],
+  },
+  {
+    slot: 'Dinner',
+    title: 'Crispy Chickpea & Lentil Tikka Masala with Steamed Basmati Rice',
+    cuisine: 'Asian',
+    prepTime: '18 mins',
+    tags: ['plant-based', 'vegan', 'gluten-free', 'dairy-free'],
+    keywords: ['lentils', 'chickpeas', 'curry', 'tikka', 'rice', 'basmati', 'spinach'],
+    ingredients: ['3/4 Cup Cooked Brown Lentils', '1/2 Cup Rinsed Chickpeas', '1/2 Cup Light Coconut Tikka Sauce', '1 Cup Fresh Baby Spinach', '3/4 Cup Steamed Basmati Rice'],
+    instructions: ['Simmer lentils, chickpeas, and tikka sauce in a saucepan for 8 mins.', 'Fold in fresh baby spinach until wilted.', 'Serve over hot basmati rice.'],
+  },
+
+  // --- SNACKS / RECOVERY FUEL ---
+  {
+    slot: 'Snack',
+    title: 'Pro-Crunch Greek Yogurt Parfait with 85% Dark Chocolate & Almonds',
+    cuisine: 'Chef Choice',
+    prepTime: '3 mins',
+    tags: ['vegetarian', 'gluten-free', 'high-protein'],
+    keywords: ['yogurt', 'greek yogurt', 'chocolate', 'almonds', 'snack', 'whey'],
+    ingredients: ['170g 0% Greek Yogurt', '1 Scoop Whey Isolate', '10g 85% Dark Chocolate Shavings', '10g Crushed Raw Almonds'],
+    instructions: ['Whisk whey isolate into Greek yogurt until thick pudding texture.', 'Top with dark chocolate shavings and crushed almonds.'],
+  },
+  {
+    slot: 'Snack',
+    title: 'Salted Brown Rice Cakes with Low-Fat Cottage Cheese & Raw Honey',
+    cuisine: 'Chef Choice',
+    prepTime: '2 mins',
+    tags: ['vegetarian', 'gluten-free', 'high-protein'],
+    keywords: ['rice cake', 'rice cakes', 'cottage cheese', 'honey', 'snack'],
+    ingredients: ['2 Salted Brown Rice Cakes', '140g Low-Fat Whipped Cottage Cheese', '1 Tsp Pure Raw Honey & Dash of Cinnamon'],
+    instructions: ['Spread cottage cheese across rice cakes.', 'Drizzle raw honey and dust with ground cinnamon.'],
+  },
+  {
+    slot: 'Snack',
+    title: 'Turkey & Swiss Cheese Roll-Ups with Crisp Apple Slices',
+    cuisine: 'American',
+    prepTime: '4 mins',
+    tags: ['gluten-free', 'high-protein', 'keto'],
+    keywords: ['turkey', 'cheese', 'apple', 'snack'],
+    ingredients: ['4 Slices Deli Smoked Turkey Breast', '1 Slice Part-Skim Swiss Cheese', '1 Honeycrisp Apple (Sliced)', '1 Tsp Dijon Mustard'],
+    instructions: ['Roll turkey slices around cheese and apple wedges with a hint of Dijon.'],
+  },
+  {
+    slot: 'Snack',
+    title: 'Steamed Edamame Pods with Coarse Sea Salt & Toasted Sesame',
+    cuisine: 'Asian',
+    prepTime: '4 mins',
+    tags: ['plant-based', 'vegan', 'gluten-free', 'dairy-free', 'high-protein'],
+    keywords: ['edamame', 'soy', 'sesame', 'snack', 'vegan'],
+    ingredients: ['1.5 Cups Whole Edamame Pods (Steamed)', '1/2 Tsp Coarse Sea Salt', '1/2 Tsp Toasted Sesame Seeds & Pinch of Chili Flakes'],
+    instructions: ['Steam edamame pods in microwave or boiling water for 3 mins.', 'Toss with sea salt, sesame seeds, and chili flakes.'],
+  },
+  {
+    slot: 'Snack',
+    title: 'Hard-Boiled Eggs with Everything Bagel Spice & Avocado',
+    cuisine: 'Chef Choice',
+    prepTime: '3 mins',
+    tags: ['vegetarian', 'gluten-free', 'dairy-free', 'keto', 'high-protein'],
+    keywords: ['egg', 'eggs', 'avocado', 'snack', 'keto'],
+    ingredients: ['2 Large Hard-Boiled Eggs (Halved)', '1/4 Ripe Avocado (Sliced)', 'Everything Bagel Seasoning & Sea Salt'],
+    instructions: ['Slice hard-boiled eggs in half.', 'Top with avocado slices and dust generously with Everything Bagel spice.'],
+  },
+  {
+    slot: 'Snack',
+    title: 'Crisp Honeycrisp Apple Wedges with Creamy Almond Butter',
+    cuisine: 'Chef Choice',
+    prepTime: '2 mins',
+    tags: ['plant-based', 'vegan', 'gluten-free', 'dairy-free'],
+    keywords: ['apple', 'almond butter', 'peanut butter', 'fruit', 'snack'],
+    ingredients: ['1 Medium Crisp Honeycrisp Apple (Sliced)', '1.5 Tbsp 100% Pure Almond Butter', 'Pinch of Ground Cinnamon'],
+    instructions: ['Slice apple into wedges.', 'Dip into creamy almond butter with a light dusting of cinnamon.'],
+  },
+  {
+    slot: 'Snack',
+    title: 'Beef Biltong Jerky with Roasted Salted Cashews',
+    cuisine: 'American',
+    prepTime: '1 min',
+    tags: ['gluten-free', 'dairy-free', 'high-protein', 'keto', 'halal'],
+    keywords: ['jerky', 'beef', 'cashews', 'nuts', 'snack', 'keto'],
+    ingredients: ['40g Lean Grass-Fed Beef Biltong / Jerky', '20g Whole Roasted Salted Cashews'],
+    instructions: ['Portion beef jerky and crunchy cashews together for on-the-go fuel.'],
+  },
+];
+
+/**
+ * Intelligent filter and randomizer that picks distinct, varied recipes
+ */
+function pickFromRecipeCatalog(slot, targetCals, dietType, options = {}, usedTitles = new Set(), mealId = 1) {
+  const cuisine = (options.cuisine || 'Chef Choice').toLowerCase();
+  const restrictions = Array.isArray(options.restrictions)
+    ? options.restrictions.map((r) => r.toLowerCase())
+    : [];
+  const pantryWords = (options.customIngredients || '')
+    .toLowerCase()
+    .split(/[\s,]+/)
+    .filter((w) => w.length > 2);
+
+  // 1. Filter recipes matching slot (map 'Afternoon Snack' / 'Evening Fuel' to 'Snack')
+  const baseSlot = slot.toLowerCase().includes('snack') || slot.toLowerCase().includes('fuel') ? 'Snack' : slot;
+  let candidates = ATHLETE_RECIPE_CATALOG.filter(
+    (r) => r.slot.toLowerCase() === baseSlot.toLowerCase()
+  );
+
+  if (candidates.length === 0) {
+    candidates = ATHLETE_RECIPE_CATALOG.filter((r) => r.slot === 'Breakfast');
+  }
+
+  // 2. Filter out already used titles in the current plan
+  const unused = candidates.filter((r) => !usedTitles.has(r.title));
+  if (unused.length > 0) candidates = unused;
+
+  // 3. Filter restrictions if specified
+  if (restrictions.length > 0) {
+    const strictFiltered = candidates.filter((r) => {
+      return restrictions.every((res) => {
+        if (res.includes('dairy')) return r.tags.includes('dairy-free');
+        if (res.includes('gluten')) return r.tags.includes('gluten-free');
+        if (res.includes('nut')) return !r.keywords.some((k) => k.includes('nut') || k.includes('peanut') || k.includes('almond') || k.includes('cashew') || k.includes('walnut'));
+        if (res.includes('pesca')) return r.tags.includes('pescatarian') || r.tags.includes('vegetarian');
+        if (res.includes('vegan') || res.includes('plant')) return r.tags.includes('vegan') || r.tags.includes('plant-based');
+        if (res.includes('halal')) return !r.keywords.some((k) => k.includes('pork') || k.includes('bacon'));
+        return true;
+      });
+    });
+    if (strictFiltered.length > 0) candidates = strictFiltered;
+  }
+
+  // 4. Score candidates with a randomized tiebreaker so generations are always fresh
+  const scored = candidates.map((r) => {
+    let score = Math.random() * 3; // randomized jitter ensures variety every click!
+
+    // Cuisine bonus
+    if (cuisine !== 'chef choice' && cuisine !== 'any') {
+      if (r.cuisine.toLowerCase().includes(cuisine)) {
+        score += 6;
+      }
+    }
+
+    // Pantry / Cravings keyword bonus
+    if (pantryWords.length > 0) {
+      for (const word of pantryWords) {
+        if (
+          r.keywords.some((k) => k.includes(word)) ||
+          r.title.toLowerCase().includes(word)
+        ) {
+          score += 5;
+        }
+      }
+    }
+
+    // Diet style alignment bonus
+    if (dietType.includes('Keto') && r.tags.includes('keto')) score += 3;
+    if (dietType.includes('Plant') && (r.tags.includes('vegan') || r.tags.includes('plant-based'))) score += 3;
+
+    return { recipe: r, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const chosen = scored[0]?.recipe || candidates[0];
+  usedTitles.add(chosen.title);
+
+  const macros = computeRealisticMacros(targetCals, dietType);
+
+  return {
+    id: mealId,
+    meal: slot,
+    title: chosen.title,
+    calories: targetCals,
+    protein: macros.protein,
+    carbs: macros.carbs,
+    fats: macros.fats,
+    prepTime: chosen.prepTime,
+    ingredients: chosen.ingredients,
+    instructions: chosen.instructions,
   };
+}
 
-  const selectedTemplate = templates[dietType] || templates['High Protein'];
-  return selectedTemplate.map((item, idx) => ({ ...item, id: idx + 1 }));
+export function getFallbackDietPlan(
+  dietType = 'High Protein',
+  targetGoal = 2000,
+  options = {}
+) {
+  const goal = Number(targetGoal) || 2000;
+  const count = Number(options.mealCount) || 4;
+  const cuisine = options.cuisine || 'Chef Choice';
+  const restrictions = Array.isArray(options.restrictions) ? options.restrictions : [];
+  const customIngredients = options.customIngredients || '';
+
+  let slots = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  let ratios = [0.25, 0.35, 0.30, 0.10];
+  if (count === 3) {
+    slots = ['Breakfast', 'Lunch', 'Dinner'];
+    ratios = [0.30, 0.40, 0.30];
+  } else if (count === 5) {
+    slots = ['Breakfast', 'Lunch', 'Afternoon Snack', 'Dinner', 'Evening Fuel'];
+    ratios = [0.22, 0.30, 0.14, 0.24, 0.10];
+  }
+
+  const slotTargets = {};
+  let running = 0;
+  for (let i = 0; i < slots.length; i++) {
+    if (i === slots.length - 1) {
+      slotTargets[slots[i]] = Math.max(50, goal - running);
+    } else {
+      const c = Math.round(goal * ratios[i]);
+      slotTargets[slots[i]] = c;
+      running += c;
+    }
+  }
+
+  const usedTitles = new Set();
+  const plan = slots.map((slot, idx) => {
+    const cals = slotTargets[slot];
+    return pickFromRecipeCatalog(
+      slot,
+      cals,
+      dietType,
+      { cuisine, restrictions, customIngredients },
+      usedTitles,
+      idx + 1
+    );
+  });
+
+  return plan;
 }
 
 /**
  * Fallback alternatives when user regenerates a single meal slot.
  */
-function getSingleMealFallback(mealSlot, targetCals, dietType = 'High Protein') {
+function getSingleMealFallback(mealSlot, targetCals, dietType = 'High Protein', options = {}) {
   const cals = Number(targetCals) || 500;
-
-  const alternates = {
-    Breakfast: [
-      {
-        title: 'High-Protein Fluffy Oat Pancakes with Berry Compote',
-        prepTime: '15 mins',
-        ingredients: ['50g Rolled Oats (Blended)', '1 Scoop Whey/Plant Isolate', '100g Egg Whites', '1/2 Tsp Cinnamon & Baking Powder', '60g Warm Berries & Zero-Cal Syrup'],
-        instructions: ['Blend oats, protein powder, egg whites, and cinnamon until smooth.', 'Cook 2-3 pancakes on a lightly greased non-stick pan over medium heat for 2 mins per side.', 'Warm berries in microwave for 30s and pour over warm pancakes.'],
-      },
-      {
-        title: 'Avocado & Smoked Salmon Sourdough Toast with Poached Eggs',
-        prepTime: '10 mins',
-        ingredients: ['2 Slices Toasted Sourdough', '50g Smoked Salmon', '1/2 Ripe Avocado (Mashed)', '2 Poached Eggs', 'Everything Bagel Seasoning'],
-        instructions: ['Toast sourdough until golden.', 'Spread mashed avocado over bread, layer with smoked salmon, and top with poached eggs and seasoning.'],
-      },
-      {
-        title: 'Overnight Chia Protein Oats with Peanut Butter & Banana',
-        prepTime: '5 mins',
-        ingredients: ['50g Rolled Oats', '1 Tbsp Chia Seeds', '1 Scoop Vanilla Protein', '1 Tbsp Natural Peanut Butter', '1/2 Sliced Banana & 150ml Almond Milk'],
-        instructions: ['Mix oats, chia seeds, protein powder, and almond milk in a jar.', 'Refrigerate overnight (or 2 hours). Top with sliced banana and peanut butter.'],
-      },
-    ],
-    Lunch: [
-      {
-        title: 'Chipotle Steak Power Bowl with Cilantro Lime Quinoa',
-        prepTime: '18 mins',
-        ingredients: ['180g Lean Flank Steak (Seared)', '3/4 Cup Cooked Quinoa', '1/3 Cup Black Beans & Fire Roasted Corn', '2 Tbsp Pico de Gallo & 1/4 Avocado'],
-        instructions: ['Season steak with cumin, chili powder, and garlic. Sear on high heat for 3 mins per side.', 'Assemble bowl with quinoa, black beans, corn, sliced steak, and pico de gallo.'],
-      },
-      {
-        title: 'Mediterranean Tuna & Chickpea Salad with Feta & Olive Oil',
-        prepTime: '8 mins',
-        ingredients: ['1 Can White Albacore Tuna in Water', '1/2 Cup Rinsed Chickpeas', 'Diced Cucumbers & Cherry Tomatoes', '30g Crumbled Light Feta', '1 Tbsp Extra Virgin Olive Oil & Lemon'],
-        instructions: ['Drain tuna and combine with chickpeas, cucumbers, tomatoes, and feta in a large bowl.', 'Toss with olive oil, fresh lemon juice, oregano, and black pepper.'],
-      },
-      {
-        title: 'Crispy Air-Fried Tofu or Chicken Teriyaki Stir-Fry',
-        prepTime: '16 mins',
-        ingredients: ['200g Chicken Breast or Extra-Firm Tofu', '1 Cup Jasmine Rice', '1.5 Cups Snap Peas, Bell Peppers & Carrots', '2 Tbsp Low-Sodium Teriyaki Glaze'],
-        instructions: ['Cube protein and stir-fry in a hot wok with vegetables for 8 mins.', 'Add teriyaki glaze and toss until glossy. Serve over steamed jasmine rice.'],
-      },
-    ],
-    Dinner: [
-      {
-        title: 'Lean Beef & Turkey Smash Patties with Baked Sweet Potato Fries',
-        prepTime: '20 mins',
-        ingredients: ['180g 93/7 Lean Ground Beef or Turkey', '150g Sweet Potato (Cut into Fries)', '1 Sliced Tomato & Lettuce Wraps', '1 Tbsp Light Burger Sauce'],
-        instructions: ['Bake sweet potato fries in air fryer at 200°C for 15 mins.', 'Form 2 thin patties, season with salt and pepper, and sear in a smoking hot pan for 2.5 mins per side.', 'Serve with fries and light burger sauce.'],
-      },
-      {
-        title: 'Garlic Butter Shrimp Pasta with Cherry Tomatoes & Zucchini',
-        prepTime: '15 mins',
-        ingredients: ['200g Peeled Jumbo Shrimp', '75g Protein Pasta or Whole Wheat Penne', '1 Cup Sautéed Zucchini & Cherry Tomatoes', '1 Tbsp Grass-Fed Butter, Minced Garlic & Parsley'],
-        instructions: ['Boil pasta until al dente.', 'Sauté garlic and shrimp in butter for 3 mins until pink. Toss in tomatoes, zucchini, and drained pasta.'],
-      },
-      {
-        title: 'Pan-Roasted Halibut with Roasted Asparagus & Lemon Herb Couscous',
-        prepTime: '18 mins',
-        ingredients: ['180g White Fish Fillet (Halibut / Cod / Sea Bass)', '1/2 Cup Whole Wheat Couscous', '1 Cup Roasted Asparagus Spears', '1 Tbsp Olive Oil, Garlic & Fresh Herbs'],
-        instructions: ['Roast asparagus at 200°C for 10 mins.', 'Sear seasoned fish fillet in olive oil for 4 mins per side.', 'Fluff couscous with lemon zest and serve alongside fish and asparagus.'],
-      },
-    ],
-    Snack: [
-      {
-        title: 'Salted Caramel Rice Cakes with Cottage Cheese & Honey',
-        prepTime: '2 mins',
-        ingredients: ['2 Salted Brown Rice Cakes', '150g Low-Fat Cottage Cheese', '1 Tsp Pure Honey & Pinch of Cinnamon'],
-        instructions: ['Spread cottage cheese evenly over rice cakes.', 'Drizzle with honey and dust with cinnamon.'],
-      },
-      {
-        title: 'Pro-Crunch Greek Yogurt Bowl with Dark Chocolate & Walnuts',
-        prepTime: '3 mins',
-        ingredients: ['170g 0% Greek Yogurt', '10g 85% Dark Chocolate Chips', '10g Crushed Raw Walnuts', '1 Scoop Whey Isolate'],
-        instructions: ['Mix whey isolate into Greek yogurt until thick.', 'Top with dark chocolate chips and crushed walnuts.'],
-      },
-      {
-        title: 'Turkey & Swiss Roll-Ups with Crisp Apple Slices',
-        prepTime: '4 mins',
-        ingredients: ['4 Slices Deli Smoked Turkey Breast', '1 Slice Light Swiss Cheese', '1 Crisp Honeycrisp Apple (Sliced)', '1 Tsp Dijon Mustard'],
-        instructions: ['Roll turkey slices around cheese and apple wedges with a touch of Dijon mustard.'],
-      },
-    ],
-  };
-
-  const pool = alternates[mealSlot] || alternates.Breakfast;
-  const picked = pool[Math.floor(Math.random() * pool.length)];
-
-  const realistic = computeRealisticMacros(cals, dietType);
-
-  return {
-    meal: mealSlot,
-    title: picked.title,
-    calories: cals,
-    protein: realistic.protein,
-    carbs: realistic.carbs,
-    fats: realistic.fats,
-    prepTime: picked.prepTime,
-    ingredients: picked.ingredients,
-    instructions: picked.instructions,
-  };
+  return pickFromRecipeCatalog(mealSlot, cals, dietType, options, new Set(), 1);
 }
 
 /**
- * Generates an exact-matched 4-meal daily diet plan.
+ * Generates an exact-matched daily diet plan with AI (or varied culinary engine).
  */
-export async function generateDietPlan({ goal, dietType = 'High Protein' }) {
+export async function generateDietPlan({
+  goal,
+  dietType = 'High Protein',
+  cuisine = 'Chef Choice',
+  restrictions = [],
+  customIngredients = '',
+  mealCount = 4,
+}) {
   const provider = getActiveProvider();
   const targetGoal = Number(goal) || 2000;
+  const count = Number(mealCount) || 4;
+
+  let slots = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  let ratios = [0.25, 0.35, 0.30, 0.10];
+  if (count === 3) {
+    slots = ['Breakfast', 'Lunch', 'Dinner'];
+    ratios = [0.30, 0.40, 0.30];
+  } else if (count === 5) {
+    slots = ['Breakfast', 'Lunch', 'Afternoon Snack', 'Dinner', 'Evening Fuel'];
+    ratios = [0.22, 0.30, 0.14, 0.24, 0.10];
+  }
+
+  const slotTargets = {};
+  let running = 0;
+  for (let i = 0; i < slots.length; i++) {
+    if (i === slots.length - 1) {
+      slotTargets[slots[i]] = Math.max(50, targetGoal - running);
+    } else {
+      const c = Math.round(targetGoal * ratios[i]);
+      slotTargets[slots[i]] = c;
+      running += c;
+    }
+  }
 
   if (provider === 'fallback') {
     await new Promise((resolve) => setTimeout(resolve, 350));
     return {
-      plan: getFallbackDietPlan(dietType, targetGoal),
+      plan: getFallbackDietPlan(dietType, targetGoal, {
+        cuisine,
+        restrictions,
+        customIngredients,
+        mealCount: count,
+      }),
       isMock: true,
-      note: 'Generated with local nutrition & culinary recipe database.',
+      note: 'Crafted with Athletic Culinary Engine',
     };
   }
 
-  // Exact target calorie distribution for the 4 daily slots
-  const bCals = Math.round(targetGoal * 0.25);
-  const lCals = Math.round(targetGoal * 0.35);
-  const dCals = Math.round(targetGoal * 0.30);
-  const sCals = Math.max(50, targetGoal - (bCals + lCals + dCals));
-  const slotTargets = {
-    Breakfast: bCals,
-    Lunch: lCals,
-    Dinner: dCals,
-    Snack: sCals,
-  };
+  const systemPrompt = `You are a Michelin-level Olympic Sports Nutritionist & Executive Chef.
+Generate an athletic ${count}-meal daily menu.
+Total Daily Calories MUST EQUAL EXACTLY ${targetGoal} kcal.
+- Cuisine Style: ${cuisine}
+- Dietary Paradigm: ${dietType}
+- Restrictions/Allergies: ${restrictions.length > 0 ? restrictions.join(', ') : 'None'}
+- Kitchen Pantry / Desired Ingredients: ${customIngredients || 'Fresh athletic whole foods'}
 
-  // Concise chef prompt to minimize tokens while delivering gourmet recipes
-  const systemPrompt = `You are a world-class Olympic Sports Nutritionist & Executive Chef.
-Generate a 4-meal daily athlete menu (Breakfast, Lunch, Dinner, Snack).
-Total Target: ${targetGoal} kcal (${bCals} Breakfast, ${lCals} Lunch, ${dCals} Dinner, ${sCals} Snack).
+Slot targets:
+${slots.map((s) => `- ${s}: ${slotTargets[s]} kcal`).join('\n')}
 
-CRITICAL CONSTRAINTS TO SAVE TOKENS & ENSURE QUALITY:
-1. Provide creative, appetizing meal titles (e.g. "Flame-Grilled Steak & Sweet Potato", "Wild Honey Salmon & Jasmine Rice").
-2. 3 to 4 real ingredients per meal with gram weights.
+CRITICAL CONSTRAINTS TO SAVE TOKENS & MAXIMIZE CULINARY QUALITY:
+1. Provide creative, mouth-watering meal titles fitting ${cuisine} and ${dietType}.
+2. 3 to 4 real ingredients with gram weights per meal.
 3. 2 concise preparation steps per meal.
 4. Output STRICT RAW JSON ONLY. No markdown, no explanations.
 
@@ -502,16 +823,16 @@ Schema:
 [
   {
     "id": 1,
-    "meal": "Breakfast",
+    "meal": "${slots[0]}",
     "title": "Recipe Title",
-    "calories": ${bCals},
+    "calories": ${slotTargets[slots[0]]},
     "prepTime": "15 mins",
-    "ingredients": ["150g Egg Whites", "80g Rolled Oats", "50g Berries"],
-    "instructions": ["Cook oats with boiling water.", "Scramble egg whites and serve together."]
+    "ingredients": ["180g Grilled Protein", "100g Rice/Carb", "80g Veggies"],
+    "instructions": ["Season and cook protein.", "Assemble with carbs & greens."]
   }
 ]`;
 
-  const userPrompt = `Create an athletic ${dietType} 4-meal menu for ${targetGoal} kcal total. Return JSON array only.`;
+  const userPrompt = `Create an athletic ${cuisine} ${dietType} ${count}-meal menu for ${targetGoal} kcal total. Return JSON array only.`;
 
   try {
     const res = await callChatCompletions({
@@ -519,16 +840,18 @@ Schema:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.45,
-      max_tokens: 850,
+      temperature: 0.55,
+      max_tokens: count === 5 ? 1100 : 880,
     });
 
     const parsedPlan = cleanJsonOutput(res.content);
 
     if (Array.isArray(parsedPlan) && parsedPlan.length >= 1) {
-      const validSlots = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
-      const finalMeals = validSlots.map((slot, idx) => {
-        const item = parsedPlan.find((p) => p.meal?.toLowerCase() === slot.toLowerCase()) || parsedPlan[idx] || {};
+      const finalMeals = slots.map((slot, idx) => {
+        const item =
+          parsedPlan.find((p) => p.meal?.toLowerCase() === slot.toLowerCase()) ||
+          parsedPlan[idx] ||
+          {};
         const slotCalorieTarget = slotTargets[slot];
 
         // Mathematically guarantee (Protein * 4) + (Carbs * 4) + (Fats * 9) === slotCalorieTarget
@@ -537,7 +860,10 @@ Schema:
         return {
           id: idx + 1,
           meal: slot,
-          title: item.title && item.title.trim().length > 3 ? item.title.trim() : `${dietType} ${slot} Plate`,
+          title:
+            item.title && item.title.trim().length > 3
+              ? item.title.trim()
+              : `${dietType} ${slot} Plate`,
           calories: slotCalorieTarget,
           protein: macros.protein,
           carbs: macros.carbs,
@@ -568,7 +894,16 @@ Schema:
     }
   } catch (error) {
     console.warn('AI Diet Plan generation error, using fallback:', error.message);
-    return { plan: getFallbackDietPlan(dietType, targetGoal), isMock: true, error: error.message };
+    return {
+      plan: getFallbackDietPlan(dietType, targetGoal, {
+        cuisine,
+        restrictions,
+        customIngredients,
+        mealCount: count,
+      }),
+      isMock: true,
+      error: error.message,
+    };
   }
 }
 
