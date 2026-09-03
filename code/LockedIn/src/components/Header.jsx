@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Flame, Globe } from 'lucide-react';
+import { User, Flame, Globe, X, Check } from 'lucide-react';
 import ProfileModal from './ProfileModal';
 import BrandLogo from './BrandLogo';
 import { useLanguage, LANGUAGES } from '../services/i18n';
@@ -24,7 +24,7 @@ export default function Header({
   return (
     <>
       <header
-        className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-3 pb-2.5 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.4)] w-full max-w-full overflow-hidden"
+        className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-3 pb-2.5 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.4)] w-full max-w-full"
         style={{
           paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
         }}
@@ -46,42 +46,17 @@ export default function Header({
               <span className="text-xs font-black tracking-tight">{streakCount}d</span>
             </div>
 
-            {/* Quick Language Selector */}
-            <div className="relative shrink-0">
+            {/* Quick Language Selector Button */}
+            <div className="shrink-0">
               <button
                 type="button"
-                onClick={() => setShowLangMenu(!showLangMenu)}
+                onClick={() => setShowLangMenu(true)}
                 className="px-2 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-black text-slate-300 flex items-center gap-1 active-press transition-colors shrink-0"
-                title={t('languageLabel')}
+                title={t('languageLabel') || 'Change Language'}
               >
                 <span className="text-sm leading-none">{currentLangObj.flag}</span>
                 <span className="text-[10px] font-black uppercase text-slate-400 hidden xs:inline">{currentLangObj.code}</span>
               </button>
-
-              {showLangMenu && (
-                <div className="absolute right-0 top-full mt-1.5 z-50 bg-slate-900 border border-slate-700/80 rounded-2xl p-1.5 shadow-2xl min-w-[130px] animate-scale-up space-y-0.5">
-                  {LANGUAGES.map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => {
-                        setLanguage(l.code);
-                        setShowLangMenu(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                        language === l.code
-                          ? 'bg-orange-500 text-white shadow-xs'
-                          : 'text-slate-300 hover:bg-slate-800'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>{l.flag}</span>
-                        <span>{l.label}</span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* User Profile Pill - compact on phone, expanded on larger screens */}
@@ -114,6 +89,64 @@ export default function Header({
           </div>
         </div>
       </header>
+
+      {/* Language Selection Modal - Top Level z-50 Backdrop */}
+      {showLangMenu && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in select-none"
+          onClick={() => setShowLangMenu(false)}
+        >
+          <div
+            className="w-full max-w-xs bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-2xl space-y-3 animate-scale-up text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-white">{t('languageLabel') || 'Select Language'}</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">Choose your app language</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLangMenu(false)}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 pt-1">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => {
+                    setLanguage(l.code);
+                    setShowLangMenu(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all active-press border ${
+                    language === l.code
+                      ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
+                      : 'bg-slate-950/70 text-slate-300 border-slate-800 hover:bg-slate-800'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-lg">{l.flag}</span>
+                    <span className="text-xs font-bold">{l.label}</span>
+                  </span>
+                  {language === l.code && (
+                    <Check className="w-4 h-4 text-white" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile & Settings Modal */}
       <ProfileModal
