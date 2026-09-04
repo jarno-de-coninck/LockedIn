@@ -124,6 +124,7 @@ export default function AiStudioTab({
       ? ''
       : activeSport || '';
   });
+  const [showChangeSport, setShowChangeSport] = useState(false);
   const [isGeneratingTraining, setIsGeneratingTraining] = useState(false);
   const [trainingNote, setTrainingNote] = useState('');
   const [generatedSession, setGeneratedSession] = useState(null);
@@ -881,60 +882,90 @@ export default function AiStudioTab({
               </button>
             </div>
 
-            {/* Sport Selector: 3 Core Sports + Other */}
+            {/* Profile Sport Display with Quick Changer */}
             <div className="space-y-2">
-              <label className="text-xs font-black text-white uppercase tracking-wider block">
-                Choose Sport
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { id: 'weightlifting', name: 'Weightlifting', icon: '🏋️‍♂️' },
-                  { id: 'mma', name: 'MMA', icon: '🥊' },
-                  { id: 'cycling', name: 'Cycling', icon: '🚴‍♂️' },
-                  { id: 'other', name: 'Other Sport', icon: '✏️' },
-                ].map((s) => {
-                  const isSelected =
-                    s.id === 'other'
-                      ? !['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase())
-                      : (activeSport || '').toLowerCase() === s.id;
-
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => {
-                        if (s.id === 'other') {
-                          setActiveSport(customSportText || 'other');
-                        } else {
-                          setActiveSport(s.id);
-                        }
-                      }}
-                      className={`min-h-[52px] p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
-                        isSelected
-                          ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
-                      }`}
-                    >
-                      <span className="text-xl block">{s.icon}</span>
-                      <span className="text-xs mt-0.5 block">{s.name}</span>
-                    </button>
-                  );
-                })}
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-2xl shrink-0">
+                    {(activeSport || '').toLowerCase() === 'weightlifting'
+                      ? '🏋️‍♂️'
+                      : (activeSport || '').toLowerCase() === 'mma'
+                      ? '🥊'
+                      : (activeSport || '').toLowerCase() === 'cycling'
+                      ? '🚴‍♂️'
+                      : '⚡'}
+                  </span>
+                  <div className="min-w-0">
+                    <span className="text-[11px] text-slate-400 font-medium block">Sport (from Profile)</span>
+                    <span className="text-sm font-bold text-white capitalize truncate block">
+                      {activeSport || 'Weightlifting'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowChangeSport(!showChangeSport)}
+                  className="text-xs text-orange-400 hover:text-orange-300 font-bold px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 active-press transition-colors shrink-0 ml-2"
+                >
+                  {showChangeSport ? 'Done' : 'Change'}
+                </button>
               </div>
 
-              {/* Type any custom sport if Other is active */}
-              {!['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase()) && (
-                <div className="pt-1 animate-slide-up">
-                  <input
-                    type="text"
-                    value={customSportText}
-                    onChange={(e) => {
-                      setCustomSportText(e.target.value);
-                      setActiveSport(e.target.value);
-                    }}
-                    placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering, CrossFit)..."
-                    className="w-full min-h-[48px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
-                  />
+              {showChangeSport && (
+                <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 animate-slide-up">
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                    Choose Different Sport
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'weightlifting', name: 'Weightlifting', icon: '🏋️‍♂️' },
+                      { id: 'mma', name: 'MMA', icon: '🥊' },
+                      { id: 'cycling', name: 'Cycling', icon: '🚴‍♂️' },
+                      { id: 'other', name: 'Other Sport', icon: '✏️' },
+                    ].map((s) => {
+                      const isSelected =
+                        s.id === 'other'
+                          ? !['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase())
+                          : (activeSport || '').toLowerCase() === s.id;
+
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => {
+                            if (s.id === 'other') {
+                              setActiveSport(customSportText || 'other');
+                            } else {
+                              setActiveSport(s.id);
+                            }
+                          }}
+                          className={`min-h-[50px] p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
+                            isSelected
+                              ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
+                              : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
+                          }`}
+                        >
+                          <span className="text-lg block">{s.icon}</span>
+                          <span className="text-xs mt-0.5 block">{s.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {!['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase()) && (
+                    <div className="pt-1 animate-slide-up">
+                      <input
+                        type="text"
+                        value={customSportText}
+                        onChange={(e) => {
+                          setCustomSportText(e.target.value);
+                          setActiveSport(e.target.value);
+                        }}
+                        placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering)..."
+                        className="w-full min-h-[48px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-900 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>

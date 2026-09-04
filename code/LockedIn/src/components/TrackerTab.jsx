@@ -77,27 +77,27 @@ export default function TrackerTab({
     switch (count) {
       case 3:
         return {
-          badge: '100% Locked In',
-          pillClass: 'bg-emerald-950 text-emerald-300 border-2 border-emerald-400',
-          ringStatus: 'All Daily Goals Met',
+          badge: '100% LOCKED IN 👑',
+          pillClass: 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/50',
+          ringStatus: '100% LOCKED IN (ABSOLUTE BEAST)',
         };
       case 2:
         return {
-          badge: '2 of 3 Goals Done',
-          pillClass: 'bg-orange-950 text-orange-300 border-2 border-orange-400',
-          ringStatus: 'Great Progress Today',
+          badge: '66% LOCKED IN 🔥',
+          pillClass: 'bg-orange-950/80 text-orange-300 border border-orange-500/50',
+          ringStatus: '66% LOCKED IN (STAY FOCUSED)',
         };
       case 1:
         return {
-          badge: '1 of 3 Goals Done',
-          pillClass: 'bg-amber-950 text-amber-200 border-2 border-amber-400',
-          ringStatus: 'Good Start Today',
+          badge: '33% LOCKED IN ⚡',
+          pillClass: 'bg-amber-950/80 text-amber-300 border border-amber-500/50',
+          ringStatus: '33% LOCKED IN (WARMING UP)',
         };
       default:
         return {
-          badge: 'Goals In Progress',
-          pillClass: 'bg-slate-900 text-slate-200 border-2 border-slate-700',
-          ringStatus: 'Ready To Begin',
+          badge: '0% LOCKED IN 💀',
+          pillClass: 'bg-slate-900 text-slate-400 border border-slate-700',
+          ringStatus: '0% LOCKED IN (WAKE UP BRO)',
         };
     }
   };

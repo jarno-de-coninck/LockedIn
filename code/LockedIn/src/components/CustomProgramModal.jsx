@@ -39,6 +39,7 @@ export default function CustomProgramModal({
     const s = (activeSport || '').toLowerCase();
     return ['weightlifting', 'mma', 'cycling'].includes(s) ? '' : activeSport || '';
   });
+  const [showChangeSport, setShowChangeSport] = useState(false);
   const [daysPerWeek, setDaysPerWeek] = useState(trainingSchedule?.daysPerWeek || 4);
   const [promptText, setPromptText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -172,46 +173,77 @@ export default function CustomProgramModal({
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {builderMode === 'prompt' ? (
             <div className="space-y-5">
-              {/* Sport Selector: Weightlifting, MMA, Cycling, Other */}
+              {/* Profile Sport Display with Quick Changer */}
               <div className="space-y-2">
-                <label className="text-xs font-black text-white uppercase tracking-wider block">
-                  Choose Sport
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { id: 'weightlifting', name: 'Weightlifting', icon: '🏋️‍♂️' },
-                    { id: 'mma', name: 'MMA', icon: '🥊' },
-                    { id: 'cycling', name: 'Cycling', icon: '🚴‍♂️' },
-                    { id: 'other', name: 'Other Sport', icon: '✏️' },
-                  ].map((s) => {
-                    const isSelected = modalSport === s.id;
-                    return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setModalSport(s.id)}
-                        className={`min-h-[52px] p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
-                          isSelected
-                            ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
-                            : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
-                        }`}
-                      >
-                        <span className="text-xl block">{s.icon}</span>
-                        <span className="text-xs mt-0.5 block">{s.name}</span>
-                      </button>
-                    );
-                  })}
+                <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-2xl shrink-0">
+                      {(modalSport === 'other' ? customSportInput : modalSport).toLowerCase() === 'weightlifting'
+                        ? '🏋️‍♂️'
+                        : (modalSport === 'other' ? customSportInput : modalSport).toLowerCase() === 'mma'
+                        ? '🥊'
+                        : (modalSport === 'other' ? customSportInput : modalSport).toLowerCase() === 'cycling'
+                        ? '🚴‍♂️'
+                        : '⚡'}
+                    </span>
+                    <div className="min-w-0">
+                      <span className="text-[11px] text-slate-400 font-medium block">Sport (from Profile)</span>
+                      <span className="text-sm font-bold text-white capitalize truncate block">
+                        {modalSport === 'other' ? customSportInput || 'Custom Sport' : modalSport}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowChangeSport(!showChangeSport)}
+                    className="text-xs text-orange-400 hover:text-orange-300 font-bold px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 active-press transition-colors shrink-0 ml-2"
+                  >
+                    {showChangeSport ? 'Done' : 'Change'}
+                  </button>
                 </div>
 
-                {modalSport === 'other' && (
-                  <div className="pt-1 animate-slide-up">
-                    <input
-                      type="text"
-                      value={customSportInput}
-                      onChange={(e) => setCustomSportInput(e.target.value)}
-                      placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering)..."
-                      className="w-full min-h-[48px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
-                    />
+                {showChangeSport && (
+                  <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 animate-slide-up">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                      Choose Different Sport
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'weightlifting', name: 'Weightlifting', icon: '🏋️‍♂️' },
+                        { id: 'mma', name: 'MMA', icon: '🥊' },
+                        { id: 'cycling', name: 'Cycling', icon: '🚴‍♂️' },
+                        { id: 'other', name: 'Other Sport', icon: '✏️' },
+                      ].map((s) => {
+                        const isSelected = modalSport === s.id;
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => setModalSport(s.id)}
+                            className={`min-h-[50px] p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
+                              isSelected
+                                ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
+                                : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
+                            }`}
+                          >
+                            <span className="text-lg block">{s.icon}</span>
+                            <span className="text-xs mt-0.5 block">{s.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {modalSport === 'other' && (
+                      <div className="pt-1 animate-slide-up">
+                        <input
+                          type="text"
+                          value={customSportInput}
+                          onChange={(e) => setCustomSportInput(e.target.value)}
+                          placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering)..."
+                          className="w-full min-h-[48px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-900 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

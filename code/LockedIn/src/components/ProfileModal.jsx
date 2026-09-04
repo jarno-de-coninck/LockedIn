@@ -24,15 +24,11 @@ import {
 import { estimateMaintenanceWithAi } from '../services/groq';
 import { useLanguage } from '../services/i18n';
 
-const SPORTS_LIST = [
-  { id: 'football', label: 'Football', icon: '⚽' },
-  { id: 'basketball', label: 'Basketball', icon: '🏀' },
-  { id: 'tennis', label: 'Tennis', icon: '🎾' },
-  { id: 'running', label: 'Running', icon: '🏃' },
-  { id: 'boxing', label: 'Boxing / MMA', icon: '🥊' },
-  { id: 'weightlifting', label: 'Gym & Lifting', icon: '🏋️' },
-  { id: 'swimming', label: 'Swimming', icon: '🏊' },
-  { id: 'cycling', label: 'Cycling', icon: '🚴' },
+const CORE_SPORTS = [
+  { id: 'weightlifting', label: 'Weightlifting', icon: '🏋️‍♂️' },
+  { id: 'mma', label: 'MMA', icon: '🥊' },
+  { id: 'cycling', label: 'Cycling', icon: '🚴‍♂️' },
+  { id: 'other', label: 'Other Sport', icon: '✏️' },
 ];
 
 const TRAINING_GOALS = [
@@ -65,6 +61,11 @@ export default function ProfileModal({
   const [activityLevel, setActivityLevel] = useState(userProfile?.activityLevel || 'moderate');
   const [calorieGoalType, setCalorieGoalType] = useState(userProfile?.calorieGoalType || 'maintain');
   const [tempGoal, setTempGoal] = useState(goal);
+  const [customSportInput, setCustomSportInput] = useState(
+    ['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase())
+      ? ''
+      : activeSport || ''
+  );
   const [toastMsg, setToastMsg] = useState(false);
 
   const [isAiEstimating, setIsAiEstimating] = useState(false);
@@ -155,6 +156,17 @@ export default function ProfileModal({
     } catch {}
 
     setGoal(Number(tempGoal));
+
+    const effectiveSport =
+      activeSport === 'other'
+        ? customSportInput.trim() || 'Custom Training'
+        : activeSport;
+    if (effectiveSport) {
+      setActiveSport(effectiveSport);
+      try {
+        localStorage.setItem('lockedin_active_sport', effectiveSport);
+      } catch {}
+    }
 
     setToastMsg(true);
     setTimeout(() => {
@@ -464,22 +476,50 @@ export default function ProfileModal({
                   Primary Sport
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {SPORTS_LIST.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setActiveSport(s.id)}
-                      className={`min-h-[50px] p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
-                        activeSport === s.id
-                          ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
-                      }`}
-                    >
-                      <span className="text-lg block">{s.icon}</span>
-                      <span className="text-xs mt-0.5 block truncate">{s.label}</span>
-                    </button>
-                  ))}
+                  {CORE_SPORTS.map((s) => {
+                    const isSelected =
+                      s.id === 'other'
+                        ? !['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase())
+                        : (activeSport || '').toLowerCase() === s.id;
+
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => {
+                          if (s.id === 'other') {
+                            setActiveSport(customSportInput.trim() || 'other');
+                          } else {
+                            setActiveSport(s.id);
+                          }
+                        }}
+                        className={`min-h-[50px] p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
+                          isSelected
+                            ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
+                            : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
+                        }`}
+                      >
+                        <span className="text-lg block">{s.icon}</span>
+                        <span className="text-xs mt-0.5 block truncate">{s.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {!['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase()) && (
+                  <div className="pt-1 animate-slide-up">
+                    <input
+                      type="text"
+                      value={customSportInput}
+                      onChange={(e) => {
+                        setCustomSportInput(e.target.value);
+                        setActiveSport(e.target.value);
+                      }}
+                      placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering)..."
+                      className="w-full min-h-[48px] px-3.5 text-sm font-medium rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
