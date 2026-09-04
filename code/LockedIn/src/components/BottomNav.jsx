@@ -21,14 +21,14 @@ export default function BottomNav({
       label: t('workouts'),
       icon: Dumbbell,
       badge: loggedWorkoutsCount > 0 ? loggedWorkoutsCount : null,
-      badgeColor: 'bg-emerald-600',
+      badgeColor: 'bg-emerald-500',
     },
     {
       id: 'diet',
       label: t('diet'),
       icon: UtensilsCrossed,
       badge: loggedMealsCount > 0 ? loggedMealsCount : null,
-      badgeColor: 'bg-orange-600',
+      badgeColor: 'bg-orange-500',
     },
     {
       id: 'ai',
@@ -41,12 +41,12 @@ export default function BottomNav({
   return (
     <nav
       aria-label="Main Navigation"
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-30 bg-slate-950 border-t-2 border-x-2 border-slate-700 rounded-t-2xl shadow-2xl overflow-hidden"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-slate-950/95 backdrop-blur-xl border-t border-x border-slate-800/80 rounded-t-2xl sm:rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.6)] overflow-hidden"
       style={{
-        paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
       }}
     >
-      <div className="w-full grid grid-cols-4 gap-1 px-2 pt-2 pb-1">
+      <div className="w-full grid grid-cols-4 px-2 pt-2 pb-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -57,25 +57,28 @@ export default function BottomNav({
               type="button"
               onClick={() => setActiveTab(tab.id)}
               aria-current={isActive ? 'page' : undefined}
-              className={`min-h-[56px] min-w-[56px] flex flex-col items-center justify-center p-1.5 rounded-xl transition-all duration-150 active-press select-none focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
+              className={`tap-target relative flex flex-col items-center justify-center min-h-[50px] py-1 px-1 rounded-2xl transition-all duration-200 active-press select-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none ${
                 isActive
-                  ? 'bg-orange-950/70 border-2 border-orange-400 text-white font-extrabold shadow-md'
-                  : 'text-slate-200 hover:text-white hover:bg-slate-900 border-2 border-transparent font-bold'
+                  ? 'text-orange-400 font-black'
+                  : 'text-slate-300 hover:text-white font-bold'
               }`}
             >
-              <div className="relative flex items-center justify-center">
-                <Icon
-                  aria-hidden="true"
-                  className={`w-6 h-6 shrink-0 ${
-                    isActive ? 'text-orange-400 stroke-[2.75]' : 'text-slate-300 stroke-[2.25]'
+              <div className="relative">
+                <div
+                  className={`p-1.5 rounded-xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-orange-500/15 text-orange-400 shadow-[0_0_16px_rgba(249,115,22,0.3)] scale-110'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
-                />
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                </div>
 
                 {tab.badge && (
                   <span
                     aria-label={`${tab.badge} logged items`}
-                    className={`absolute -top-1.5 -right-2.5 min-w-[20px] h-5 px-1 rounded-full text-white text-xs font-black flex items-center justify-center border-2 border-slate-950 ${
-                      tab.badgeColor || 'bg-orange-600'
+                    className={`absolute -top-1 -right-1 min-w-[18px] h-4 px-1 rounded-full text-white text-[10px] font-black flex items-center justify-center shadow-md border border-slate-950 ${
+                      tab.badgeColor || 'bg-orange-500'
                     }`}
                   >
                     {tab.badge}
@@ -84,8 +87,8 @@ export default function BottomNav({
               </div>
 
               <span
-                className={`text-xs mt-1 leading-tight tracking-normal ${
-                  isActive ? 'text-orange-300 font-black' : 'text-slate-200 font-bold'
+                className={`text-xs mt-1 tracking-tight transition-colors ${
+                  isActive ? 'text-white font-black' : 'text-slate-300 font-semibold'
                 }`}
               >
                 {tab.label}

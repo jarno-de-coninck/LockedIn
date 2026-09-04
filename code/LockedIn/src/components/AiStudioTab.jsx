@@ -909,14 +909,14 @@ export default function AiStudioTab({
                           setActiveSport(s.id);
                         }
                       }}
-                      className={`min-h-[58px] p-3 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center ${
+                      className={`min-h-[52px] p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
                         isSelected
-                          ? 'bg-orange-600 text-white border-orange-400 shadow-md font-black'
-                          : 'bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-700 font-bold'
+                          ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
+                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
                       }`}
                     >
                       <span className="text-xl block">{s.icon}</span>
-                      <span className="text-xs mt-1 block">{s.name}</span>
+                      <span className="text-xs mt-0.5 block">{s.name}</span>
                     </button>
                   );
                 })}
@@ -933,7 +933,7 @@ export default function AiStudioTab({
                       setActiveSport(e.target.value);
                     }}
                     placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering, CrossFit)..."
-                    className="w-full min-h-[52px] px-4 text-sm font-bold rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
+                    className="w-full min-h-[48px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
                   />
                 </div>
               )}
@@ -954,13 +954,13 @@ export default function AiStudioTab({
                     key={g.id}
                     type="button"
                     onClick={() => setTrainingGoal(g.label)}
-                    className={`min-h-[52px] px-3 py-2 rounded-2xl border-2 text-center transition-all ${
+                    className={`min-h-[46px] px-3 py-2 rounded-xl border text-center transition-all active-press ${
                       trainingGoal === g.label
-                        ? 'bg-orange-600 text-white border-orange-400 shadow-md font-black'
-                        : 'bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-700 font-bold'
+                        ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
+                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
                     }`}
                   >
-                    <span className="text-xs font-black block">{g.label}</span>
+                    <span className="text-xs block">{g.label}</span>
                   </button>
                 ))}
               </div>
@@ -968,12 +968,12 @@ export default function AiStudioTab({
 
             {/* Workout Frequency Selector */}
             {trainingModeType === 'schedule' && (
-              <div className="space-y-2 pt-2 border-t-2 border-slate-800">
+              <div className="space-y-2 pt-2 border-t border-slate-800">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-black text-white uppercase tracking-wider">
                     Workout Frequency
                   </label>
-                  <span className="text-xs font-black text-orange-300 bg-orange-950 px-3 py-1 rounded-full border border-orange-500/40">
+                  <span className="text-xs font-bold text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-full border border-orange-500/30">
                     {scheduleDays} Training Days / Week
                   </span>
                 </div>
@@ -983,14 +983,14 @@ export default function AiStudioTab({
                       key={days}
                       type="button"
                       onClick={() => setScheduleDays(days)}
-                      className={`min-h-[48px] py-2 rounded-2xl border-2 text-center transition-all ${
+                      className={`min-h-[44px] py-1.5 rounded-xl border text-center transition-all active-press ${
                         scheduleDays === days
-                          ? 'bg-orange-600 text-white border-orange-400 font-black shadow-md'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white font-bold'
+                          ? 'bg-orange-500 text-white border-orange-500 font-bold shadow-md shadow-orange-500/20'
+                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white font-semibold'
                       }`}
                     >
-                      <span className="text-sm font-black block">{days}</span>
-                      <span className="text-xs font-bold block uppercase opacity-80">Days</span>
+                      <span className="text-sm font-black">{days}d</span>
+                      <span className="text-[10px] block opacity-80">/week</span>
                     </button>
                   ))}
                 </div>

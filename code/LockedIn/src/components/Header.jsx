@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { User, Flame, Globe, X, Check } from 'lucide-react';
+import { User, Flame, Globe, X, Check, Bot } from 'lucide-react';
 import ProfileModal from './ProfileModal';
+import SettingsModal from './SettingsModal';
 import BrandLogo from './BrandLogo';
 import { useLanguage, LANGUAGES } from '../services/i18n';
+import { getGroqApiKey } from '../services/groq';
 
 export default function Header({
   goal,
@@ -16,6 +18,7 @@ export default function Header({
   streakCount = 3,
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
@@ -25,24 +28,24 @@ export default function Header({
     <>
       <header
         role="banner"
-        className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b-2 border-slate-800 px-3.5 pb-3 transition-all shadow-md w-full max-w-full"
+        className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 px-3.5 pb-2.5 transition-all shadow-md w-full max-w-full"
         style={{
-          paddingTop: 'max(14px, env(safe-area-inset-top, 14px))',
+          paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
         }}
       >
-        <div className="flex items-center justify-between gap-2.5 w-full">
+        <div className="flex items-center justify-between gap-2 w-full">
           <div className="shrink min-w-0">
             <BrandLogo size="sm" showText={true} textDark={false} />
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <div
-              className="min-h-[48px] px-3 py-1.5 rounded-2xl bg-orange-950/60 border-2 border-orange-500/60 text-orange-300 flex items-center gap-2 select-none shadow-sm shrink-0"
+              className="min-h-[44px] px-2.5 py-1 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 flex items-center gap-1.5 select-none shadow-sm shrink-0"
               title={`${streakCount} Day Streak`}
               aria-label={`Current streak is ${streakCount} days`}
             >
-              <Flame className="w-5 h-5 fill-orange-400 text-orange-400 shrink-0" />
-              <span className="text-sm font-black tracking-tight">{streakCount}d</span>
+              <Flame className="w-4 h-4 fill-orange-400 text-orange-400 shrink-0" />
+              <span className="text-xs font-black tracking-tight">{streakCount}d</span>
             </div>
 
             <div className="shrink-0">
@@ -50,35 +53,44 @@ export default function Header({
                 type="button"
                 onClick={() => setShowLangMenu(true)}
                 aria-label={`Change language, current is ${currentLangObj.label}`}
-                className="min-h-[48px] min-w-[48px] px-3 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-sm font-black text-slate-100 flex items-center justify-center gap-2 active-press transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none shrink-0"
+                className="min-h-[44px] min-w-[44px] px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 active-press transition-colors shrink-0"
               >
-                <span className="text-lg leading-none" aria-hidden="true">{currentLangObj.flag}</span>
-                <span className="text-xs font-black uppercase text-slate-200">{currentLangObj.code}</span>
+                <span className="text-base leading-none" aria-hidden="true">{currentLangObj.flag}</span>
+                <span className="text-xs font-extrabold uppercase text-slate-300">{currentLangObj.code}</span>
               </button>
             </div>
 
             <button
               type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              aria-label="AI and App Settings"
+              className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors active-press relative shrink-0"
+              title="AI & App Settings"
+            >
+              <Bot className="w-5 h-5 text-orange-400" />
+              {getGroqApiKey() && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 ring-1 ring-slate-950" />
+              )}
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsProfileOpen(true)}
-              aria-label={t('athleteProfile') || 'Athlete Profile and Settings'}
-              className="min-h-[48px] flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 transition-all active-press shadow-sm focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none shrink-0"
+              aria-label={t('athleteProfile') || 'Athlete Profile'}
+              className="min-h-[44px] flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all active-press shadow-sm shrink-0"
             >
               <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 text-slate-950 flex items-center justify-center text-xs font-black shadow-sm">
-                  <User className="w-5 h-5 text-slate-950" />
+                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 text-slate-950 flex items-center justify-center text-xs font-black shadow-sm">
+                  <User className="w-4 h-4 text-slate-950" />
                 </div>
-                <span
-                  className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-slate-950"
-                  title={t('aiOnline')}
-                />
               </div>
 
-              <div className="hidden sm:flex items-center gap-1.5 leading-none pr-1">
-                <span className="text-sm font-black text-white">
+              <div className="hidden sm:flex items-center gap-1.5 leading-none pr-0.5">
+                <span className="text-xs font-black text-white">
                   {userProfile?.weight || 78}kg
                 </span>
-                <span className="text-slate-400 font-bold">•</span>
-                <span className="text-sm font-black text-amber-400">
+                <span className="text-slate-500 font-bold">•</span>
+                <span className="text-xs font-black text-amber-400">
                   {goal} kcal
                 </span>
               </div>
@@ -153,6 +165,10 @@ export default function Header({
       <ProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
+        onOpenSettings={() => {
+          setIsProfileOpen(false);
+          setIsSettingsOpen(true);
+        }}
         userProfile={userProfile}
         setUserProfile={setUserProfile}
         goal={goal}
@@ -161,6 +177,11 @@ export default function Header({
         setActiveSport={setActiveSport}
         trainingGoal={trainingGoal}
         setTrainingGoal={setTrainingGoal}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </>
   );

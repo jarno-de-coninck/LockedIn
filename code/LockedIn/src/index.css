@@ -15,12 +15,6 @@
     box-sizing: border-box;
   }
   
-  html {
-    font-size: 18px;
-    line-height: 1.6;
-    letter-spacing: 0.015em;
-  }
-
   html, body {
     min-height: 100%;
     min-height: 100dvh;
@@ -28,11 +22,12 @@
     background-color: #020617;
     color: #ffffff;
     color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
   }
 
   *:focus-visible {
-    outline: 4px solid #f59e0b !important;
-    outline-offset: 3px !important;
+    outline: 2px solid #f97316 !important;
+    outline-offset: 2px !important;
     border-radius: 8px !important;
   }
 

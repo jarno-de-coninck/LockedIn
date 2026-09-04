@@ -124,28 +124,28 @@ export default function CustomProgramModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-fade-in select-none">
-      <div className="w-full max-w-lg bg-slate-900 border-2 border-slate-700 text-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden animate-slide-up">
-        <div className="p-5 border-b-2 border-slate-800 flex items-center justify-between shrink-0 bg-slate-950">
+      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 text-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden animate-slide-up">
+        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-950">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-orange-500/20 border-2 border-orange-500/40 text-orange-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-orange-500/20 border border-orange-500/40 text-orange-400 flex items-center justify-center shrink-0">
               <Dumbbell className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-black text-white">Custom Split Builder</h3>
-              <p className="text-xs text-slate-300 font-bold">Pick your sport and schedule frequency</p>
+              <p className="text-xs text-slate-300 font-medium">Pick your sport and schedule frequency</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="min-w-[48px] min-h-[48px] rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors active-press"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-3 border-b-2 border-slate-800 bg-slate-950 shrink-0">
-          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border-2 border-slate-800">
+        <div className="p-2.5 border-b border-slate-800 bg-slate-950 shrink-0">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-900/60 rounded-xl border border-slate-800">
             <button
               type="button"
               onClick={() => setBuilderMode('prompt')}
@@ -190,14 +190,14 @@ export default function CustomProgramModal({
                         key={s.id}
                         type="button"
                         onClick={() => setModalSport(s.id)}
-                        className={`min-h-[58px] p-2.5 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center ${
+                        className={`min-h-[52px] p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center active-press ${
                           isSelected
-                            ? 'bg-orange-600 text-white border-orange-400 shadow-md font-black'
-                            : 'bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-700 font-bold'
+                            ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold'
+                            : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 font-semibold'
                         }`}
                       >
                         <span className="text-xl block">{s.icon}</span>
-                        <span className="text-xs mt-1 block">{s.name}</span>
+                        <span className="text-xs mt-0.5 block">{s.name}</span>
                       </button>
                     );
                   })}
@@ -210,19 +210,19 @@ export default function CustomProgramModal({
                       value={customSportInput}
                       onChange={(e) => setCustomSportInput(e.target.value)}
                       placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering)..."
-                      className="w-full min-h-[52px] px-4 text-sm font-bold rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
+                      className="w-full min-h-[48px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
                     />
                   </div>
                 )}
               </div>
 
               {/* Workout Frequency Selector */}
-              <div className="p-4 rounded-2xl bg-slate-950 border-2 border-slate-800 space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-white uppercase tracking-wider">
                     Workout Frequency
                   </span>
-                  <span className="text-xs font-black text-orange-300 bg-orange-950 px-3 py-1 rounded-full border border-orange-500/40">
+                  <span className="text-xs font-bold text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-full border border-orange-500/30">
                     {daysPerWeek} Training Days / Wk
                   </span>
                 </div>
@@ -232,14 +232,14 @@ export default function CustomProgramModal({
                       key={num}
                       type="button"
                       onClick={() => setDaysPerWeek(num)}
-                      className={`min-h-[48px] py-2 rounded-2xl border-2 text-center transition-all ${
+                      className={`min-h-[44px] py-1.5 rounded-xl border text-center transition-all active-press ${
                         daysPerWeek === num
-                          ? 'bg-orange-600 text-white border-orange-400 font-black shadow-md'
-                          : 'bg-slate-900 text-slate-300 border-slate-800 hover:text-white font-bold'
+                          ? 'bg-orange-500 text-white border-orange-500 font-bold shadow-md shadow-orange-500/20'
+                          : 'bg-slate-900 text-slate-300 border-slate-800 hover:text-white font-semibold'
                       }`}
                     >
-                      <span className="text-sm font-black block">{num}</span>
-                      <span className="text-xs font-bold block uppercase opacity-80">Days</span>
+                      <span className="text-sm font-black">{num}d</span>
+                      <span className="text-[10px] block opacity-80">/week</span>
                     </button>
                   ))}
                 </div>
@@ -254,7 +254,7 @@ export default function CustomProgramModal({
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                   placeholder="e.g., Heavy upper/lower compound lifts with explosiveness and core mobility..."
-                  className="w-full p-4 text-sm rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none font-medium"
+                  className="w-full p-3.5 text-sm rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none font-medium"
                 />
               </div>
 
