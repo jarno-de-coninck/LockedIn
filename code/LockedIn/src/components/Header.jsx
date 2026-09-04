@@ -24,65 +24,62 @@ export default function Header({
   return (
     <>
       <header
-        className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-3 pb-2.5 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.4)] w-full max-w-full"
+        role="banner"
+        className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b-2 border-slate-800 px-3.5 pb-3 transition-all shadow-md w-full max-w-full"
         style={{
-          paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
+          paddingTop: 'max(14px, env(safe-area-inset-top, 14px))',
         }}
       >
-        <div className="flex items-center justify-between gap-1.5 w-full">
-          {/* Brand Logo with white text - scaled for phones */}
+        <div className="flex items-center justify-between gap-2.5 w-full">
           <div className="shrink min-w-0">
             <BrandLogo size="sm" showText={true} textDark={false} />
           </div>
 
-          {/* Right Action Cluster - strictly scaled to never overflow */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Streak Flame Badge */}
+          <div className="flex items-center gap-2 shrink-0">
             <div
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 select-none shadow-[0_0_12px_rgba(249,115,22,0.15)] shrink-0"
-              title={`${streakCount} Day Streak!`}
+              className="min-h-[48px] px-3 py-1.5 rounded-2xl bg-orange-950/60 border-2 border-orange-500/60 text-orange-300 flex items-center gap-2 select-none shadow-sm shrink-0"
+              title={`${streakCount} Day Streak`}
+              aria-label={`Current streak is ${streakCount} days`}
             >
-              <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
-              <span className="text-xs font-black tracking-tight">{streakCount}d</span>
+              <Flame className="w-5 h-5 fill-orange-400 text-orange-400 shrink-0" />
+              <span className="text-sm font-black tracking-tight">{streakCount}d</span>
             </div>
 
-            {/* Quick Language Selector Button */}
             <div className="shrink-0">
               <button
                 type="button"
                 onClick={() => setShowLangMenu(true)}
-                className="px-2 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-black text-slate-300 flex items-center gap-1 active-press transition-colors shrink-0"
-                title={t('languageLabel') || 'Change Language'}
+                aria-label={`Change language, current is ${currentLangObj.label}`}
+                className="min-h-[48px] min-w-[48px] px-3 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-sm font-black text-slate-100 flex items-center justify-center gap-2 active-press transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none shrink-0"
               >
-                <span className="text-sm leading-none">{currentLangObj.flag}</span>
-                <span className="text-[10px] font-black uppercase text-slate-400 hidden xs:inline">{currentLangObj.code}</span>
+                <span className="text-lg leading-none" aria-hidden="true">{currentLangObj.flag}</span>
+                <span className="text-xs font-black uppercase text-slate-200">{currentLangObj.code}</span>
               </button>
             </div>
 
-            {/* User Profile Pill - compact on phone, expanded on larger screens */}
             <button
               type="button"
               onClick={() => setIsProfileOpen(true)}
-              className="group flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all active-press shadow-xs shrink-0"
-              title={t('athleteProfile')}
+              aria-label={t('athleteProfile') || 'Athlete Profile and Settings'}
+              className="min-h-[48px] flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 transition-all active-press shadow-sm focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none shrink-0"
             >
               <div className="relative">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 text-white flex items-center justify-center text-[10px] font-black shadow-xs">
-                  <User className="w-3.5 h-3.5 text-slate-950" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 text-slate-950 flex items-center justify-center text-xs font-black shadow-sm">
+                  <User className="w-5 h-5 text-slate-950" />
                 </div>
                 <span
-                  className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-950 animate-pulse"
+                  className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-slate-950"
                   title={t('aiOnline')}
                 />
               </div>
 
-              <div className="hidden sm:flex items-center gap-1 leading-none pr-1">
-                <span className="text-xs font-black text-slate-100">
+              <div className="hidden sm:flex items-center gap-1.5 leading-none pr-1">
+                <span className="text-sm font-black text-white">
                   {userProfile?.weight || 78}kg
                 </span>
-                <span className="text-[11px] text-slate-500 font-bold">•</span>
-                <span className="text-xs font-black text-orange-400">
-                  {goal}
+                <span className="text-slate-400 font-bold">•</span>
+                <span className="text-sm font-black text-amber-400">
+                  {goal} kcal
                 </span>
               </div>
             </button>
@@ -90,36 +87,41 @@ export default function Header({
         </div>
       </header>
 
-      {/* Language Selection Modal - Top Level z-50 Backdrop */}
       {showLangMenu && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in select-none"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="language-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in select-none"
           onClick={() => setShowLangMenu(false)}
         >
           <div
-            className="w-full max-w-xs bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-2xl space-y-3 animate-scale-up text-white"
+            className="w-full max-w-sm bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up text-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center">
-                  <Globe className="w-4 h-4" />
+            <div className="flex items-center justify-between pb-3 border-b-2 border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-orange-500/20 text-orange-400 border-2 border-orange-500/40 flex items-center justify-center">
+                  <Globe className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-white">{t('languageLabel') || 'Select Language'}</h3>
-                  <p className="text-[10px] text-slate-400 font-bold">Choose your app language</p>
+                  <h3 id="language-modal-title" className="text-base font-black text-white">
+                    {t('languageLabel') || 'Select Language'}
+                  </h3>
+                  <p className="text-xs text-slate-300 font-bold">Choose your preferred language</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowLangMenu(false)}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                aria-label="Close language selector"
+                className="min-w-[48px] min-h-[48px] rounded-2xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 border-2 border-transparent hover:border-slate-700 transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
               >
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 pt-1">
+            <div className="grid grid-cols-1 gap-2.5 pt-1">
               {LANGUAGES.map((l) => (
                 <button
                   key={l.code}
@@ -128,18 +130,18 @@ export default function Header({
                     setLanguage(l.code);
                     setShowLangMenu(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all active-press border ${
+                  className={`min-h-[52px] w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-extrabold transition-all active-press border-2 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
                     language === l.code
-                      ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20'
-                      : 'bg-slate-950/70 text-slate-300 border-slate-800 hover:bg-slate-800'
+                      ? 'bg-orange-600 text-white border-orange-400 shadow-md'
+                      : 'bg-slate-950 text-slate-100 border-slate-800 hover:bg-slate-800 hover:border-slate-700'
                   }`}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="text-lg">{l.flag}</span>
-                    <span className="text-xs font-bold">{l.label}</span>
+                  <span className="flex items-center gap-3.5">
+                    <span className="text-2xl" aria-hidden="true">{l.flag}</span>
+                    <span className="text-sm font-bold text-white">{l.label}</span>
                   </span>
                   {language === l.code && (
-                    <Check className="w-4 h-4 text-white" />
+                    <Check className="w-5 h-5 text-white stroke-[3]" />
                   )}
                 </button>
               ))}
@@ -148,7 +150,6 @@ export default function Header({
         </div>
       )}
 
-      {/* Profile & Settings Modal */}
       <ProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}

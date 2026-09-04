@@ -39,7 +39,6 @@ export default function TrackerTab({
   const [toastMsg, setToastMsg] = useState('');
   const [selectedRecipeMeal, setSelectedRecipeMeal] = useState(null);
 
-  // Historical Day Navigator state (null = today)
   const [selectedHistoryDate, setSelectedHistoryDate] = useState(null);
   const historyRecords = getDailyHistory();
   const selectedPastDay = selectedHistoryDate
@@ -49,12 +48,10 @@ export default function TrackerTab({
   const todayName = DAYS_OF_WEEK[new Date().getDay()];
   const activeDayName = selectedPastDay?.dayName || todayName;
 
-  // Active data (Today vs. Historical day being viewed)
   const activeMeals = selectedPastDay ? selectedPastDay.meals : meals;
   const activeWorkouts = selectedPastDay ? selectedPastDay.workouts : workouts;
   const activeGoal = selectedPastDay ? selectedPastDay.goalCalories : goal;
 
-  // Energy balance calculations
   const totalConsumed = activeMeals.reduce((acc, m) => acc + (Number(m.calories) || 0), 0);
   const totalBurned = activeWorkouts.reduce((acc, w) => acc + (Number(w.caloriesBurned) || 0), 0);
   const netCalories = totalConsumed - totalBurned;
@@ -64,13 +61,11 @@ export default function TrackerTab({
   const isOverGoal = netCalories > activeGoal;
   const displayPercentage = Math.min(100, Math.max(0, rawPercentage));
 
-  // Scheduled Workout for the active day
   const scheduledForToday = trainingSchedule?.schedule?.find((s) => s.day === activeDayName);
   const isWorkoutDoneToday = activeWorkouts.length > 0 || scheduledForToday?.type === 'Rest';
   const isCalorieGoalSatisfied = totalConsumed >= Math.round(activeGoal * 0.85);
   const isMealsLogged = activeMeals.length >= 3;
 
-  // Gamification & XP
   const completedMissionsCount =
     (isWorkoutDoneToday ? 1 : 0) +
     (isCalorieGoalSatisfied ? 1 : 0) +
@@ -78,43 +73,40 @@ export default function TrackerTab({
   const isFullyLockedIn = completedMissionsCount === 3;
   const earnedXp = (isWorkoutDoneToday ? 100 : 0) + (isCalorieGoalSatisfied ? 75 : 0) + (activeMeals.length * 25);
 
-  // Funny & Hype "Locked In" Tiers
   const getLockedInStatus = (count) => {
     switch (count) {
       case 3:
         return {
-          badge: '100% LOCKED IN 🔒🔥',
-          pillClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]',
-          ringStatus: '100% LOCKED IN 🔒🔥',
+          badge: '100% Locked In',
+          pillClass: 'bg-emerald-950 text-emerald-300 border-2 border-emerald-400',
+          ringStatus: 'All Daily Goals Met',
         };
       case 2:
         return {
-          badge: "67% LOCKED IN 🍳",
-          pillClass: 'bg-orange-500/20 text-orange-400 border-orange-500/40 shadow-[0_0_12px_rgba(249,115,22,0.15)]',
-          ringStatus: "67% LOCKED IN (HE COOKIN')",
+          badge: '2 of 3 Goals Done',
+          pillClass: 'bg-orange-950 text-orange-300 border-2 border-orange-400',
+          ringStatus: 'Great Progress Today',
         };
       case 1:
         return {
-          badge: '33% LOCKED IN ⚡',
-          pillClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-          ringStatus: '33% LOCKED IN (WARMING UP)',
+          badge: '1 of 3 Goals Done',
+          pillClass: 'bg-amber-950 text-amber-200 border-2 border-amber-400',
+          ringStatus: 'Good Start Today',
         };
       default:
         return {
-          badge: '0% LOCKED IN 💀',
-          pillClass: 'bg-slate-850 text-slate-400 border-slate-700/80',
-          ringStatus: '0% LOCKED IN (WAKE UP BRO)',
+          badge: 'Goals In Progress',
+          pillClass: 'bg-slate-900 text-slate-200 border-2 border-slate-700',
+          ringStatus: 'Ready To Begin',
         };
     }
   };
   const lockedInStatusInfo = getLockedInStatus(completedMissionsCount);
 
-  // SVG Energy Halo calculations
-  const radius = 78;
+  const radius = 80;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (displayPercentage / 100) * circumference;
 
-  // Diet Plan Meal Slots
   const mealSlots = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
   const loggedMealsByType = {
     Breakfast: activeMeals.filter((m) => m.name.toLowerCase().includes('breakfast') || m.time < '11:00'),
@@ -125,7 +117,7 @@ export default function TrackerTab({
 
   const showToast = (msg) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(''), 2500);
+    setTimeout(() => setToastMsg(''), 3000);
   };
 
   const getFormattedTime = () => {
@@ -141,12 +133,12 @@ export default function TrackerTab({
     const parsedCals = parseInt(calories, 10);
 
     if (!trimmedName) {
-      setErrorMsg('Enter food name');
+      setErrorMsg('Please enter the name of your food');
       return;
     }
 
     if (isNaN(parsedCals) || parsedCals <= 0) {
-      setErrorMsg('Enter valid calories');
+      setErrorMsg('Please enter a positive calorie number');
       return;
     }
 
@@ -160,20 +152,22 @@ export default function TrackerTab({
     setMeals((prev) => [newMeal, ...prev]);
     setMealName('');
     setCalories('');
-    showToast(`+${parsedCals} kcal • ${trimmedName}`);
+    showToast(`Added: ${trimmedName} (${parsedCals} calories)`);
   };
 
   return (
-    <div className="space-y-4 pb-28 animate-fade-in w-full">
-      {/* Toast Notification */}
+    <div className="space-y-5 pb-32 animate-fade-in w-full max-w-lg mx-auto">
       {toastMsg && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900/95 text-white text-xs font-bold rounded-full shadow-2xl flex items-center gap-2 animate-slide-up border border-orange-500/40 backdrop-blur-md">
-          <CheckCircle2 className="w-4 h-4 text-orange-400" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-slate-900 text-white text-sm font-extrabold rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-orange-400"
+        >
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span>{toastMsg}</span>
         </div>
       )}
 
-      {/* Recipe Modal */}
       <RecipeModal
         isOpen={Boolean(selectedRecipeMeal)}
         onClose={() => setSelectedRecipeMeal(null)}
@@ -186,14 +180,12 @@ export default function TrackerTab({
             time: getFormattedTime(),
           };
           setMeals((prev) => [newM, ...prev]);
-          showToast(`Logged ${m.title}`);
+          showToast(`Logged meal: ${m.title}`);
         }}
       />
 
-      {/* 0. DAY NAVIGATOR & ATHLETIC HISTORY BAR */}
-      <div className="flex items-center justify-between px-1 gap-2">
+      <nav aria-label="Day Navigation" className="flex items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2 min-w-0">
-          {/* Previous Day Button */}
           <button
             type="button"
             onClick={() => {
@@ -216,25 +208,24 @@ export default function TrackerTab({
                 historyRecords.findIndex((h) => h.date === selectedHistoryDate) ===
                   historyRecords.length - 1)
             }
-            className="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center active-press disabled:opacity-25 transition-colors shrink-0"
-            title="View previous day"
+            aria-label="View previous day records"
+            className="w-12 h-12 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-white flex items-center justify-center active-press disabled:opacity-30 transition-colors shrink-0 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
 
-          <div className="min-w-0 flex items-center gap-1.5">
+          <div className="min-w-0 flex items-center gap-2">
             {!selectedHistoryDate && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="w-3 h-3 rounded-full bg-emerald-400 shrink-0 ring-2 ring-emerald-950" />
             )}
-            <span className="text-xs font-black text-white uppercase tracking-wider truncate">
+            <span className="text-sm font-black text-white uppercase tracking-wider truncate">
               {selectedHistoryDate ? formatHumanDate(selectedHistoryDate) : 'Today'}
             </span>
-            <span className="text-[11px] text-slate-400 font-bold hidden xs:inline truncate">
-              • {selectedPastDay?.dayName || todayName}
+            <span className="text-xs text-slate-300 font-bold hidden xs:inline truncate">
+              ({selectedPastDay?.dayName || todayName})
             </span>
           </div>
 
-          {/* Next Day Button (disabled when viewing today) */}
           <button
             type="button"
             onClick={() => {
@@ -243,126 +234,107 @@ export default function TrackerTab({
                 if (currIdx > 0) {
                   setSelectedHistoryDate(historyRecords[currIdx - 1].date);
                 } else {
-                  setSelectedHistoryDate(null); // return to today
+                  setSelectedHistoryDate(null);
                 }
               }
             }}
             disabled={!selectedHistoryDate}
-            className="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center active-press disabled:opacity-25 transition-colors shrink-0"
-            title="View next day"
+            aria-label="View next day records"
+            className="w-12 h-12 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-white flex items-center justify-center active-press disabled:opacity-30 transition-colors shrink-0 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Full History Archive Button */}
         <button
           type="button"
           onClick={onOpenHistory}
-          className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-black flex items-center gap-1.5 active-press transition-colors shadow-xs shrink-0"
+          aria-label="Open past days history archive"
+          className="min-h-[48px] px-4 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-white text-sm font-black flex items-center gap-2 active-press transition-colors shrink-0 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
         >
-          <Calendar className="w-3.5 h-3.5 text-orange-400" />
+          <Calendar className="w-5 h-5 text-amber-400" />
           <span>{t('history') || 'Past Days'}</span>
         </button>
-      </div>
+      </nav>
 
-      {/* Viewing Past Day Notice Banner */}
       {selectedHistoryDate && (
-        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-2 animate-slide-up">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="text-xs font-black text-amber-200 truncate">
-              Archived: {formatHumanDate(selectedHistoryDate)}
+        <div className="p-4 rounded-2xl bg-amber-950/70 border-2 border-amber-400 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Calendar className="w-5 h-5 text-amber-300 shrink-0" />
+            <span className="text-sm font-black text-amber-100 truncate">
+              Viewing: {formatHumanDate(selectedHistoryDate)}
             </span>
           </div>
           <button
             type="button"
             onClick={() => setSelectedHistoryDate(null)}
-            className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs active-press shrink-0 shadow-xs transition-colors"
+            className="min-h-[48px] px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm active-press shrink-0 transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
           >
             Back to Today
           </button>
         </div>
       )}
 
-      {/* =========================================================================
-          1. HERO ELEMENT: THE "LOCKEDIN ENERGY HALO"
-          ========================================================================= */}
-      <div className="relative overflow-hidden rounded-3xl bg-slate-900/90 border border-slate-800/80 p-5 shadow-2xl space-y-4">
-        {/* Subtle Ambient Energy Glow */}
-        <div
-          className={`absolute -top-16 -right-16 w-52 h-52 rounded-full blur-3xl pointer-events-none transition-all duration-700 ${
-            isFullyLockedIn ? 'bg-emerald-500/20' : 'bg-orange-500/15'
-          }`}
-        />
-
-        {/* Top Header Badge & Score */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700/80 text-xs font-black text-slate-200">
-            <Zap className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-            <span>+{earnedXp} XP</span>
+      <section
+        aria-label="Today's Calorie Summary"
+        className="relative overflow-hidden rounded-3xl bg-slate-900 border-2 border-slate-700 p-6 shadow-xl space-y-5"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800 border border-slate-600 text-sm font-black text-white">
+            <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span>+{earnedXp} Points</span>
           </div>
 
           <div
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border transition-all ${lockedInStatusInfo.pillClass}`}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black border-2 transition-all ${lockedInStatusInfo.pillClass}`}
           >
-            <Trophy className="w-3.5 h-3.5" />
+            <Trophy className="w-4 h-4" />
             <span>{lockedInStatusInfo.badge}</span>
           </div>
         </div>
 
-        {/* Circular Energy Ring */}
         <div className="flex flex-col items-center justify-center py-2 relative">
-          <div className="relative w-48 h-48 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 190 190">
-              {/* Background Track */}
+          <div className="relative w-56 h-56 flex items-center justify-center">
+            <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 200 200">
               <circle
-                cx="95"
-                cy="95"
+                cx="100"
+                cy="100"
                 r={radius}
-                className="text-slate-800/70"
-                strokeWidth="14"
+                className="text-slate-800"
+                strokeWidth="18"
                 stroke="currentColor"
                 fill="transparent"
               />
-              {/* Progress Halo */}
               <circle
-                cx="95"
-                cy="95"
+                cx="100"
+                cy="100"
                 r={radius}
                 stroke={isOverGoal ? '#f43f5e' : isFullyLockedIn ? '#10b981' : '#f97316'}
-                strokeWidth="14"
+                strokeWidth="18"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
                 fill="transparent"
-                className="transition-all duration-1000 ease-out"
-                style={{
-                  filter: isFullyLockedIn
-                    ? 'drop-shadow(0 0 10px rgba(16,185,129,0.5))'
-                    : 'drop-shadow(0 0 10px rgba(249,115,22,0.5))',
-                }}
+                className="transition-all duration-700 ease-out"
               />
             </svg>
 
-            {/* Inner Content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-              <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                {remainingBudget < 0 ? t('kcalOver') : t('remaining')}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-3">
+              <span className="text-xs font-black uppercase tracking-widest text-slate-200">
+                {remainingBudget < 0 ? 'Calories Over Target' : 'Calories Remaining'}
               </span>
-              <span className="text-3xl font-black tracking-tight text-white font-mono mt-0.5">
+              <span className="text-4xl font-black text-white font-mono mt-1">
                 {Math.abs(remainingBudget)}
               </span>
-              <span className="text-xs font-bold text-slate-400">
-                {remainingBudget < 0 ? t('kcalOver') : t('kcalLeft')}
+              <span className="text-sm font-extrabold text-slate-200 mt-0.5">
+                {remainingBudget < 0 ? 'kcal over limit' : 'kcal to eat'}
               </span>
 
-              {/* Status Tag */}
               <span
-                className={`mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                className={`mt-2.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border-2 ${
                   isFullyLockedIn
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                    : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                    ? 'bg-emerald-950 text-emerald-300 border-emerald-400'
+                    : 'bg-orange-950 text-orange-300 border-orange-400'
                 }`}
               >
                 {lockedInStatusInfo.ringStatus}
@@ -371,205 +343,208 @@ export default function TrackerTab({
           </div>
         </div>
 
-        {/* 4-Pillar Metric Strip */}
-        <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-800/80 text-center">
-          <div className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/50">
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight block">
-              {t('baseGoal')}
+        <div className="grid grid-cols-4 gap-2.5 pt-3 border-t-2 border-slate-800 text-center">
+          <div className="p-3 rounded-2xl bg-slate-950 border-2 border-slate-800">
+            <span className="text-xs font-black text-slate-300 uppercase block">
+              Daily Goal
             </span>
-            <span className="text-base font-black text-white mt-0.5 block">{goal}</span>
+            <span className="text-lg font-black text-white mt-1 block font-mono">{goal}</span>
           </div>
 
-          <div className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/50">
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight block">
-              {t('foodIn')}
+          <div className="p-3 rounded-2xl bg-slate-950 border-2 border-slate-800">
+            <span className="text-xs font-black text-slate-300 uppercase block">
+              Food In
             </span>
-            <span className="text-base font-black text-orange-400 mt-0.5 block">+{totalConsumed}</span>
+            <span className="text-lg font-black text-amber-400 mt-1 block font-mono">+{totalConsumed}</span>
           </div>
 
-          <div className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/50">
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight block">
-              {t('burnedOut')}
+          <div className="p-3 rounded-2xl bg-slate-950 border-2 border-slate-800">
+            <span className="text-xs font-black text-slate-300 uppercase block">
+              Burned
             </span>
-            <span className="text-base font-black text-emerald-400 mt-0.5 block">-{totalBurned}</span>
+            <span className="text-lg font-black text-emerald-400 mt-1 block font-mono">-{totalBurned}</span>
           </div>
 
-          <div className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/50">
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight block">
-              {t('netCals')}
+          <div className="p-3 rounded-2xl bg-slate-950 border-2 border-slate-800">
+            <span className="text-xs font-black text-slate-300 uppercase block">
+              Net Total
             </span>
-            <span className="text-base font-black text-slate-200 mt-0.5 block">{netCalories}</span>
+            <span className="text-lg font-black text-white mt-1 block font-mono">{netCalories}</span>
           </div>
         </div>
 
-        {/* Quick Food / Snack Entry Form */}
         {!selectedHistoryDate ? (
-          <form onSubmit={handleAddMeal} className="space-y-1.5 pt-2 border-t border-slate-800/80">
+          <form onSubmit={handleAddMeal} className="space-y-2.5 pt-3 border-t-2 border-slate-800">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                {t('quickLogTitle')}
-              </span>
-              {errorMsg && <span className="text-xs text-rose-400 font-bold">{errorMsg}</span>}
+              <label htmlFor="quick-meal-name" className="text-xs font-black text-white uppercase tracking-wider block">
+                Quick Food Logger
+              </label>
+              {errorMsg && <span className="text-xs text-rose-300 font-extrabold">{errorMsg}</span>}
             </div>
 
-            <div className="grid grid-cols-12 gap-2">
+            <div className="grid grid-cols-12 gap-2.5">
               <input
+                id="quick-meal-name"
                 type="text"
                 value={mealName}
                 onChange={(e) => setMealName(e.target.value)}
-                placeholder={t('foodPlaceholder')}
-                className="col-span-7 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500 font-bold"
+                placeholder="What did you eat?"
+                aria-label="Food name"
+                className="col-span-7 min-h-[52px] px-3.5 text-sm rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 font-bold focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
               />
               <input
+                id="quick-meal-calories"
                 type="number"
                 min="1"
                 max="5000"
                 value={calories}
                 onChange={(e) => setCalories(e.target.value)}
-                placeholder={t('calsPlaceholder')}
-                className="col-span-3 px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500 font-black text-center"
+                placeholder="Calories"
+                aria-label="Food calories"
+                className="col-span-3 min-h-[52px] px-2 text-sm rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 font-black text-center font-mono focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
               />
               <button
                 type="submit"
-                className="col-span-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press flex items-center justify-center transition-all shadow-md shadow-orange-500/25"
+                aria-label="Add meal"
+                className="col-span-2 min-h-[52px] min-w-[52px] rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-base font-black active-press flex items-center justify-center transition-all shadow-md focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
               >
-                <Plus className="w-5 h-5 stroke-[3]" />
+                <Plus className="w-6 h-6 stroke-[3]" />
               </button>
             </div>
           </form>
         ) : (
-          <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span className="font-bold text-slate-300">
+          <div className="pt-3 border-t-2 border-slate-800 flex items-center justify-between text-sm text-slate-300">
+            <span className="font-bold">
               Archived Record • {activeMeals.length} meals logged
             </span>
             <button
               type="button"
               onClick={() => setSelectedHistoryDate(null)}
-              className="text-orange-400 hover:text-orange-300 font-black text-xs transition-colors"
+              className="min-h-[48px] px-3 py-2 text-amber-400 hover:text-amber-300 font-black text-sm transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
             >
               Return to Today →
             </button>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* =========================================================================
-          2. DAILY MISSIONS / QUESTS
-          ========================================================================= */}
-      <div className="bg-slate-900/80 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3">
+      <section
+        aria-label="Daily Goals and Missions"
+        className="bg-slate-900 rounded-3xl p-5 border-2 border-slate-700 shadow-xl space-y-3.5"
+      >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
-            <h3 className="text-xs font-black text-white uppercase tracking-wider">
-              {t('dailyQuests')} ({completedMissionsCount}/3)
+          <div className="flex items-center gap-2.5">
+            <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+            <h3 className="text-sm font-black text-white uppercase tracking-wider">
+              {t('dailyQuests')} ({completedMissionsCount}/3 Completed)
             </h3>
           </div>
-          <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border transition-all ${lockedInStatusInfo.pillClass}`}>
+          <span className={`text-xs font-black px-3 py-1 rounded-full border-2 transition-all ${lockedInStatusInfo.pillClass}`}>
             {lockedInStatusInfo.badge}
           </span>
         </div>
 
-        <div className="space-y-2">
-          {/* Quest 1: Workout */}
-          <div
+        <div className="space-y-2.5">
+          <button
+            type="button"
             onClick={onNavigateToWorkouts}
-            className={`p-3 rounded-2xl flex items-center justify-between cursor-pointer transition-all active-press border ${
+            className={`w-full min-h-[58px] p-4 rounded-2xl flex items-center justify-between transition-all active-press border-2 text-left focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
               isWorkoutDoneToday
-                ? 'bg-emerald-950/40 text-emerald-200 border-emerald-500/30'
-                : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'
+                ? 'bg-emerald-950/70 text-emerald-100 border-emerald-400'
+                : 'bg-slate-950 text-white border-slate-700 hover:border-slate-500'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+            <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-2">
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                   isWorkoutDoneToday
-                    ? 'bg-emerald-500 text-slate-950 shadow-xs'
-                    : 'border border-slate-600 text-transparent'
+                    ? 'bg-emerald-500 text-slate-950'
+                    : 'border-2 border-slate-500 text-transparent'
                 }`}
               >
-                <Check className="w-3 h-3 stroke-[3]" />
+                <Check className="w-5 h-5 stroke-[3]" />
               </div>
-              <span className="text-xs font-bold truncate">
+              <span className="text-sm font-extrabold truncate">
                 {isWorkoutDoneToday ? t('trainingDone') : (scheduledForToday?.title || t('trainingPending'))}
               </span>
             </div>
-            <span className={`text-[11px] font-black shrink-0 ${isWorkoutDoneToday ? 'text-emerald-400' : 'text-orange-400'}`}>
+            <span className={`text-xs font-black shrink-0 ${isWorkoutDoneToday ? 'text-emerald-300' : 'text-amber-400'}`}>
               {isWorkoutDoneToday ? t('doneBadge') : `${t('startBadge')} →`}
             </span>
-          </div>
+          </button>
 
-          {/* Quest 2: Calorie Target */}
-          <div
+          <button
+            type="button"
             onClick={onNavigateToDiet}
-            className={`p-3 rounded-2xl flex items-center justify-between cursor-pointer transition-all active-press border ${
+            className={`w-full min-h-[58px] p-4 rounded-2xl flex items-center justify-between transition-all active-press border-2 text-left focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
               isCalorieGoalSatisfied
-                ? 'bg-emerald-950/40 text-emerald-200 border-emerald-500/30'
-                : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'
+                ? 'bg-emerald-950/70 text-emerald-100 border-emerald-400'
+                : 'bg-slate-950 text-white border-slate-700 hover:border-slate-500'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+            <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-2">
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                   isCalorieGoalSatisfied
-                    ? 'bg-emerald-500 text-slate-950 shadow-xs'
-                    : 'border border-slate-600 text-transparent'
+                    ? 'bg-emerald-500 text-slate-950'
+                    : 'border-2 border-slate-500 text-transparent'
                 }`}
               >
-                <Check className="w-3 h-3 stroke-[3]" />
+                <Check className="w-5 h-5 stroke-[3]" />
               </div>
-              <span className="text-xs font-bold truncate">
-                {isCalorieGoalSatisfied ? t('calsHit') : `${t('calsPending')}: ${Math.max(0, goal - totalConsumed)} kcal`}
+              <span className="text-sm font-extrabold truncate">
+                {isCalorieGoalSatisfied ? t('calsHit') : `${t('calsPending')}: ${Math.max(0, goal - totalConsumed)} kcal left`}
               </span>
             </div>
-            <span className={`text-[11px] font-black shrink-0 ${isCalorieGoalSatisfied ? 'text-emerald-400' : 'text-orange-400'}`}>
+            <span className={`text-xs font-black shrink-0 ${isCalorieGoalSatisfied ? 'text-emerald-300' : 'text-amber-400'}`}>
               {isCalorieGoalSatisfied ? t('doneBadge') : `${t('logBadge')} →`}
             </span>
-          </div>
+          </button>
 
-          {/* Quest 3: 3+ Meals Logged */}
-          <div
+          <button
+            type="button"
             onClick={onNavigateToDiet}
-            className={`p-3 rounded-2xl flex items-center justify-between cursor-pointer transition-all active-press border ${
+            className={`w-full min-h-[58px] p-4 rounded-2xl flex items-center justify-between transition-all active-press border-2 text-left focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
               isMealsLogged
-                ? 'bg-emerald-950/40 text-emerald-200 border-emerald-500/30'
-                : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'
+                ? 'bg-emerald-950/70 text-emerald-100 border-emerald-400'
+                : 'bg-slate-950 text-white border-slate-700 hover:border-slate-500'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+            <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-2">
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                   isMealsLogged
-                    ? 'bg-emerald-500 text-slate-950 shadow-xs'
-                    : 'border border-slate-600 text-transparent'
+                    ? 'bg-emerald-500 text-slate-950'
+                    : 'border-2 border-slate-500 text-transparent'
                 }`}
               >
-                <Check className="w-3 h-3 stroke-[3]" />
+                <Check className="w-5 h-5 stroke-[3]" />
               </div>
-              <span className="text-xs font-bold truncate">
-                {t('mealsLoggedCount')} ({meals.length}/3)
+              <span className="text-sm font-extrabold truncate">
+                {t('mealsLoggedCount')} ({meals.length}/3 Meals)
               </span>
             </div>
-            <span className={`text-[11px] font-black shrink-0 ${isMealsLogged ? 'text-emerald-400' : 'text-orange-400'}`}>
+            <span className={`text-xs font-black shrink-0 ${isMealsLogged ? 'text-emerald-300' : 'text-amber-400'}`}>
               {isMealsLogged ? t('doneBadge') : `${t('logBadge')} →`}
             </span>
-          </div>
+          </button>
         </div>
-      </div>
+      </section>
 
-      {/* =========================================================================
-          3. TODAY'S TRAINING SESSION SUMMARY (RULE OF ONE PRIMARY ACTION)
-          ========================================================================= */}
-      <div className="bg-slate-900/90 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3 overflow-hidden">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center shrink-0 shadow-xs">
-              <Dumbbell className="w-4 h-4" />
+      <section
+        aria-label="Today's Workout"
+        className="bg-slate-900 rounded-3xl p-5 border-2 border-slate-700 shadow-xl space-y-3.5 overflow-hidden"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-11 h-11 rounded-2xl bg-orange-950 text-orange-400 border-2 border-orange-500/40 flex items-center justify-center shrink-0">
+              <Dumbbell className="w-6 h-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] uppercase font-black tracking-wider text-orange-400 block">
+              <span className="text-xs uppercase font-black tracking-wider text-orange-300 block">
                 {t('todaysWorkout')}
               </span>
-              <h3 className="text-sm font-black text-white truncate mt-0.5">
+              <h3 className="text-base font-black text-white truncate mt-0.5">
                 {scheduledForToday?.title || `${todayName} Session`}
               </h3>
             </div>
@@ -578,69 +553,69 @@ export default function TrackerTab({
           <button
             type="button"
             onClick={onNavigateToWorkouts}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-black text-orange-400 flex items-center gap-1 shrink-0 active-press transition-colors"
+            className="min-h-[48px] px-3.5 py-2 rounded-2xl bg-slate-950 hover:bg-slate-800 border-2 border-slate-700 text-sm font-black text-orange-400 flex items-center gap-2 shrink-0 active-press transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
           >
             <span>{isWorkoutDoneToday ? t('reviewWorkout') : t('startWorkout')}</span>
-            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </button>
         </div>
 
         {isWorkoutDoneToday ? (
-          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <div className="p-4 rounded-2xl bg-emerald-950/50 border-2 border-emerald-400 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-black text-emerald-200 truncate">
+                <p className="text-sm font-black text-emerald-100 truncate">
                   {workouts.length > 0 ? workouts[0].title : t('restDay')}
                 </p>
-                <span className="text-xs text-emerald-400/80 font-bold block truncate">
+                <span className="text-xs text-emerald-300 font-bold block truncate">
                   {workouts.length > 0
-                    ? `${workouts[0].duration}m • -${workouts[0].caloriesBurned} kcal`
+                    ? `${workouts[0].duration} mins • -${workouts[0].caloriesBurned} calories burned`
                     : t('restFocus')}
                 </span>
               </div>
             </div>
-            <span className="text-xs font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+            <span className="text-xs font-black px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shrink-0">
               {t('completed')}
             </span>
           </div>
         ) : (
-          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between gap-2.5">
+          <div className="p-4 rounded-2xl bg-slate-950 border-2 border-slate-800 flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1 pr-1">
-              <p className="text-xs text-slate-200 font-bold truncate">
-                {scheduledForToday?.focus || 'Scheduled athletic session'}
+              <p className="text-sm text-white font-extrabold truncate">
+                {scheduledForToday?.focus || 'Scheduled workout session'}
               </p>
               {scheduledForToday?.duration && (
-                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                  ⏱ {scheduledForToday.duration}
+                <span className="text-xs text-slate-300 font-bold block mt-0.5">
+                  Target duration: {scheduledForToday.duration}
                 </span>
               )}
             </div>
             <button
               type="button"
               onClick={onNavigateToWorkouts}
-              className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press shadow-md shadow-orange-500/20 shrink-0 transition-colors"
+              className="min-h-[48px] px-4 py-2.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-black active-press shadow-md shrink-0 transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
             >
               {t('startWorkout')}
             </button>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* =========================================================================
-          4. 4-MEAL NUTRITION SCHEDULE GLANCE
-          ========================================================================= */}
-      <div className="bg-slate-900/80 rounded-3xl p-4 border border-slate-800/80 shadow-lg space-y-3 overflow-hidden">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0 shadow-xs">
-              <UtensilsCrossed className="w-4 h-4" />
+      <section
+        aria-label="Nutrition and Meal Schedule"
+        className="bg-slate-900 rounded-3xl p-5 border-2 border-slate-700 shadow-xl space-y-3.5 overflow-hidden"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-950 text-emerald-400 border-2 border-emerald-500/40 flex items-center justify-center shrink-0">
+              <UtensilsCrossed className="w-6 h-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 block">
+              <span className="text-xs uppercase font-black tracking-wider text-slate-300 block">
                 {t('nutritionSchedule')}
               </span>
-              <h3 className="text-xs font-black text-white truncate">
+              <h3 className="text-base font-black text-white truncate">
                 {meals.length} / 4 {t('mealsLoggedOf')}
               </h3>
             </div>
@@ -649,56 +624,56 @@ export default function TrackerTab({
           <button
             type="button"
             onClick={onNavigateToDiet}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 shrink-0 active-press transition-colors"
+            className="min-h-[48px] px-3.5 py-2 rounded-2xl bg-slate-950 hover:bg-slate-800 border-2 border-slate-700 text-sm font-black text-orange-400 hover:text-orange-300 flex items-center gap-2 shrink-0 active-press transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
           >
             <span>{t('planRecipes')}</span>
-            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </button>
         </div>
 
-        {/* 4-Slot Grid Cards */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {mealSlots.map((slot) => {
             const planItem = dietPlan.find((p) => p.meal === slot);
             const isLogged = loggedMealsByType[slot]?.length > 0;
 
             return (
-              <div
+              <button
                 key={slot}
+                type="button"
                 onClick={() => {
                   if (planItem) setSelectedRecipeMeal(planItem);
                   else onNavigateToDiet();
                 }}
-                className={`p-3 rounded-2xl border transition-all cursor-pointer active-press ${
+                className={`min-h-[72px] p-3.5 rounded-2xl border-2 transition-all active-press text-left focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
                   isLogged
-                    ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-100'
-                    : 'bg-slate-950/60 hover:bg-slate-800/60 border-slate-800/80 text-slate-200'
+                    ? 'bg-emerald-950/60 border-emerald-400 text-emerald-100'
+                    : 'bg-slate-950 hover:bg-slate-800 border-slate-800 text-white'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-300">
                     {slot}
                   </span>
                   {isLogged ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   ) : (
-                    <span className="text-[11px] font-black text-orange-400">
-                      {planItem ? `${planItem.calories} kcal` : 'Empty'}
+                    <span className="text-xs font-black text-amber-400">
+                      {planItem ? `${planItem.calories} kcal` : 'Not logged'}
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-black truncate">
+                <p className="text-sm font-black truncate">
                   {isLogged
                     ? loggedMealsByType[slot][0].name
                     : planItem
                     ? planItem.title
                     : t('tapToLog')}
                 </p>
-              </div>
+              </button>
             );
           })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
