@@ -279,160 +279,82 @@ export default function DietTab({
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-3xl border-2 border-slate-700 shadow-xl overflow-hidden">
-        {!showCravingBuilder ? (
-          <div className="p-5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-12 h-12 rounded-2xl bg-orange-950 text-orange-400 border-2 border-orange-500/40 flex items-center justify-center shrink-0">
-                <ChefHat className="w-6 h-6" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-base font-black text-white">Build a Custom Recipe</h3>
-                <p className="text-xs text-slate-300 font-bold mt-0.5">
-                  Guided 3-step assistant: choose meal, style & ingredients
-                </p>
-              </div>
+      {/* SIMPLE PROFILE-CALIBRATED MEAL CREATOR */}
+      <div className="bg-slate-900 rounded-3xl p-5 border-2 border-slate-700 shadow-xl space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-12 h-12 rounded-2xl bg-orange-950 text-orange-400 border-2 border-orange-500/40 flex items-center justify-center shrink-0">
+              <ChefHat className="w-6 h-6" />
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowCravingBuilder(true)}
-              className="min-h-[50px] px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-sm font-black active-press transition-colors shadow-md shrink-0 flex items-center gap-2 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>Start Builder</span>
-            </button>
+            <div>
+              <h3 className="text-base font-black text-white">Create a Meal</h3>
+              <p className="text-xs text-slate-300 font-bold">
+                Auto-calibrated to your profile (~{Math.round(remainingKcal > 350 ? remainingKcal / 2 : goal / 4)} kcal target)
+              </p>
+            </div>
           </div>
-        ) : (
-          <div className="p-5 space-y-5 animate-slide-up">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <ChefHat className="w-6 h-6 text-orange-400" />
-                <div>
-                  <h3 className="text-base font-black text-white">Guided Recipe Builder</h3>
-                  <p className="text-xs text-slate-300 font-bold">Answer 3 simple questions below</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCravingBuilder(false)}
-                className="min-w-[48px] min-h-[48px] rounded-2xl bg-slate-950 hover:bg-slate-800 border-2 border-slate-800 text-slate-300 hover:text-white flex items-center justify-center"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+        </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-white uppercase tracking-wider block">
-                  1. Which meal are you cooking?
-                </label>
-                <span className="text-xs font-bold text-amber-300">
-                  ~{Math.round(remainingKcal > 350 ? remainingKcal / 2 : goal / 4)} kcal target
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setCravingSlot(slot)}
-                    className={`min-h-[52px] rounded-2xl text-sm font-black border-2 transition-all ${
-                      cravingSlot === slot
-                        ? 'bg-orange-600 text-white border-orange-400 shadow-md'
-                        : 'bg-slate-950 text-slate-200 border-slate-800 hover:bg-slate-800'
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-4 gap-2">
+          {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((slot) => (
+            <button
+              key={slot}
+              type="button"
+              onClick={() => setCravingSlot(slot)}
+              className={`min-h-[48px] rounded-2xl text-xs font-black border-2 transition-all ${
+                cravingSlot === slot
+                  ? 'bg-orange-600 text-white border-orange-400 shadow-md'
+                  : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
+              }`}
+            >
+              {slot}
+            </button>
+          ))}
+        </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-black text-white uppercase tracking-wider block">
-                2. What style or vibe do you want?
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {RECIPE_STYLES.map((style) => (
-                  <button
-                    key={style.id}
-                    type="button"
-                    onClick={() => setSelectedStyle(style.id)}
-                    className={`min-h-[58px] p-3.5 rounded-2xl border-2 text-left transition-all flex items-center justify-between ${
-                      selectedStyle === style.id
-                        ? 'bg-orange-950 text-white border-orange-400 shadow-md'
-                        : 'bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{style.icon}</span>
-                      <span className="text-sm font-black">{style.label}</span>
-                    </div>
-                    {selectedStyle === style.id && (
-                      <CheckCircle2 className="w-5 h-5 text-orange-400 shrink-0" />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="pt-2">
-                <input
-                  type="text"
-                  value={cravingInput}
-                  onChange={(e) => setCravingInput(e.target.value)}
-                  placeholder="Optional: specific craving (e.g. teriyaki salmon with jasmine rice)"
-                  className="w-full min-h-[52px] px-4 text-sm rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 font-bold focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-black text-white uppercase tracking-wider block">
-                3. Any ingredients in your kitchen? (Optional)
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {POPULAR_INGREDIENTS.map((ing) => {
-                  const isSelected = selectedIngredients.includes(ing);
-                  return (
-                    <button
-                      key={ing}
-                      type="button"
-                      onClick={() => toggleIngredientTag(ing)}
-                      className={`min-h-[46px] px-3.5 py-2 rounded-2xl text-xs font-black border-2 transition-all ${
-                        isSelected
-                          ? 'bg-emerald-950 text-emerald-200 border-emerald-400 shadow-sm'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      {isSelected ? '✓ ' : '+ '}
-                      {ing}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <input
+              type="text"
+              value={cravingInput}
+              onChange={(e) => setCravingInput(e.target.value)}
+              placeholder="What are you craving? (e.g. salmon, pasta, steak - or leave blank)"
+              className="flex-1 min-h-[52px] px-4 text-sm rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 font-bold focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
+            />
             <button
               type="button"
-              onClick={handleGenerateGuidedRecipe}
+              onClick={() => handleGenerateGuidedRecipe()}
               disabled={isGeneratingCustom}
-              className="w-full min-h-[56px] rounded-2xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-base font-black transition-all flex items-center justify-center gap-2 shadow-xl shadow-orange-600/30 active-press focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
+              className="min-h-[52px] px-6 rounded-2xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-black transition-all flex items-center justify-center gap-2 shadow-md shadow-orange-600/30 active-press shrink-0 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
             >
               {isGeneratingCustom ? (
-                <>
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  <span>Chef Lock is Architecting Recipe...</span>
-                </>
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <>
-                  <Sparkles className="w-6 h-6" />
-                  <span>Create My {cravingSlot} Recipe</span>
-                </>
+                <Sparkles className="w-5 h-5" />
               )}
+              <span>{isGeneratingCustom ? 'Cooking...' : 'Cook Meal'}</span>
             </button>
           </div>
-        )}
+
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            <span className="text-xs font-bold text-slate-400">Quick ideas:</span>
+            {[
+              '🥩 High-Protein Chicken Bowl',
+              '🥑 Low-Carb Salmon Salad',
+              '⚡ Quick 10-Min Eggs & Toast',
+            ].map((idea) => (
+              <button
+                key={idea}
+                type="button"
+                onClick={() => handleGenerateGuidedRecipe(idea)}
+                disabled={isGeneratingCustom}
+                className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold active-press transition-colors"
+              >
+                {idea}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {dietView === 'to_eat' && (

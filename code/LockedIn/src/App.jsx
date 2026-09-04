@@ -466,7 +466,7 @@ export default function App() {
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center shrink-0 text-[10px]">3</span>
-                  <span>Tap <strong>Add / Install</strong> — the app will install with its native dark icon!</span>
+                  <span>Tap <strong>Add / Install</strong> - the app will install with its native dark icon!</span>
                 </div>
               </div>
 

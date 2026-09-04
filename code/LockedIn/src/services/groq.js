@@ -1258,9 +1258,87 @@ function getFallbackWeeklySchedule({ sport = 'weightlifting', goal = 'strength',
     weightlifting: '🏋️‍♂️ 4-Day Upper / Lower Heavy Strength & Hypertrophy',
     running: '🏃‍♂️ 4-Day VO2 Max & Lactate Threshold Running Engine',
     mma: '🥊 4-Day Championship Combat Conditioning & Grappling',
+    cycling: '🚴‍♂️ 4-Day Cycling Endurance, Hill Climbing & Cadence Split',
   };
 
   const schedules = {
+    cycling: [
+      {
+        day: 'Monday',
+        title: 'Cadence Drills & High-RPM Intervals',
+        focus: 'Leg speed, pedal stroke efficiency & lactate threshold',
+        duration: '50m',
+        type: 'Intervals',
+        exercises: [
+          { name: 'Warm-Up & Progressive Cadence Spin', sets: '1 set', reps: '10 mins @ 90-100 RPM', notes: 'Smooth pedal stroke' },
+          { name: 'Over-Under Lactate Threshold Intervals', sets: '5 sets', reps: '3m Over / 2m Under', notes: 'FTP Zone 4/5' },
+          { name: 'Cool-down Spin & Quad Stretch', sets: '1 set', reps: '10 mins Zone 1', notes: 'Flush legs' },
+        ],
+      },
+      {
+        day: 'Tuesday',
+        title: 'Leg Power & Core Stability Off-Bike',
+        focus: 'Squats, Bulgarian split squats & core anti-rotation',
+        duration: '45m',
+        type: 'Strength',
+        exercises: [
+          { name: 'Barbell Front Squats (Quad Drive)', sets: '4 sets', reps: '8 reps', notes: '60kg, upright torso' },
+          { name: 'Dumbbell Step-Ups onto Box', sets: '3 sets', reps: '10 reps/leg', notes: '16kg dumbbells' },
+          { name: 'Plank with Hip Extensions', sets: '3 sets', reps: '60s hold', notes: 'Glute stability' },
+        ],
+      },
+      {
+        day: 'Wednesday',
+        title: 'Active Recovery Spin & Hip Mobility',
+        focus: 'Zone 1 coffee ride, hip flexor release & foam rolling',
+        duration: '35m',
+        type: 'Recovery',
+        exercises: [
+          { name: 'Easy Zone 1 Recovery Spin', sets: '1 set', reps: '25 mins', notes: '<55% FTP' },
+          { name: 'Pigeon Stretch & Couch Stretch', sets: '3 sets', reps: '60s per side', notes: 'Hip flexor mobility' },
+        ],
+      },
+      {
+        day: 'Thursday',
+        title: 'Hill Climb Torque & Vo2 Max Intervals',
+        focus: 'Low-cadence heavy gear climbing & explosive sprint finishes',
+        duration: '55m',
+        type: 'Climbing',
+        exercises: [
+          { name: 'Simulated Hill Repeats (Big Gear)', sets: '4 sets', reps: '5 mins @ 65 RPM', notes: 'Zone 4 climbing power' },
+          { name: 'Out-of-Saddle Sprint Surges', sets: '5 sets', reps: '30s all-out', notes: 'Peak watts' },
+        ],
+      },
+      {
+        day: 'Friday',
+        title: 'Upper Body & Lower Back Posture Armor',
+        focus: 'Lat pulldowns, face pulls & hamstring Romanian deadlifts',
+        duration: '40m',
+        type: 'Strength',
+        exercises: [
+          { name: 'Romanian Deadlifts (Hamstring Armor)', sets: '3 sets', reps: '10 reps', notes: '70kg' },
+          { name: 'Face Pulls & Rear Delt Flyes', sets: '4 sets', reps: '15 reps', notes: 'Aerobar posture relief' },
+        ],
+      },
+      {
+        day: 'Saturday',
+        title: 'Long Endurance Gran Fondo Ride',
+        focus: 'Zone 2 steady aerobic base & nutrition pacing',
+        duration: '90m',
+        type: 'Long Ride',
+        exercises: [
+          { name: 'Steady State Zone 2 Aerobic Base Ride', sets: '1 set', reps: '90 mins steady', notes: 'Heart Rate Zone 2' },
+        ],
+      },
+      {
+        day: 'Sunday',
+        title: 'Rest & Deep Tissue Recovery',
+        focus: 'Calf & quad foam rolling, hydration & recovery',
+        duration: '0m',
+        type: 'Rest',
+        exercises: [],
+      },
+    ],
     tennis: [
       {
         day: 'Monday',

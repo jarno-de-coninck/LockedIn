@@ -119,6 +119,11 @@ export default function AiStudioTab({
   const [sessionDuration, setSessionDuration] = useState(45);
   const [sessionLevel, setSessionLevel] = useState('Intermediate');
   const [scheduleDays, setScheduleDays] = useState(4);
+  const [customSportText, setCustomSportText] = useState(() => {
+    return ['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase())
+      ? ''
+      : activeSport || '';
+  });
   const [isGeneratingTraining, setIsGeneratingTraining] = useState(false);
   const [trainingNote, setTrainingNote] = useState('');
   const [generatedSession, setGeneratedSession] = useState(null);
@@ -283,28 +288,33 @@ export default function AiStudioTab({
     setTrainingNote('');
     setGeneratedSession(null);
 
+    const isPreset = ['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase());
+    const effectiveSport = isPreset
+      ? activeSport
+      : customSportText.trim() || activeSport || 'Weightlifting';
+
     try {
       if (trainingModeType === 'schedule') {
         const res = await generateWeeklySchedule({
-          sport: activeSport,
+          sport: effectiveSport,
           goal: trainingGoal,
           daysPerWeek: scheduleDays,
           level: sessionLevel,
         });
         if (res && res.schedule) {
           setTrainingSchedule(res.schedule);
-          setTrainingNote(`7-day schedule generated for ${activeSport.toUpperCase()}!`);
+          setTrainingNote(`7-day roadmap generated for ${effectiveSport.toUpperCase()}!`);
         }
       } else {
         const res = await generateSportWorkout({
-          sport: activeSport,
+          sport: effectiveSport,
           goal: trainingGoal,
           duration: sessionDuration,
           level: sessionLevel,
         });
         if (res && res.workout) {
           setGeneratedSession(res.workout);
-          setTrainingNote(`Custom session generated for ${activeSport.toUpperCase()}!`);
+          setTrainingNote(`Custom workout generated for ${effectiveSport.toUpperCase()}!`);
         }
       }
     } catch (err) {
@@ -460,7 +470,7 @@ export default function AiStudioTab({
               </div>
               <div>
                 <span className="text-xs font-black text-amber-200 block">
-                  AI Engine Offline — Live openai/gpt-oss-20b Disabled
+                  AI Engine Offline: Live openai/gpt-oss-20b Disabled
                 </span>
                 <span className="text-[11px] text-amber-400/80 font-medium block">
                   Add your free GroqCloud key to generate 100% live AI recipes & coach advice.
@@ -871,41 +881,83 @@ export default function AiStudioTab({
               </button>
             </div>
 
-            {/* Sport Chips */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">Sport</label>
-              <div className="grid grid-cols-5 gap-1.5">
-                {SPORTS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setActiveSport(s.id)}
-                    className={`py-2.5 rounded-2xl border text-center transition-all ${
-                      activeSport === s.id
-                        ? 'bg-orange-500 text-white border-orange-400 shadow-md'
-                        : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <span className="text-lg block">{s.icon}</span>
-                    <span className="text-[10px] font-black block mt-0.5 truncate">{s.name}</span>
-                  </button>
-                ))}
+            {/* Sport Selector: 3 Core Sports + Other */}
+            <div className="space-y-2">
+              <label className="text-xs font-black text-white uppercase tracking-wider block">
+                Choose Sport
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: 'weightlifting', name: 'Weightlifting', icon: '🏋️‍♂️' },
+                  { id: 'mma', name: 'MMA', icon: '🥊' },
+                  { id: 'cycling', name: 'Cycling', icon: '🚴‍♂️' },
+                  { id: 'other', name: 'Other Sport', icon: '✏️' },
+                ].map((s) => {
+                  const isSelected =
+                    s.id === 'other'
+                      ? !['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase())
+                      : (activeSport || '').toLowerCase() === s.id;
+
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        if (s.id === 'other') {
+                          setActiveSport(customSportText || 'other');
+                        } else {
+                          setActiveSport(s.id);
+                        }
+                      }}
+                      className={`min-h-[58px] p-3 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center ${
+                        isSelected
+                          ? 'bg-orange-600 text-white border-orange-400 shadow-md font-black'
+                          : 'bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-700 font-bold'
+                      }`}
+                    >
+                      <span className="text-xl block">{s.icon}</span>
+                      <span className="text-xs mt-1 block">{s.name}</span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Type any custom sport if Other is active */}
+              {!['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase()) && (
+                <div className="pt-1 animate-slide-up">
+                  <input
+                    type="text"
+                    value={customSportText}
+                    onChange={(e) => {
+                      setCustomSportText(e.target.value);
+                      setActiveSport(e.target.value);
+                    }}
+                    placeholder="Type ANY sport (e.g. Swimming, Tennis, Football, Bouldering, CrossFit)..."
+                    className="w-full min-h-[52px] px-4 text-sm font-bold rounded-2xl border-2 border-slate-700 bg-slate-950 text-white placeholder:text-slate-400 focus:border-amber-400 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Goal Chips */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">Focus</label>
-              <div className="grid grid-cols-2 gap-2">
-                {TRAINING_GOALS.map((g) => (
+            {/* Simple Training Focus */}
+            <div className="space-y-2">
+              <label className="text-xs font-black text-white uppercase tracking-wider block">
+                Training Focus
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'strength', label: 'Strength & Muscle' },
+                  { id: 'endurance', label: 'Endurance & Stamina' },
+                  { id: 'agility', label: 'Speed & Agility' },
+                ].map((g) => (
                   <button
                     key={g.id}
                     type="button"
                     onClick={() => setTrainingGoal(g.label)}
-                    className={`py-2.5 px-3 rounded-2xl border text-left transition-all ${
+                    className={`min-h-[52px] px-3 py-2 rounded-2xl border-2 text-center transition-all ${
                       trainingGoal === g.label
-                        ? 'bg-orange-500 text-white border-orange-400 shadow-md'
-                        : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700'
+                        ? 'bg-orange-600 text-white border-orange-400 shadow-md font-black'
+                        : 'bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-700 font-bold'
                     }`}
                   >
                     <span className="text-xs font-black block">{g.label}</span>
@@ -916,29 +968,29 @@ export default function AiStudioTab({
 
             {/* Workout Frequency Selector */}
             {trainingModeType === 'schedule' && (
-              <div className="space-y-2 pt-1 border-t border-slate-800">
+              <div className="space-y-2 pt-2 border-t-2 border-slate-800">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-black text-white uppercase tracking-wider">
                     Workout Frequency
                   </label>
-                  <span className="text-[10px] font-black text-orange-300 bg-orange-500/20 px-2.5 py-0.5 rounded-md border border-orange-500/30">
+                  <span className="text-xs font-black text-orange-300 bg-orange-950 px-3 py-1 rounded-full border border-orange-500/40">
                     {scheduleDays} Training Days / Week
                   </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1.5">
+                <div className="grid grid-cols-5 gap-2">
                   {[2, 3, 4, 5, 6].map((days) => (
                     <button
                       key={days}
                       type="button"
                       onClick={() => setScheduleDays(days)}
-                      className={`py-2 rounded-2xl border text-center transition-all ${
+                      className={`min-h-[48px] py-2 rounded-2xl border-2 text-center transition-all ${
                         scheduleDays === days
-                          ? 'bg-orange-500 text-white border-orange-400 font-black shadow-md'
-                          : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:text-white font-bold'
+                          ? 'bg-orange-600 text-white border-orange-400 font-black shadow-md'
+                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white font-bold'
                       }`}
                     >
-                      <span className="text-xs font-black block">{days}</span>
-                      <span className="text-[9px] font-bold block uppercase opacity-75">Days</span>
+                      <span className="text-sm font-black block">{days}</span>
+                      <span className="text-xs font-bold block uppercase opacity-80">Days</span>
                     </button>
                   ))}
                 </div>
@@ -949,17 +1001,19 @@ export default function AiStudioTab({
               type="button"
               onClick={handleGenerateTraining}
               disabled={isGeneratingTraining}
-              className="w-full py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-orange-500/25"
+              className="w-full min-h-[56px] rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-base font-black active-press transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-xl shadow-orange-600/30 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
             >
               {isGeneratingTraining ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Architecting Training...</span>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Architecting Training Plan...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Generate {activeSport.toUpperCase()} {trainingModeType === 'schedule' ? '7-Day Plan' : 'Workout'}</span>
+                  <Sparkles className="w-6 h-6" />
+                  <span>
+                    Generate {(['weightlifting', 'mma', 'cycling'].includes((activeSport || '').toLowerCase()) ? activeSport : customSportText.trim() || 'Custom Sport').toUpperCase()} {trainingModeType === 'schedule' ? '7-Day Plan' : 'Workout'}
+                  </span>
                 </>
               )}
             </button>
