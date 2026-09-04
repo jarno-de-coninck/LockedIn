@@ -566,134 +566,91 @@ export default function AiStudioTab({
               </span>
             </div>
 
-            {/* Meal Count Switcher */}
+            {/* 1. Daily Structure Dropdown */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+              <label className="text-xs font-bold text-slate-300 block">
                 Daily Structure
-              </span>
-              <div className="grid grid-cols-3 gap-1.5 bg-slate-950/80 p-1 rounded-2xl border border-slate-800">
-                {[
-                  { count: 3, label: '3 Meals', desc: 'B / L / D' },
-                  { count: 4, label: '4 Meals', desc: 'Standard Split' },
-                  { count: 5, label: '5 Meals', desc: 'Athlete Fuel' },
-                ].map((item) => {
-                  const isSel = mealCount === item.count;
-                  return (
-                    <button
-                      key={item.count}
-                      type="button"
-                      onClick={() => setMealCount(item.count)}
-                      className={`py-2 px-1 text-center rounded-xl transition-all active-press ${
-                        isSel
-                          ? 'bg-orange-500 text-white shadow-md'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <span className="text-xs font-black block">{item.label}</span>
-                      <span className="text-[9px] font-medium opacity-80 block">{item.desc}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              </label>
+              <select
+                value={mealCount}
+                onChange={(e) => setMealCount(Number(e.target.value))}
+                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
+              >
+                <option value={3}>3 Meals (Breakfast, Lunch, Dinner)</option>
+                <option value={4}>4 Meals (Standard Athlete Split)</option>
+                <option value={5}>5 Meals (Intense Athlete Fueling)</option>
+              </select>
             </div>
 
-            {/* 1. Macro & Athletic Goal Style */}
+            {/* 2. Macro & Goal Style Dropdown */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                1. Macro & Athletic Style
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {DIET_PRESETS.map((p) => {
-                  const isSel = selectedDietPreset === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setSelectedDietPreset(p.id)}
-                      className={`text-left p-2.5 rounded-2xl border transition-all active-press ${
-                        isSel
-                          ? 'bg-orange-500 text-white border-orange-400 shadow-md'
-                          : 'bg-slate-950/70 hover:bg-slate-800/60 text-slate-300 border-slate-800'
-                      }`}
-                    >
-                      <p className="text-xs font-black">{p.label}</p>
-                      <p
-                        className={`text-[9px] mt-0.5 font-medium leading-tight ${
-                          isSel ? 'text-orange-100' : 'text-slate-400'
-                        }`}
-                      >
-                        {p.desc}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
+              <label className="text-xs font-bold text-slate-300 block">
+                Macro & Athletic Goal
+              </label>
+              <select
+                value={selectedDietPreset}
+                onChange={(e) => setSelectedDietPreset(e.target.value)}
+                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
+              >
+                {DIET_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label} - {p.desc}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* 2. Cuisine & Flavor Profile */}
+            {/* 3. Cuisine & Flavor Profile Dropdown */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                2. Cuisine & Flavor Profile
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                {CUISINES.map((c) => {
-                  const isSel = selectedCuisine === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setSelectedCuisine(c.id)}
-                      className={`p-2 rounded-xl text-center border text-[11px] font-black transition-all active-press ${
-                        isSel
-                          ? 'bg-orange-500/20 text-orange-300 border-orange-500/50 shadow-sm'
-                          : 'bg-slate-950/60 text-slate-400 hover:text-white border-slate-800/80'
-                      }`}
-                    >
-                      {c.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <label className="text-xs font-bold text-slate-300 block">
+                Cuisine & Flavor
+              </label>
+              <select
+                value={selectedCuisine}
+                onChange={(e) => setSelectedCuisine(e.target.value)}
+                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
+              >
+                {CUISINES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* 3. Dietary Restrictions & Allergies */}
+            {/* 4. Dietary Restrictions Dropdown */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                3. Dietary Restrictions & Allergies
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {DIETARY_RESTRICTIONS.map((r) => {
-                  const isSel = selectedRestrictions.includes(r.id);
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => toggleRestriction(r.id)}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-black border transition-all active-press flex items-center gap-1 ${
-                        isSel
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-                          : 'bg-slate-950/60 text-slate-400 border-slate-800'
-                      }`}
-                    >
-                      {isSel && <Check className="w-3 h-3 text-emerald-400" />}
-                      <span>{r.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <label className="text-xs font-bold text-slate-300 block">
+                Dietary Preference / Allergies
+              </label>
+              <select
+                value={selectedRestrictions[0] || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedRestrictions(val ? [val] : []);
+                }}
+                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
+              >
+                <option value="">No Restrictions (All Foods)</option>
+                {DIETARY_RESTRICTIONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* 4. Kitchen Pantry & Cravings */}
+            {/* 5. Kitchen Pantry & Ingredients */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                  4. Kitchen Pantry & Ingredients on Hand
-                </span>
+                <label className="text-xs font-bold text-slate-300 block">
+                  Kitchen Ingredients & Cravings
+                </label>
                 {pantryInput && (
                   <button
                     type="button"
                     onClick={() => setPantryInput('')}
-                    className="text-[10px] text-slate-500 hover:text-slate-300 font-bold"
+                    className="text-[11px] text-slate-400 hover:text-slate-200 font-bold"
                   >
                     Clear
                   </button>
@@ -703,24 +660,9 @@ export default function AiStudioTab({
                 type="text"
                 value={pantryInput}
                 onChange={(e) => setPantryInput(e.target.value)}
-                placeholder="e.g. Chicken breast, sweet potatoes, eggs, spinach..."
-                className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500 font-bold"
+                placeholder="e.g. Chicken breast, sweet potatoes, eggs, spinach (or leave blank)"
+                className="w-full min-h-[46px] px-3.5 text-xs sm:text-sm font-medium rounded-xl border border-slate-700 bg-slate-950 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-none"
               />
-
-              {/* Quick staple add pills */}
-              <div className="flex flex-wrap gap-1 pt-1">
-                <span className="text-[9px] text-slate-500 font-bold py-0.5">Quick add:</span>
-                {PANTRY_STAPLES.map((staple) => (
-                  <button
-                    key={staple}
-                    type="button"
-                    onClick={() => addPantryTag(staple)}
-                    className="px-2 py-0.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[10px] font-bold active-press transition-colors"
-                  >
-                    + {staple}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Main Generation Button */}

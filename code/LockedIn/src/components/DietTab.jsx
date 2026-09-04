@@ -12,6 +12,7 @@ import {
   BookOpen,
   Loader2,
   ChefHat,
+  ArrowRight,
 } from 'lucide-react';
 import RecipeModal from './RecipeModal';
 import { useLanguage } from '../services/i18n';
@@ -221,6 +222,28 @@ export default function DietTab({
         </div>
       </div>
 
+      {onNavigateToAiStudio && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-orange-500/5 border border-orange-500/30 flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-white block truncate">Want a full daily meal plan?</span>
+              <span className="text-[11px] text-slate-400 block truncate">Use Diet Architect in AI Studio</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onNavigateToAiStudio}
+            className="min-h-[38px] px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shrink-0 active-press transition-colors shadow-sm flex items-center gap-1"
+          >
+            <span>Architect</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       <div className="p-2 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -228,12 +251,21 @@ export default function DietTab({
           </span>
           <select
             value={dietView}
-            onChange={(e) => setDietView(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value === 'ai_architect') {
+                if (onNavigateToAiStudio) onNavigateToAiStudio();
+                return;
+              }
+              setDietView(e.target.value);
+            }}
             className="bg-slate-950 text-white text-xs font-bold rounded-xl border border-slate-700 px-3 py-1.5 focus:border-orange-500 focus:outline-none"
           >
             <option value="to_eat">Planned Meals ({pendingPlanMeals.length})</option>
             <option value="cook">Cook AI Meal</option>
             <option value="eaten">Eaten Log ({meals.length})</option>
+            {onNavigateToAiStudio && (
+              <option value="ai_architect">⚡ Diet Architect (AI Studio) →</option>
+            )}
           </select>
         </div>
 
@@ -382,14 +414,26 @@ export default function DietTab({
               <p className="text-xs text-slate-400 max-w-xs mx-auto">
                 Switch to Cook Meal above to generate your first meal, or generate a 4-meal plan in AI Studio.
               </p>
-              <button
-                type="button"
-                onClick={() => setDietView('cook')}
-                className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold active-press transition-colors shadow-sm"
-              >
-                <ChefHat className="w-4 h-4" />
-                <span>Cook a Meal Now</span>
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setDietView('cook')}
+                  className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold active-press transition-colors shadow-sm"
+                >
+                  <ChefHat className="w-4 h-4" />
+                  <span>Cook a Meal</span>
+                </button>
+                {onNavigateToAiStudio && (
+                  <button
+                    type="button"
+                    onClick={onNavigateToAiStudio}
+                    className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold active-press transition-colors shadow-sm"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>AI Diet Architect</span>
+                  </button>
+                )}
+              </div>
             </div>
           ) : pendingPlanMeals.length === 0 ? (
             <div className="text-center py-8 px-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-1.5 animate-fade-in">
