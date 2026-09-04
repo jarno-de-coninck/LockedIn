@@ -10,6 +10,7 @@ import {
   Trophy,
   Dumbbell,
   ArrowRight,
+  ChevronDown,
 } from 'lucide-react';
 import { generateWeeklyScheduleFromPrompt } from '../services/groq';
 
@@ -340,23 +341,28 @@ export default function CustomProgramModal({
                   <div key={d.day} className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-white">{d.day}</span>
-                      <select
-                        value={d.type}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setManualDays((prev) =>
-                            prev.map((item, idx) =>
-                              idx === dIdx ? { ...item, type: val, duration: val === 'Rest' ? '0m' : '45m' } : item
-                            )
-                          );
-                        }}
-                        className="px-2 py-1 text-xs rounded-lg border border-slate-800 bg-slate-900 text-slate-300 focus:outline-none"
-                      >
-                        <option value="Strength">Strength</option>
-                        <option value="Agility">Agility</option>
-                        <option value="Conditioning">Conditioning</option>
-                        <option value="Rest">Rest</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={d.type}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setManualDays((prev) =>
+                              prev.map((item, idx) =>
+                                idx === dIdx ? { ...item, type: val, duration: val === 'Rest' ? '0m' : '45m' } : item
+                              )
+                            );
+                          }}
+                          className="appearance-none pl-2.5 pr-7 py-1 text-xs font-bold rounded-xl border border-slate-800 bg-slate-900 text-slate-200 focus:outline-none focus:border-orange-500 cursor-pointer transition-colors hover:border-slate-700"
+                        >
+                          <option value="Strength">Strength</option>
+                          <option value="Agility">Agility</option>
+                          <option value="Conditioning">Conditioning</option>
+                          <option value="Rest">Rest</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-orange-400">
+                          <ChevronDown className="w-3 h-3 stroke-[2.5]" />
+                        </div>
+                      </div>
                     </div>
 
                     <input

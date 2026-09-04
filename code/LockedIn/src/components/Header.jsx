@@ -53,8 +53,11 @@ export default function Header({
               title="Settings & Language"
             >
               <Settings className="w-4 h-4 text-slate-300" />
-              {getGroqApiKey() && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 ring-1 ring-slate-950" />
+              {!getGroqApiKey() && (
+                <span
+                  className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 ring-1 ring-slate-950"
+                  title="No AI key connected"
+                />
               )}
             </button>
 

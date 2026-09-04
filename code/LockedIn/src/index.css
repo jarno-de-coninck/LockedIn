@@ -50,6 +50,19 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #64748b;
   }
+
+  select {
+    color-scheme: dark;
+    background-color: #020617;
+    color: #f8fafc;
+  }
+
+  select option {
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 10px 14px;
+    font-weight: 600;
+  }
 }
 
 .active-press:active {

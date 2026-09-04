@@ -13,6 +13,7 @@ import {
   Loader2,
   ChefHat,
   ArrowRight,
+  ChevronDown,
 } from 'lucide-react';
 import RecipeModal from './RecipeModal';
 import { useLanguage } from '../services/i18n';
@@ -249,24 +250,29 @@ export default function DietTab({
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Diet View
           </span>
-          <select
-            value={dietView}
-            onChange={(e) => {
-              if (e.target.value === 'ai_architect') {
-                if (onNavigateToAiStudio) onNavigateToAiStudio();
-                return;
-              }
-              setDietView(e.target.value);
-            }}
-            className="bg-slate-950 text-white text-xs font-bold rounded-xl border border-slate-700 px-3 py-1.5 focus:border-orange-500 focus:outline-none"
-          >
-            <option value="to_eat">Planned Meals ({pendingPlanMeals.length})</option>
-            <option value="cook">Cook AI Meal</option>
-            <option value="eaten">Eaten Log ({meals.length})</option>
-            {onNavigateToAiStudio && (
-              <option value="ai_architect">⚡ Diet Architect (AI Studio) →</option>
-            )}
-          </select>
+          <div className="relative">
+            <select
+              value={dietView}
+              onChange={(e) => {
+                if (e.target.value === 'ai_architect') {
+                  if (onNavigateToAiStudio) onNavigateToAiStudio();
+                  return;
+                }
+                setDietView(e.target.value);
+              }}
+              className="appearance-none bg-slate-950 hover:bg-slate-900 text-white text-xs font-bold rounded-xl border border-slate-800 hover:border-slate-700 pl-3 pr-8 py-1.5 focus:border-orange-500 focus:outline-none transition-all cursor-pointer shadow-xs"
+            >
+              <option value="to_eat">Planned Meals ({pendingPlanMeals.length})</option>
+              <option value="cook">Cook AI Meal</option>
+              <option value="eaten">Eaten Log ({meals.length})</option>
+              {onNavigateToAiStudio && (
+                <option value="ai_architect">⚡ Diet Architect (AI Studio) →</option>
+              )}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-orange-400">
+              <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
@@ -364,22 +370,27 @@ export default function DietTab({
             <label className="text-xs font-bold text-slate-400 block">
               Or pick a 1-tap recipe idea:
             </label>
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleGenerateGuidedRecipe(e.target.value);
-                  e.target.value = '';
-                }
-              }}
-              className="w-full min-h-[44px] px-3 text-xs font-bold rounded-xl border border-slate-700 bg-slate-950 text-slate-200 focus:border-orange-500 focus:outline-none"
-            >
-              <option value="">Select a popular athlete recipe idea...</option>
-              {QUICK_IDEAS.map((idea) => (
-                <option key={idea} value={idea}>
-                  {idea}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleGenerateGuidedRecipe(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                className="appearance-none w-full min-h-[46px] pl-3.5 pr-10 text-xs sm:text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-200 focus:border-orange-500 focus:outline-none transition-all cursor-pointer shadow-xs"
+              >
+                <option value="">Select a popular athlete recipe idea...</option>
+                {QUICK_IDEAS.map((idea) => (
+                  <option key={idea} value={idea}>
+                    {idea}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-orange-400">
+                <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+              </div>
+            </div>
           </div>
 
           <button

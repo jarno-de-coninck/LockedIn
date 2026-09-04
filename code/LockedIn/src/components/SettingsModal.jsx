@@ -120,20 +120,12 @@ export default function SettingsModal({ isOpen, onClose }) {
                 <Sparkles className="w-3.5 h-3.5 text-orange-400" />
                 <span>AI Engine Connection</span>
               </span>
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                  isKeyActive
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
-                    : 'bg-amber-500/15 text-amber-300 border-amber-500/40'
-                }`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isKeyActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-                  }`}
-                />
-                {isKeyActive ? 'Live Groq AI' : 'Offline Heuristics'}
-              </span>
+              {!isKeyActive && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border bg-amber-500/15 text-amber-300 border-amber-500/40">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  Offline (No Key)
+                </span>
+              )}
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">

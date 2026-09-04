@@ -15,6 +15,7 @@ import {
   Plus,
   Shuffle,
   Flame,
+  ChevronDown,
 } from 'lucide-react';
 import {
   generateDietPlan,
@@ -542,20 +543,12 @@ export default function AiStudioTab({
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
                     {t('dietMode') || 'Diet Architect'}
                   </span>
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                      getGroqApiKey()
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        getGroqApiKey() ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-                      }`}
-                    />
-                    {getGroqApiKey() ? 'Live AI Active (openai/gpt-oss-20b)' : 'Offline (No API Key)'}
-                  </span>
+                  {!getGroqApiKey() && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      Offline (No AI Key)
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-xs sm:text-sm font-black text-white mt-0.5">
                   Olympic Meal Generation Studio
@@ -571,15 +564,20 @@ export default function AiStudioTab({
               <label className="text-xs font-bold text-slate-300 block">
                 Daily Structure
               </label>
-              <select
-                value={mealCount}
-                onChange={(e) => setMealCount(Number(e.target.value))}
-                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
-              >
-                <option value={3}>3 Meals (Breakfast, Lunch, Dinner)</option>
-                <option value={4}>4 Meals (Standard Athlete Split)</option>
-                <option value={5}>5 Meals (Intense Athlete Fueling)</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={mealCount}
+                  onChange={(e) => setMealCount(Number(e.target.value))}
+                  className="appearance-none w-full min-h-[48px] pl-4 pr-10 text-xs sm:text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-white focus:border-orange-500 focus:outline-none transition-all cursor-pointer shadow-xs"
+                >
+                  <option value={3}>3 Meals (Breakfast, Lunch, Dinner)</option>
+                  <option value={4}>4 Meals (Standard Athlete Split)</option>
+                  <option value={5}>5 Meals (Intense Athlete Fueling)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-orange-400">
+                  <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                </div>
+              </div>
             </div>
 
             {/* 2. Macro & Goal Style Dropdown */}
@@ -587,17 +585,22 @@ export default function AiStudioTab({
               <label className="text-xs font-bold text-slate-300 block">
                 Macro & Athletic Goal
               </label>
-              <select
-                value={selectedDietPreset}
-                onChange={(e) => setSelectedDietPreset(e.target.value)}
-                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
-              >
-                {DIET_PRESETS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label} - {p.desc}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedDietPreset}
+                  onChange={(e) => setSelectedDietPreset(e.target.value)}
+                  className="appearance-none w-full min-h-[48px] pl-4 pr-10 text-xs sm:text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-white focus:border-orange-500 focus:outline-none transition-all cursor-pointer shadow-xs"
+                >
+                  {DIET_PRESETS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.label} - {p.desc}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-orange-400">
+                  <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                </div>
+              </div>
             </div>
 
             {/* 3. Cuisine & Flavor Profile Dropdown */}
@@ -605,17 +608,22 @@ export default function AiStudioTab({
               <label className="text-xs font-bold text-slate-300 block">
                 Cuisine & Flavor
               </label>
-              <select
-                value={selectedCuisine}
-                onChange={(e) => setSelectedCuisine(e.target.value)}
-                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
-              >
-                {CUISINES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedCuisine}
+                  onChange={(e) => setSelectedCuisine(e.target.value)}
+                  className="appearance-none w-full min-h-[48px] pl-4 pr-10 text-xs sm:text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-white focus:border-orange-500 focus:outline-none transition-all cursor-pointer shadow-xs"
+                >
+                  {CUISINES.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-orange-400">
+                  <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                </div>
+              </div>
             </div>
 
             {/* 4. Dietary Restrictions Dropdown */}
@@ -623,21 +631,26 @@ export default function AiStudioTab({
               <label className="text-xs font-bold text-slate-300 block">
                 Dietary Preference / Allergies
               </label>
-              <select
-                value={selectedRestrictions[0] || ''}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSelectedRestrictions(val ? [val] : []);
-                }}
-                className="w-full min-h-[46px] px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-700 bg-slate-950 text-white focus:border-orange-500 focus:outline-none"
-              >
-                <option value="">No Restrictions (All Foods)</option>
-                {DIETARY_RESTRICTIONS.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedRestrictions[0] || ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedRestrictions(val ? [val] : []);
+                  }}
+                  className="appearance-none w-full min-h-[48px] pl-4 pr-10 text-xs sm:text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-white focus:border-orange-500 focus:outline-none transition-all cursor-pointer shadow-xs"
+                >
+                  <option value="">No Restrictions (All Foods)</option>
+                  {DIETARY_RESTRICTIONS.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-orange-400">
+                  <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                </div>
+              </div>
             </div>
 
             {/* 5. Kitchen Pantry & Ingredients */}
