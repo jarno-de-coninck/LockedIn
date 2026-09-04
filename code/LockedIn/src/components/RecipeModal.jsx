@@ -16,114 +16,120 @@ export default function RecipeModal({
   const ingredients = Array.isArray(meal.ingredients) && meal.ingredients.length > 0
     ? meal.ingredients
     : [
-        'Lean Protein (Chicken / Eggs / Fish / Tofu)',
-        'Complex Carbs (Rice / Sweet Potato / Oats)',
+        'Lean Protein (Chicken, Eggs, Fish, or Tofu)',
+        'Complex Carbs (Rice, Sweet Potato, or Oats)',
         'Fresh Vegetables or Salad Greens',
-        'Healthy Fats (Olive Oil / Avocado)',
+        'Healthy Fats (Olive Oil or Avocado)',
       ];
 
   const instructions = Array.isArray(meal.instructions) && meal.instructions.length > 0
     ? meal.instructions
     : [
-        'Measure and prep all fresh ingredients.',
-        'Cook protein over medium heat until tender.',
-        'Assemble ingredients and season to taste.',
+        'Measure and prepare all fresh ingredients.',
+        'Cook protein over medium heat until thoroughly cooked.',
+        'Combine ingredients and season lightly with herbs and spices.',
       ];
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="recipe-title"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-fade-in select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="w-full max-w-sm bg-slate-900 border border-slate-800 text-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[82vh] overflow-hidden animate-slide-up"
+        className="w-full max-w-md bg-slate-900 border-2 border-slate-700 text-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="px-4 py-3.5 flex items-start justify-between border-b border-slate-800 shrink-0">
+        <div className="px-5 py-4 flex items-center justify-between border-b-2 border-slate-800 shrink-0 bg-slate-950">
           <div className="min-w-0 pr-2">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 uppercase tracking-wider">
+              <span className="text-xs font-black px-3 py-1 rounded-full bg-orange-950 text-orange-300 border border-orange-500/50 uppercase tracking-wider">
                 {meal.meal || 'Meal'}
               </span>
-              <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" /> {meal.prepTime || '15 mins'}
+              <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-amber-400" /> {meal.prepTime || '15 mins'}
               </span>
             </div>
-            <h3 className="text-xs font-black text-white leading-snug">
+            <h3 id="recipe-title" className="text-base font-black text-white leading-snug">
               {meal.title}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center shrink-0 transition-colors"
+            aria-label="Close recipe"
+            className="min-w-[48px] min-h-[48px] rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-slate-200 hover:text-white flex items-center justify-center shrink-0 transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
           >
-            <X className="w-4 h-4" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Full-Name Aesthetic Macro Grid */}
-        <div className="px-4 py-3 bg-slate-950/80 grid grid-cols-4 gap-2 border-b border-slate-800 shrink-0 text-center">
-          <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight block">Calories</span>
-            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.calories}</span>
+        <div className="px-5 py-3.5 bg-slate-950 grid grid-cols-4 gap-2.5 border-b-2 border-slate-800 shrink-0 text-center">
+          <div className="p-2.5 rounded-2xl bg-slate-900 border-2 border-slate-800">
+            <span className="text-xs font-black text-slate-300 uppercase block">Calories</span>
+            <span className="text-lg font-black text-white font-mono mt-0.5 block">{meal.calories}</span>
           </div>
-          <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/30">
-            <span className="text-[10px] font-black text-orange-400 uppercase tracking-tight block">Protein</span>
-            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.protein || Math.round((meal.calories * 0.35) / 4)}g</span>
+          <div className="p-2.5 rounded-2xl bg-slate-900 border-2 border-slate-800">
+            <span className="text-xs font-black text-orange-400 uppercase block">Protein</span>
+            <span className="text-lg font-black text-white font-mono mt-0.5 block">{meal.protein || Math.round((meal.calories * 0.35) / 4)}g</span>
           </div>
-          <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/30">
-            <span className="text-[10px] font-black text-sky-400 uppercase tracking-tight block">Carbs</span>
-            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.carbs || Math.round((meal.calories * 0.45) / 4)}g</span>
+          <div className="p-2.5 rounded-2xl bg-slate-900 border-2 border-slate-800">
+            <span className="text-xs font-black text-sky-400 uppercase block">Carbs</span>
+            <span className="text-lg font-black text-white font-mono mt-0.5 block">{meal.carbs || Math.round((meal.calories * 0.45) / 4)}g</span>
           </div>
-          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-tight block">Fats</span>
-            <span className="text-sm font-black text-white font-mono mt-0.5 block">{meal.fats || Math.round((meal.calories * 0.20) / 9)}g</span>
+          <div className="p-2.5 rounded-2xl bg-slate-900 border-2 border-slate-800">
+            <span className="text-xs font-black text-emerald-400 uppercase block">Fats</span>
+            <span className="text-lg font-black text-white font-mono mt-0.5 block">{meal.fats || Math.round((meal.calories * 0.20) / 9)}g</span>
           </div>
         </div>
 
-        {/* Scrollable Body */}
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto text-xs text-slate-300">
-          {/* Ingredients */}
+        <div className="p-5 space-y-5 flex-1 overflow-y-auto text-sm text-slate-200">
           <div>
-            <h4 className="font-black text-white uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
-              <Utensils className="w-3.5 h-3.5 text-orange-400" />
-              <span>Ingredients</span>
+            <h4 className="font-black text-white uppercase tracking-wider text-xs mb-3 flex items-center gap-2">
+              <Utensils className="w-4 h-4 text-orange-400" />
+              <span>Ingredients Needed</span>
             </h4>
-            <ul className="space-y-1.5 list-disc list-inside text-slate-300 pl-1 text-xs">
+            <ul className="space-y-2.5 pl-1">
               {ingredients.map((ing, idx) => (
-                <li key={idx} className="leading-relaxed">{ing}</li>
+                <li key={idx} className="flex items-start gap-2.5 text-slate-200 leading-relaxed font-medium">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 mt-2" />
+                  <span>{ing}</span>
+                </li>
               ))}
             </ul>
           </div>
 
-          {/* Instructions */}
           <div>
-            <h4 className="font-black text-white uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
-              <ChefHat className="w-3.5 h-3.5 text-orange-400" />
-              <span>Preparation Steps</span>
+            <h4 className="font-black text-white uppercase tracking-wider text-xs mb-3 flex items-center gap-2">
+              <ChefHat className="w-4 h-4 text-orange-400" />
+              <span>Preparation Instructions</span>
             </h4>
-            <ol className="space-y-2 list-decimal list-inside text-slate-300 pl-1 text-xs">
+            <ol className="space-y-3 pl-1">
               {instructions.map((step, idx) => (
-                <li key={idx} className="leading-relaxed">{step}</li>
+                <li key={idx} className="flex items-start gap-3 text-slate-200 leading-relaxed font-medium">
+                  <span className="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 text-white font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
               ))}
             </ol>
           </div>
         </div>
 
-        {/* Action Footer */}
-        <div className="p-3.5 bg-slate-950 border-t border-slate-800 grid grid-cols-2 gap-2 shrink-0">
+        <div className="p-4 bg-slate-950 border-t-2 border-slate-800 grid grid-cols-2 gap-3 shrink-0">
           {onSwapMeal && (
             <button
               type="button"
               onClick={() => onSwapMeal(meal)}
               disabled={isSwapping}
-              className="py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-black active-press flex items-center justify-center gap-2 transition-colors"
+              className="min-h-[52px] rounded-2xl bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 text-slate-200 hover:text-white text-sm font-black active-press flex items-center justify-center gap-2 transition-colors focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none"
             >
-              {isSwapping ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4 text-orange-400" />}
+              {isSwapping ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5 text-orange-400" />}
               <span>{t('swapMeal')}</span>
             </button>
           )}
@@ -135,11 +141,11 @@ export default function RecipeModal({
                 onLogMeal(meal);
                 onClose();
               }}
-              className={`py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black active-press flex items-center justify-center gap-2 transition-colors shadow-lg shadow-orange-500/25 ${
+              className={`min-h-[52px] rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-sm font-black active-press flex items-center justify-center gap-2 transition-colors shadow-lg shadow-orange-600/30 focus-visible:ring-4 focus-visible:ring-amber-400 focus-visible:outline-none ${
                 onSwapMeal ? 'col-span-1' : 'col-span-2'
               }`}
             >
-              <Check className="w-4 h-4 stroke-[3]" />
+              <Check className="w-5 h-5 stroke-[3]" />
               <span>{t('logMeal')}</span>
             </button>
           )}
